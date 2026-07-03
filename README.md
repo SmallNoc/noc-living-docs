@@ -2,19 +2,40 @@
 
 中文 | [English](#english)
 
-NOC Living Docs 是一套面向 AI 编程 Agent 的活文档协议。
+NOC Living Docs 是一套项目活文档规范和配套工具。
 
-它为项目提供稳定的文档结构，让 Codex、Claude Code、Gemini CLI 或其他 Agent 在修改代码前，可以理解项目现状、功能需求、禁止操作、测试要求和改造历史。
+它解决的问题很具体：项目文档分散、容易过期，代码改了以后没人知道哪些需求、现状、限制和测试记录也该同步更新。NOC 把这些内容放进固定目录 `noc_docs/`，再用脚本做初始化、索引、校验和变更提醒。
 
-## 核心理念
+它不会替代 README、产品文档、接口文档或项目管理工具。它只负责一件事：让项目的“需求、现状、限制、测试、变更记录”有固定位置，并且能跟代码变更保持同步。
+
+## 能帮你做什么
+
+- 新项目或旧项目都可以一条命令生成活文档结构。
+- 已有 `docs/`、`AGENTS.md`、`CLAUDE.md`、`GEMINI.md` 不会被覆盖。
+- 代码路径可以映射到功能文档，后续检查时能知道“这次改动影响哪个功能”。
+- 提交前可以检查：代码改了，相关文档有没有同步。
+- 大项目可以按业务域拆分，避免所有文档堆在一起。
+- 本地脚本不调用模型，不消耗 token。
+
+## Token 成本
+
+NOC 本身是本地文件和脚本，运行 `init`、`index`、`validate`、`check` 不会消耗模型 token。
+
+如果你把这些文档交给编程助手读取，读取内容当然会占用上下文。NOC 的目标是减少这部分浪费：通过 `feature-map.json` 和索引文件，只读取和当前改动相关的功能文档，而不是每次把整套项目文档都塞进上下文。
+
+简单说：
+
+- 不使用 NOC：经常需要反复解释项目背景，或者让助手读大量无关文档。
+- 使用 NOC：先定位受影响功能，只读必要的 `requirements.md`、`status.md`、`guardrails.md`、`test-record.md` 等文件。
+
+## 核心约定
 
 - 文档根目录固定为 `noc_docs/`。
 - 默认中文正文，方便中文团队维护。
-- 机器可识别结构保持英文：文件名、标题、编号、JSON key、状态值和命令。
+- 文件名、JSON key、状态值和命令保持英文，方便脚本稳定解析。
 - 小项目使用 `noc_docs/features/`。
 - 大项目使用 `noc_docs/domains/<domain>/features/`。
-- Agent 默认只读取受影响功能或业务域的相关文档，避免浪费上下文 token。
-- 已有 `AGENTS.md`、`CLAUDE.md` 或 `GEMINI.md` 必须合并，不能覆盖。
+- 已有项目规则只合并，不覆盖。
 
 ## 仓库结构
 
@@ -26,19 +47,132 @@ scripts/        初始化、索引、校验和 Git hook 工具
 examples/       小项目和大项目示例
 ```
 
+## 生成的项目文档结构
+
+小项目默认生成：
+
+```text
+noc_docs/
+├─ docs-map.md
+├─ project-status.md
+├─ development/
+│  ├─ git-workflow.md
+│  ├─ testing.md
+│  └─ documentation-policy.md
+├─ features/
+│  └─ <feature>/
+│     ├─ agent-guide.md
+│     ├─ requirements.md
+│     ├─ status.md
+│     ├─ guardrails.md
+│     ├─ test-record.md
+│     ├─ change-record.md
+│     └─ notes.md
+└─ .living-docs/
+   ├─ feature-map.json
+   ├─ docs-index.json
+   └─ manifest.json
+```
+
+大项目会多一层业务域：
+
+```text
+noc_docs/
+└─ domains/
+   └─ <domain>/
+      ├─ guardrails.md
+      └─ features/
+         └─ <feature>/
+```
+
+`domain` 可以是 `auth`、`billing`、`admin`、`reporting` 这类业务域，也可以是一个较大的子系统。
+
+## 每个文档的作用
+
+| 文件 | 作用 |
+|---|---|
+| `docs-map.md` | 文档地图。说明项目文档怎么组织，什么信息应该去哪里找。 |
+| `project-status.md` | 项目总体现状。记录当前阶段、主要模块、当前重点、已知问题。 |
+| `development/git-workflow.md` | Git 工作流程。记录分支、提交、PR、发布前检查等规则。 |
+| `development/testing.md` | 测试说明。记录测试命令、测试要求、哪些改动必须补验证。 |
+| `development/documentation-policy.md` | 文档维护规则。说明什么时候更新文档，文档和代码冲突时怎么处理。 |
+| `features/<feature>/agent-guide.md` | 功能维护指引。记录相关代码路径、改动前要看的文档、常见注意点。 |
+| `features/<feature>/requirements.md` | 功能需求。记录“这个功能应该是什么样”，表达目标和意图。 |
+| `features/<feature>/status.md` | 功能现状。记录“这个功能现在实际是什么样”。 |
+| `features/<feature>/guardrails.md` | 限制和禁区。记录不能破坏的规则、安全边界、兼容性要求。 |
+| `features/<feature>/test-record.md` | 测试记录。记录测试命令、验证结果、未覆盖风险。 |
+| `features/<feature>/change-record.md` | 变更记录。记录重要修改、修改原因和影响范围。 |
+| `features/<feature>/notes.md` | 补充笔记。记录临时结论、调研信息、暂时不适合放进正式文档的内容。 |
+
+最容易混淆的是 `requirements.md` 和 `status.md`：
+
+- `requirements.md` 写“期望行为”。
+- `status.md` 写“当前行为”。
+
+如果当前代码还没做到需求要求，不要为了迎合代码去改 `requirements.md`。应该把实际情况写进 `status.md`，再决定是修代码，还是调整需求。
+
+## JSON 文件的作用
+
+`.living-docs/` 里的 JSON 是给脚本和工具使用的索引，不是让人长期手写的正文文档。
+
+| 文件 | 作用 |
+|---|---|
+| `feature-map.json` | 记录功能和代码路径的关系。例如 `src/api/` 属于 `api` 功能。`check` 会用它判断代码变更影响哪个功能。 |
+| `docs-index.json` | 文档索引。记录标题、摘要、标签，方便快速定位相关文档。 |
+| `manifest.json` | 文档清单。记录文件 hash、大小、索引时间，用来判断文档是否变化。 |
+
+一般只需要人工确认 `feature-map.json` 里的路径映射。`docs-index.json` 和 `manifest.json` 通常由 `index` 命令生成。
+
+## 安装
+
+目前推荐直接使用这个仓库里的脚本：
+
+```bash
+git clone https://github.com/SmallNoc/noc-living-docs.git
+cd noc-living-docs
+python scripts/noc.py validate
+```
+
+然后对目标项目执行初始化：
+
+```bash
+python scripts/noc.py init /path/to/project
+```
+
+如果安装了 Git Hook，hook 会引用当前仓库里的 `scripts/noc.py`。因此不要随意移动或删除这个工具仓库。
+
 ## 快速开始
 
-初始化一个项目：
+初始化目标项目：
 
 ```bash
 python scripts/noc.py init /path/to/project
 python scripts/noc.py validate --target /path/to/project
 ```
 
-然后告诉你的 Agent：
+生成映射建议：
+
+```bash
+python scripts/noc.py suggest-map /path/to/project
+```
+
+确认建议可靠后写入：
+
+```bash
+python scripts/noc.py suggest-map /path/to/project --write
+python scripts/noc.py index /path/to/project
+```
+
+提交前检查：
+
+```bash
+python scripts/noc.py check /path/to/project --staged
+```
+
+如果你使用编程助手，可以告诉它：
 
 ```text
-Initialize NOC Living Docs for this project.
+Use NOC Living Docs before changing this project.
 ```
 
 如果使用 Codex，可以安装或引用：
@@ -46,6 +180,82 @@ Initialize NOC Living Docs for this project.
 ```text
 skills/codex/project-living-docs
 ```
+
+## 日常使用
+
+常见流程：
+
+1. 改代码前，先看这次改动影响哪个功能。
+2. 读对应功能的 `requirements.md`、`status.md`、`guardrails.md`、`test-record.md`。
+3. 改完代码后，如果行为、测试或限制发生变化，同步更新对应文档。
+4. 运行 `index` 更新索引。
+5. 运行 `check --staged` 检查代码和文档是否脱节。
+
+最常用命令：
+
+```bash
+python scripts/noc.py suggest-map /path/to/project
+python scripts/noc.py index /path/to/project
+python scripts/noc.py check /path/to/project --staged
+python scripts/noc.py validate --target /path/to/project
+```
+
+## 更新
+
+更新 NOC 工具仓库：
+
+```bash
+git pull
+python scripts/noc.py validate
+```
+
+更新目标项目里的受控区块和模板索引：
+
+```bash
+python scripts/noc.py init /path/to/project
+python scripts/noc.py index /path/to/project
+python scripts/noc.py validate --target /path/to/project
+```
+
+默认不会覆盖目标项目里已有的 `noc_docs/` 文件。如果确实要用新模板覆盖已有文件，才使用：
+
+```bash
+python scripts/noc.py init /path/to/project --force
+```
+
+`--force` 不会覆盖用户在 `AGENTS.md`、`CLAUDE.md`、`GEMINI.md` 中受控区块之外的内容。
+
+## 卸载
+
+NOC 不会修改业务代码。卸载时移除它添加的文档、受控区块和可选 hook 即可。
+
+如果安装过 Git Hook，先卸载：
+
+```bash
+python scripts/noc.py hook uninstall /path/to/project
+```
+
+删除目标项目里的文档目录：
+
+```bash
+rm -rf /path/to/project/noc_docs
+```
+
+Windows PowerShell：
+
+```powershell
+Remove-Item -Recurse -Force /path/to/project/noc_docs
+```
+
+如果 `AGENTS.md`、`CLAUDE.md` 或 `GEMINI.md` 里有下面的区块，删除它：
+
+```md
+<!-- noc-living-docs:start -->
+...
+<!-- noc-living-docs:end -->
+```
+
+如果你不再使用这个工具仓库，也可以删除克隆下来的 `noc-living-docs` 目录。
 
 ## 脚本命令
 

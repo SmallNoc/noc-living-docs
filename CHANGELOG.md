@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- Reworked the Chinese README introduction to explain the project in user-facing terms, including generated document structure, file responsibilities, JSON index roles, token impact, install, update, usage, and uninstall instructions.
+
 ## [1.0.0] - 2026-07-04
 
 ### Added
