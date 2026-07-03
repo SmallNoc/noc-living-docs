@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Added `VERSION` and `scripts/release.py` for repeatable release checks and version bumps.
+- Added release preparation support that moves `Unreleased` changelog notes into a target version.
+- Added migration tests for existing agent files, existing `docs/`, monorepo domain detection, and config-heavy projects.
+- Added a migration report template for real-project dogfood runs.
+- Added CI coverage for release checks and release CLI tests.
+
 ## [0.4.0] - 2026-07-04
 
 ### Added

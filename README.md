@@ -141,6 +141,54 @@ python scripts/noc.py check /path/to/project --staged
 
 通过 `hook install` 安装的 pre-commit hook 默认使用 `--warn-only`，因此它会提示风险，但不会阻断提交。
 
+### 发布检查
+
+版本号以 `VERSION` 为准，发布记录写入 `CHANGELOG.md`，Git tag 使用 `vX.Y.Z`：
+
+```bash
+python scripts/release.py --check
+python scripts/release.py --bump patch
+python scripts/release.py --version 0.5.0
+```
+
+`--check` 会校验：
+
+- `VERSION` 使用 `MAJOR.MINOR.PATCH`。
+- `CHANGELOG.md` 包含对应版本条目。
+- 如果当前提交正好位于 Git tag 上，tag 必须等于 `v<VERSION>`。
+
+CI 会在 push、PR 和 tag 场景运行发布检查、协议校验和测试。
+
+推荐发布流程：
+
+```bash
+python scripts/release.py --version 0.5.0
+python scripts/release.py --check
+python -m unittest tests.test_noc_cli tests.test_release_cli
+git add VERSION CHANGELOG.md README.md scripts tests .github
+git commit -m "chore: prepare v0.5.0 release"
+git tag -a v0.5.0 -m "v0.5.0"
+git push origin main
+git push origin v0.5.0
+```
+
+如果 `CHANGELOG.md` 有 `Unreleased` 内容，`release.py --version` 会把它移动到目标版本条目下，并保留空的 `Unreleased` 区块。
+
+### 迁移测试
+
+测试套件覆盖接近真实项目的迁移场景：
+
+- 已有 `AGENTS.md` 时只追加或更新 NOC managed block，不覆盖用户规则。
+- 已有 `docs/` 时保持原样，NOC 协议仍固定使用 `noc_docs/`。
+- monorepo 或 3 个以上 app/service 自动进入 Domain Mode。
+- YAML、SQL、Shell、Dockerfile 等工程文件变更会触发文档同步检查。
+
+真实项目 dogfood 结果记录到：
+
+```text
+docs/migration-reports/YYYY-MM-DD-<repo>.md
+```
+
 ## 文档根目录
 
 `noc_docs/` 是协议固定根目录。不要为这套协议创建 `docs/`。如果项目已经有 `docs/`，除非用户明确要求迁移，否则保持不动。
@@ -306,6 +354,54 @@ By default, the manual `check` command exits with failure when staged code chang
 `check` recognizes common code, config, SQL, shell, Dockerfile, and related engineering files. For code paths mapped to a feature, staged documentation changes must touch that affected feature's docs; unrelated `noc_docs/` edits do not count as coverage.
 
 The pre-commit hook installed by `hook install` uses `--warn-only` by default, so it warns about risk without blocking commits.
+
+### Release Check
+
+`VERSION` is the source of truth for the project version. Release notes live in `CHANGELOG.md`, and Git tags use `vX.Y.Z`:
+
+```bash
+python scripts/release.py --check
+python scripts/release.py --bump patch
+python scripts/release.py --version 0.5.0
+```
+
+`--check` validates that:
+
+- `VERSION` uses `MAJOR.MINOR.PATCH`.
+- `CHANGELOG.md` contains an entry for the version.
+- If the current commit is exactly on a Git tag, that tag matches `v<VERSION>`.
+
+CI runs release checks, protocol validation, and tests on pushes, pull requests, and tags.
+
+Recommended release flow:
+
+```bash
+python scripts/release.py --version 0.5.0
+python scripts/release.py --check
+python -m unittest tests.test_noc_cli tests.test_release_cli
+git add VERSION CHANGELOG.md README.md scripts tests .github
+git commit -m "chore: prepare v0.5.0 release"
+git tag -a v0.5.0 -m "v0.5.0"
+git push origin main
+git push origin v0.5.0
+```
+
+If `CHANGELOG.md` has `Unreleased` content, `release.py --version` moves it into the target version entry and keeps an empty `Unreleased` section.
+
+### Migration Tests
+
+The test suite covers realistic migration cases:
+
+- Existing `AGENTS.md` content is preserved while the NOC managed block is appended or updated.
+- Existing `docs/` directories are left untouched; the protocol still uses fixed `noc_docs/`.
+- Monorepos or projects with 3 or more apps/services automatically use Domain Mode.
+- YAML, SQL, shell, Dockerfile, and related engineering changes trigger documentation sync checks.
+
+Record real-project dogfood results in:
+
+```text
+docs/migration-reports/YYYY-MM-DD-<repo>.md
+```
 
 ## Documentation Root
 

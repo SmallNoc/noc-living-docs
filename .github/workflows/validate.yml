@@ -2,6 +2,8 @@ name: Validate
 
 on:
   push:
+    tags:
+      - "v*"
   pull_request:
 
 jobs:
@@ -12,7 +14,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
-      - run: python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/validate-noc-docs.py
+      - run: python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py
+      - run: python scripts/release.py --check
       - run: python scripts/validate-noc-docs.py
       - run: python scripts/validate-noc-docs.py --target examples/small-project
       - run: python scripts/validate-noc-docs.py --target examples/domain-project
@@ -20,3 +23,4 @@ jobs:
       - run: python scripts/noc.py validate --target examples/small-project
       - run: python scripts/noc.py validate --target examples/domain-project
       - run: python -m unittest tests.test_noc_cli
+      - run: python -m unittest tests.test_release_cli

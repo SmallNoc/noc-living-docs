@@ -229,6 +229,55 @@ class NocCliTests(unittest.TestCase):
             self.assertIn("missing_docs", entry["completeness"])
             self.assertIn("requirements.md", entry["completeness"]["missing_docs"])
 
+    def test_migration_preserves_existing_agent_rules_and_existing_docs_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            (project / "AGENTS.md").write_text("# Existing Rules\n\n- Keep this rule.\n", encoding="utf-8")
+            (project / "docs").mkdir()
+            (project / "docs/README.md").write_text("# Existing Docs\n", encoding="utf-8")
+
+            run(["init", str(project), "--mode", "small"])
+            run(["validate", "--target", str(project)])
+
+            agents = (project / "AGENTS.md").read_text(encoding="utf-8")
+            self.assertIn("- Keep this rule.", agents)
+            self.assertIn("<!-- noc-living-docs:start -->", agents)
+            self.assertTrue((project / "docs/README.md").exists())
+            self.assertTrue((project / "noc_docs/features").exists())
+
+    def test_migration_auto_selects_domain_mode_for_monorepo_services(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            (project / "pnpm-workspace.yaml").write_text("packages:\n  - services/*\n", encoding="utf-8")
+            for name in ["auth", "billing", "reporting"]:
+                (project / "services" / name).mkdir(parents=True)
+
+            run(["init", str(project), "--mode", "auto"])
+            run(["validate", "--target", str(project)])
+
+            config = json.loads((project / "noc_docs/.living-docs/config.json").read_text(encoding="utf-8"))
+            self.assertEqual(config["mode"], "domain")
+            self.assertTrue((project / "noc_docs/domains").exists())
+            self.assertFalse((project / "noc_docs/features").exists())
+
+    def test_migration_config_heavy_project_triggers_docs_check(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            git(project, ["init"])
+            run(["init", str(project), "--mode", "small"])
+            git(project, ["add", "."])
+            git(project, ["commit", "-m", "init"], check=False)
+
+            (project / "docker-compose.yml").write_text("services: {}\n", encoding="utf-8")
+            (project / "migrations").mkdir()
+            (project / "migrations/001.sql").write_text("select 1;\n", encoding="utf-8")
+            git(project, ["add", "."])
+
+            result = run(["check", str(project), "--staged"], check=False)
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("code changed but no noc_docs files changed", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -36,6 +36,9 @@ def parse_args() -> argparse.Namespace:
 def check_required_paths() -> None:
     required = [
         "README.md",
+        "CHANGELOG.md",
+        "VERSION",
+        "docs/migration-reports/TEMPLATE.md",
         "protocol/AGENT_PROTOCOL.md",
         "protocol/DOCUMENT_STRUCTURE.md",
         "protocol/LANGUAGE_POLICY.md",
@@ -44,6 +47,7 @@ def check_required_paths() -> None:
         "scripts/noc.py",
         "scripts/init-noc-docs.py",
         "scripts/index-noc-docs.py",
+        "scripts/release.py",
         "scripts/validate-noc-docs.py",
         "templates/AGENTS.md",
         "templates/noc_docs/project-status.md",

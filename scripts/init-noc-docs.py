@@ -56,8 +56,8 @@ def detect_mode(target: Path, requested: str) -> tuple[str, list[str]]:
         if path.is_dir():
             app_service_dirs.extend([p for p in path.iterdir() if p.is_dir()])
     if len(app_service_dirs) >= 3:
-        score += 2
         reasons.append(f"detected {len(app_service_dirs)} app/service directories")
+        return "domain", reasons
 
     domain_like_dirs = []
     for base in ["src/domains", "src/modules", "src/features", "domains", "modules"]:
@@ -65,8 +65,8 @@ def detect_mode(target: Path, requested: str) -> tuple[str, list[str]]:
         if path.is_dir():
             domain_like_dirs.extend([p for p in path.iterdir() if p.is_dir()])
     if len(domain_like_dirs) >= 20:
-        score += 2
         reasons.append(f"detected {len(domain_like_dirs)} probable features")
+        return "domain", reasons
     elif len(domain_like_dirs) >= 8:
         score += 1
         reasons.append(f"detected {len(domain_like_dirs)} top-level modules")
@@ -74,8 +74,8 @@ def detect_mode(target: Path, requested: str) -> tuple[str, list[str]]:
     domain_names = {"auth", "billing", "payment", "admin", "reporting", "tenant", "security"}
     detected_domains = {p.name.lower() for p in domain_like_dirs if p.name.lower() in domain_names}
     if len(detected_domains) >= 3:
-        score += 2
         reasons.append(f"detected probable domains: {', '.join(sorted(detected_domains))}")
+        return "domain", reasons
 
     if score >= 5:
         return "domain", reasons or ["auto score selected domain mode"]
