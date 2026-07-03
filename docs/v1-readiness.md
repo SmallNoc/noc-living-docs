@@ -43,12 +43,13 @@ NOC Living Docs v1 should stay small and hard. The core promise is:
 
 ## Current Gap
 
-The repository has two dogfood reports:
+The repository has three dogfood reports:
 
 - `docs/migration-reports/2026-07-04-noc-living-docs.md`
 - `docs/migration-reports/2026-07-04-myspringboot.md`
+- `docs/migration-reports/2026-07-04-edm-ui.md`
 
-v1 still needs one external dogfood run for:
+This satisfies the small-project and existing-agent project coverage. v1 still needs one external dogfood run for:
 
 - a monorepo or multi-service project.
 
