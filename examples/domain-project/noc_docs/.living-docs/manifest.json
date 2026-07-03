@@ -1,0 +1,80 @@
+{
+  "generated_at": "2026-07-03T12:39:57.212862+00:00",
+  "files": {
+    "noc_docs/development/documentation-policy.md": {
+      "sha256": "a3e8a0665cef1cf79567bc51acfeaab7d5498398a481dfb11de513c123872063",
+      "bytes": 674,
+      "last_indexed": "2026-07-03T12:39:57.212862+00:00"
+    },
+    "noc_docs/development/git-workflow.md": {
+      "sha256": "37d4d7f2b670c0d56e86b29cf2de608284040ad05acf56242fa7ba4ff7b2e329",
+      "bytes": 736,
+      "last_indexed": "2026-07-03T12:39:57.212862+00:00"
+    },
+    "noc_docs/development/testing.md": {
+      "sha256": "e11a2ed26986c889c044852396e7acabbd778c05e553362d74981db09435f61e",
+      "bytes": 460,
+      "last_indexed": "2026-07-03T12:39:57.212862+00:00"
+    },
+    "noc_docs/docs-map.md": {
+      "sha256": "484417693b81302689fce8b71725c2836703f1a26ba38a344162c88d2cea3cfb",
+      "bytes": 685,
+      "last_indexed": "2026-07-03T12:39:57.212862+00:00"
+    },
+    "noc_docs/domains/_domain/features/_feature/agent-guide.md": {
+      "sha256": "65c37b31b3cfa4c115cc4473f2670d3d7b7170323152a8e1c5e9ef163b4c9fc0",
+      "bytes": 951,
+      "last_indexed": "2026-07-03T12:39:57.212862+00:00"
+    },
+    "noc_docs/domains/_domain/features/_feature/change-record.md": {
+      "sha256": "62003d06ae9b02339c7bb938ffee4e0e5ebcb2bd0d9052357c83219174f7a582",
+      "bytes": 122,
+      "last_indexed": "2026-07-03T12:39:57.212862+00:00"
+    },
+    "noc_docs/domains/_domain/features/_feature/guardrails.md": {
+      "sha256": "edcfdd0f0dd21fae20727c40d6f9cca5b71dc13ac12fb4eb61c08a204ce6b48c",
+      "bytes": 245,
+      "last_indexed": "2026-07-03T12:39:57.212862+00:00"
+    },
+    "noc_docs/domains/_domain/features/_feature/notes.md": {
+      "sha256": "ddfb780c84d90b066cb057b29ce9363530de6ef0dbb174048669be323279c23e",
+      "bytes": 102,
+      "last_indexed": "2026-07-03T12:39:57.212862+00:00"
+    },
+    "noc_docs/domains/_domain/features/_feature/requirements.md": {
+      "sha256": "0de935be89a33ea9a2515297520c6a304ac28fcd98a6607c2342a5a3ea5bb5d1",
+      "bytes": 305,
+      "last_indexed": "2026-07-03T12:39:57.212862+00:00"
+    },
+    "noc_docs/domains/_domain/features/_feature/status.md": {
+      "sha256": "f5492df2f0724a307906bf2cd3f7af232838f5b69681e96763bee9e7e467cd38",
+      "bytes": 284,
+      "last_indexed": "2026-07-03T12:39:57.212862+00:00"
+    },
+    "noc_docs/domains/_domain/features/_feature/test-record.md": {
+      "sha256": "511908fb4b5ae9cda806a24b8b1db42b07ed74290b72651ad9a884ce0eaf6f36",
+      "bytes": 358,
+      "last_indexed": "2026-07-03T12:39:57.212862+00:00"
+    },
+    "noc_docs/domains/_domain/guardrails.md": {
+      "sha256": "b9556793a09c9229baa7cda92ac24a6ad9edd413d06de190134f6539eba797db",
+      "bytes": 226,
+      "last_indexed": "2026-07-03T12:39:57.212862+00:00"
+    },
+    "noc_docs/domains/_domain/index.md": {
+      "sha256": "68a595f2bfa4477a3f632b5a8dc27b1867eb0f698641ca3aec0030c1a85bd644",
+      "bytes": 223,
+      "last_indexed": "2026-07-03T12:39:57.212862+00:00"
+    },
+    "noc_docs/domains/index.md": {
+      "sha256": "fb7cb4c261e1a4807a2bc14497957d5bef33409cd8507bc92e349b91144df338",
+      "bytes": 129,
+      "last_indexed": "2026-07-03T12:39:57.212862+00:00"
+    },
+    "noc_docs/project-status.md": {
+      "sha256": "c98b488209e68fd4125a5322923c7ccd403850a468e927e517135fcc665be79a",
+      "bytes": 301,
+      "last_indexed": "2026-07-03T12:39:57.212862+00:00"
+    }
+  }
+}

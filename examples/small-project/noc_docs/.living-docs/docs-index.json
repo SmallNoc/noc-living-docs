@@ -1,0 +1,101 @@
+{
+  "generated_at": "2026-07-03T12:39:57.159395+00:00",
+  "documents": {
+    "noc_docs/development/documentation-policy.md": {
+      "title": "Documentation Policy",
+      "summary": "Update NOC docs only when the change affects: - behavior - requirements - API or CLI contracts - configuration - tests or verification strategy - deployment or operations - guardrails - architecture or module boundaries Pure formatting, internal cleanup, or no-behavior-change refactors do not require feature doc update",
+      "tags": [
+        "development"
+      ]
+    },
+    "noc_docs/development/git-workflow.md": {
+      "title": "Git Workflow",
+      "summary": "- Use `feature/<short-name>` for features. - Use `fix/<short-name>` for fixes. - Use `docs/<short-name>` for documentation-only changes. Use Conventional Commits: - `feat: add password reset` - `fix: handle expired sessions` - `docs: update login status`",
+      "tags": [
+        "development"
+      ]
+    },
+    "noc_docs/development/testing.md": {
+      "title": "Testing",
+      "summary": "- TODO: Add unit test command. - TODO: Add integration test command. - TODO: Add lint/typecheck command. 开发任务完成前，Agent 应根据影响范围运行相关测试。如果测试无法运行，必须说明原因和剩余风险。 Final responses should include: - commands run - pass/fail result - skipped checks and reasons",
+      "tags": [
+        "development"
+      ]
+    },
+    "noc_docs/docs-map.md": {
+      "title": "Docs Map",
+      "summary": "| Situation | Read | |---|---| | Any code change | `AGENTS.md`, `noc_docs/project-status.md` | | Feature change | affected feature `agent-guide.md`, `guardrails.md` | | Requirement change | affected feature `requirements.md` | | Behavior change | affected feature `status.md` |",
+      "tags": []
+    },
+    "noc_docs/features/_feature/agent-guide.md": {
+      "title": "Agent Guide: FEATURE_NAME",
+      "summary": "",
+      "tags": [
+        "agent-guide",
+        "features"
+      ]
+    },
+    "noc_docs/features/_feature/change-record.md": {
+      "title": "Change Record: FEATURE_NAME",
+      "summary": "TODO - TODO - TODO",
+      "tags": [
+        "change-record",
+        "features"
+      ]
+    },
+    "noc_docs/features/_feature/guardrails.md": {
+      "title": "Guardrails: FEATURE_NAME",
+      "summary": "",
+      "tags": [
+        "features",
+        "guardrails"
+      ]
+    },
+    "noc_docs/features/_feature/notes.md": {
+      "title": "Notes: FEATURE_NAME",
+      "summary": "- TODO - TODO - TODO",
+      "tags": [
+        "features",
+        "notes"
+      ]
+    },
+    "noc_docs/features/_feature/requirements.md": {
+      "title": "Requirements: FEATURE_NAME",
+      "summary": "",
+      "tags": [
+        "features",
+        "requirements"
+      ]
+    },
+    "noc_docs/features/_feature/status.md": {
+      "title": "Current Status: FEATURE_NAME",
+      "summary": "",
+      "tags": [
+        "features",
+        "status"
+      ]
+    },
+    "noc_docs/features/_feature/test-record.md": {
+      "title": "Test Record: FEATURE_NAME",
+      "summary": "",
+      "tags": [
+        "features",
+        "test-record"
+      ]
+    },
+    "noc_docs/features/index.md": {
+      "title": "Features",
+      "summary": "| Feature | Status | Entry | Requirements | Current Status | Guardrails | Tests | |---|---|---|---|---|---|---| | TODO | planned | ./TODO/agent-guide.md | ./TODO/requirements.md | ./TODO/status.md | ./TODO/guardrails.md | ./TODO/test-record.md |",
+      "tags": [
+        "features"
+      ]
+    },
+    "noc_docs/project-status.md": {
+      "title": "Project Status",
+      "summary": "",
+      "tags": [
+        "status"
+      ]
+    }
+  }
+}
