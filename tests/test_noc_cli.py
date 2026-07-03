@@ -349,6 +349,37 @@ class NocCliTests(unittest.TestCase):
             self.assertIn("billing", result.stdout)
             self.assertIn("services/billing/", result.stdout)
 
+    def test_suggest_map_write_merges_without_overwriting_existing_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            run(["init", str(project), "--mode", "small"])
+            feature_map_path = project / "noc_docs/.living-docs/feature-map.json"
+            feature_map_path.write_text(
+                json.dumps(
+                    {
+                        "mode": "small",
+                        "features": {
+                            "auth": {
+                                "paths": ["legacy/auth/"],
+                                "owner": "auth-team",
+                            }
+                        },
+                    },
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            (project / "src/auth").mkdir(parents=True)
+            (project / "src/auth/login.py").write_text("print('login')\n", encoding="utf-8")
+
+            result = run(["suggest-map", str(project), "--write"])
+
+            self.assertIn("Updated feature-map.json with 1 suggestion(s).", result.stdout)
+            feature_map = json.loads(feature_map_path.read_text(encoding="utf-8"))
+            entry = feature_map["features"]["auth"]
+            self.assertEqual(entry["owner"], "auth-team")
+            self.assertEqual(entry["paths"], ["legacy/auth/", "src/auth/"])
+
 
 if __name__ == "__main__":
     unittest.main()

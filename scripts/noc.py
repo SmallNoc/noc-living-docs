@@ -229,6 +229,10 @@ def suggested_docs_for(change_types: list[str]) -> list[str]:
 def command_suggest_map(args: argparse.Namespace) -> int:
     target = Path(args.target).resolve()
     suggestions = suggest_mappings(target)
+    if args.write:
+        count = write_suggestions(target, suggestions)
+        print(f"Updated feature-map.json with {count} suggestion(s).")
+        return 0
     print(json.dumps({"suggestions": suggestions}, indent=2, ensure_ascii=False))
     return 0
 
@@ -258,6 +262,27 @@ def directory_has_code(path: Path) -> bool:
         if child.is_file() and is_code_file(child.name):
             return True
     return False
+
+
+def write_suggestions(target: Path, suggestions: list[dict[str, str]]) -> int:
+    path = target / "noc_docs/.living-docs/feature-map.json"
+    if path.exists():
+        feature_map = json.loads(path.read_text(encoding="utf-8"))
+    else:
+        feature_map = {"mode": "small", "features": {}}
+    features = feature_map.setdefault("features", {})
+    added = 0
+    for suggestion in suggestions:
+        feature_id = suggestion["feature"]
+        candidate_path = suggestion["path"]
+        entry = features.setdefault(feature_id, {})
+        paths = entry.setdefault("paths", [])
+        if candidate_path not in paths:
+            paths.append(candidate_path)
+            added += 1
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(feature_map, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return added
 
 
 def is_code_file(path: str) -> bool:
@@ -389,8 +414,9 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("--warn-only", action="store_true", help="Return success even when docs are missing.")
     check.set_defaults(func=command_check)
 
-    suggest_map = sub.add_parser("suggest-map", help="Suggest feature path mappings without writing files.")
+    suggest_map = sub.add_parser("suggest-map", help="Suggest feature path mappings.")
     suggest_map.add_argument("target", nargs="?", default=".")
+    suggest_map.add_argument("--write", action="store_true", help="Merge suggestions into feature-map.json without overwriting existing paths.")
     suggest_map.set_defaults(func=command_suggest_map)
 
     return parser

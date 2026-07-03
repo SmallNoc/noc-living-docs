@@ -151,7 +151,13 @@ python scripts/noc.py check /path/to/project --staged
 python scripts/noc.py suggest-map /path/to/project
 ```
 
-你可以把确认后的建议写入：
+确认建议可靠后，可以自动合并进 `feature-map.json`：
+
+```bash
+python scripts/noc.py suggest-map /path/to/project --write
+```
+
+`--write` 只会追加缺失的 path，不会覆盖已有人工维护的字段。你也可以手动把确认后的建议写入：
 
 ```text
 noc_docs/.living-docs/feature-map.json
@@ -381,7 +387,13 @@ The pre-commit hook installed by `hook install` uses `--warn-only` by default, s
 python scripts/noc.py suggest-map /path/to/project
 ```
 
-After review, copy useful suggestions into:
+After review, merge suggestions into `feature-map.json`:
+
+```bash
+python scripts/noc.py suggest-map /path/to/project --write
+```
+
+`--write` only appends missing paths. It does not overwrite manually maintained fields. You can also copy useful suggestions into:
 
 ```text
 noc_docs/.living-docs/feature-map.json

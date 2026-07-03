@@ -120,7 +120,13 @@ When changed paths do not map to a feature, use mapping suggestions if available
 python scripts/noc.py suggest-map /path/to/project
 ```
 
-Treat suggestions as candidates. Do not write them into `feature-map.json` unless the mapping is clear from the project structure or user intent.
+Treat suggestions as candidates. If the mapping is clear from the project structure or user intent, merge them with:
+
+```bash
+python scripts/noc.py suggest-map /path/to/project --write
+```
+
+Do not use `--write` when the suggested feature names are ambiguous.
 
 ## Index Trust Signals
 
