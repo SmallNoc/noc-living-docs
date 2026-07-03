@@ -349,6 +349,30 @@ class NocCliTests(unittest.TestCase):
             self.assertIn("billing", result.stdout)
             self.assertIn("services/billing/", result.stdout)
 
+    def test_suggest_map_uses_java_package_branches_for_maven_projects(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            run(["init", str(project), "--mode", "small"])
+            for name in ["api", "application", "domain", "infrastructure"]:
+                package_dir = project / "src/main/java/com/noc/code" / name
+                package_dir.mkdir(parents=True)
+                (package_dir / "Marker.java").write_text(f"package com.noc.code.{name};\n", encoding="utf-8")
+            test_dir = project / "src/test/java/com/noc/code"
+            test_dir.mkdir(parents=True)
+            (test_dir / "MarkerTests.java").write_text("package com.noc.code;\n", encoding="utf-8")
+
+            result = run(["suggest-map", str(project)])
+            suggestions = json.loads(result.stdout)["suggestions"]
+            features = {suggestion["feature"] for suggestion in suggestions}
+            paths = {suggestion["path"] for suggestion in suggestions}
+
+            self.assertIn("api", features)
+            self.assertIn("domain", features)
+            self.assertIn("src/main/java/com/noc/code/api/", paths)
+            self.assertNotIn("main", features)
+            self.assertNotIn("test", features)
+            self.assertNotIn("src/test/", paths)
+
     def test_suggest_map_write_merges_without_overwriting_existing_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp)

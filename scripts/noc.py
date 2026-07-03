@@ -239,12 +239,15 @@ def command_suggest_map(args: argparse.Namespace) -> int:
 
 def suggest_mappings(target: Path) -> list[dict[str, str]]:
     suggestions: list[dict[str, str]] = []
+    suggestions.extend(suggest_java_package_mappings(target))
     for base in ["src", "app", "apps", "packages", "services", "modules", "domains"]:
         root = target / base
         if not root.is_dir():
             continue
         for child in sorted(root.iterdir()):
             if not child.is_dir() or child.name.startswith(".") or child.name.startswith("_"):
+                continue
+            if child.name in {"main", "test"} and base == "src":
                 continue
             if not directory_has_code(child):
                 continue
@@ -254,7 +257,42 @@ def suggest_mappings(target: Path) -> list[dict[str, str]]:
                     "path": child.relative_to(target).as_posix() + "/",
                 }
             )
+    return dedupe_suggestions(suggestions)
+
+
+def suggest_java_package_mappings(target: Path) -> list[dict[str, str]]:
+    java_root = target / "src/main/java"
+    if not java_root.is_dir():
+        return []
+    branch_root = java_root
+    while True:
+        child_dirs = [child for child in branch_root.iterdir() if child.is_dir() and not child.name.startswith(".")]
+        java_files = [child for child in branch_root.iterdir() if child.is_file() and child.suffix == ".java"]
+        if len(child_dirs) != 1 or java_files:
+            break
+        branch_root = child_dirs[0]
+    suggestions = []
+    for child in sorted(branch_root.iterdir()):
+        if child.is_dir() and directory_has_code(child):
+            suggestions.append(
+                {
+                    "feature": child.name,
+                    "path": child.relative_to(target).as_posix() + "/",
+                }
+            )
     return suggestions
+
+
+def dedupe_suggestions(suggestions: list[dict[str, str]]) -> list[dict[str, str]]:
+    seen: set[tuple[str, str]] = set()
+    deduped = []
+    for suggestion in suggestions:
+        key = (suggestion["feature"], suggestion["path"])
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(suggestion)
+    return deduped
 
 
 def directory_has_code(path: Path) -> bool:
