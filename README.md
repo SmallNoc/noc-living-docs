@@ -160,7 +160,7 @@ python scripts/noc.py check /path/to/project --staged
 
 ## 状态
 
-当前是 v0.3 早期协议雏形，包含初始化、索引、校验、Git hook 和变更检查命令。
+当前是 v0.4.0 可用早期版本，包含初始化、索引、校验、Git hook、相关文档检查和文档可信度信号。
 
 ---
 
@@ -326,4 +326,4 @@ This means prose is Chinese by default, while structure remains English for stab
 
 ## Status
 
-This repository is an early v0.3 protocol scaffold with initialization, indexing, validation, Git hook, and change-check commands.
+This repository is a usable early v0.4.0 release with initialization, indexing, validation, Git hook, related-document checks, and documentation trust signals.
