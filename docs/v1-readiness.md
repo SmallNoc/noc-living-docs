@@ -54,4 +54,4 @@ This satisfies the small-project, existing-agent project, modular frontend, and 
 
 `docs/v1-manual-dogfood.md` records the required user input, safety rules, commands, and acceptance criteria for future dogfood runs.
 
-The remaining work before an actual v1 release is release bookkeeping: move the relevant `CHANGELOG.md` notes into a `1.0.0` entry, update `VERSION`, run the release checks, create the Git tag, and push.
+Release bookkeeping has been prepared for `1.0.0`: `VERSION` and `CHANGELOG.md` are aligned. The final release gate is to run validation, create the Git tag, and push.

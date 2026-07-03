@@ -172,7 +172,7 @@ noc_docs/.living-docs/feature-map.json
 ```bash
 python scripts/release.py --check
 python scripts/release.py --bump patch
-python scripts/release.py --version 0.5.0
+python scripts/release.py --version 1.0.0
 ```
 
 `--check` 会校验：
@@ -186,14 +186,14 @@ CI 会在 push、PR 和 tag 场景运行发布检查、协议校验和测试。
 推荐发布流程：
 
 ```bash
-python scripts/release.py --version 0.5.0
+python scripts/release.py --version 1.0.0
 python scripts/release.py --check
 python -m unittest tests.test_noc_cli tests.test_release_cli
 git add VERSION CHANGELOG.md README.md scripts tests .github
-git commit -m "chore: prepare v0.5.0 release"
-git tag -a v0.5.0 -m "v0.5.0"
+git commit -m "chore: prepare v1.0.0 release"
+git tag -a v1.0.0 -m "v1.0.0"
 git push origin main
-git push origin v0.5.0
+git push origin v1.0.0
 ```
 
 如果 `CHANGELOG.md` 有 `Unreleased` 内容，`release.py --version` 会把它移动到目标版本条目下，并保留空的 `Unreleased` 区块。
@@ -232,7 +232,7 @@ docs/migration-reports/YYYY-MM-DD-<repo>.md
 
 ## 状态
 
-当前是 v0.4.0 可用早期版本，包含初始化、索引、校验、Git hook、相关文档检查和文档可信度信号。
+当前是 v1.0.0 小而硬的稳定协议版本，包含初始化、索引、校验、Git hook、相关文档检查、feature-map 建议、轻量变更提示和真实项目迁移报告。
 
 ---
 
@@ -410,7 +410,7 @@ noc_docs/.living-docs/feature-map.json
 ```bash
 python scripts/release.py --check
 python scripts/release.py --bump patch
-python scripts/release.py --version 0.5.0
+python scripts/release.py --version 1.0.0
 ```
 
 `--check` validates that:
@@ -424,14 +424,14 @@ CI runs release checks, protocol validation, and tests on pushes, pull requests,
 Recommended release flow:
 
 ```bash
-python scripts/release.py --version 0.5.0
+python scripts/release.py --version 1.0.0
 python scripts/release.py --check
 python -m unittest tests.test_noc_cli tests.test_release_cli
 git add VERSION CHANGELOG.md README.md scripts tests .github
-git commit -m "chore: prepare v0.5.0 release"
-git tag -a v0.5.0 -m "v0.5.0"
+git commit -m "chore: prepare v1.0.0 release"
+git tag -a v1.0.0 -m "v1.0.0"
 git push origin main
-git push origin v0.5.0
+git push origin v1.0.0
 ```
 
 If `CHANGELOG.md` has `Unreleased` content, `release.py --version` moves it into the target version entry and keeps an empty `Unreleased` section.
@@ -470,4 +470,4 @@ This means prose is Chinese by default, while structure remains English for stab
 
 ## Status
 
-This repository is a usable early v0.4.0 release with initialization, indexing, validation, Git hook, related-document checks, and documentation trust signals.
+This repository is the small-but-hard v1.0.0 protocol release with initialization, indexing, validation, Git hook, related-document checks, feature-map suggestions, lightweight change hints, and real-project migration reports.

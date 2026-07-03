@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [1.0.0] - 2026-07-04
+
 ### Added
 
 - Added `noc.py suggest-map` to print candidate feature path mappings without modifying project files.
@@ -9,6 +11,7 @@
 - Added lightweight change hints in `noc.py check` for schema, deployment, CI, security, and API-looking changes.
 - Added top-level project directory detection for multi-project workspaces without standard monorepo marker files.
 - Added EDMPro3 multi-project dogfood report.
+
 
 ## [0.5.0] - 2026-07-04
 
