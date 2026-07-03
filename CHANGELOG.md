@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.5.0] - 2026-07-04
+
 ### Added
 
 - Added `VERSION` and `scripts/release.py` for repeatable release checks and version bumps.
@@ -9,6 +11,8 @@
 - Added migration tests for existing agent files, existing `docs/`, monorepo domain detection, and config-heavy projects.
 - Added a migration report template for real-project dogfood runs.
 - Added CI coverage for release checks and release CLI tests.
+- Added Tcl and SKILL files to documentation sync checks; Java and Go coverage is now explicit in tests.
+
 
 ## [0.4.0] - 2026-07-04
 

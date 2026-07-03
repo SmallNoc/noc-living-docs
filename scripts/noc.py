@@ -268,6 +268,8 @@ CODE_EXTS = {
     ".proto",
     ".graphql",
     ".gql",
+    ".skill",
+    ".tcl",
 }
 
 

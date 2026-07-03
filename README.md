@@ -137,7 +137,7 @@ python scripts/noc.py check /path/to/project --staged
 
 默认情况下，手动运行 `check` 时，如果 staged 代码变更没有对应 staged `noc_docs/` 变更，该命令会失败。需要只提示不失败时，可以使用 `--warn-only`。
 
-`check` 会识别常见代码、配置、SQL、Shell、Dockerfile 等工程文件。对于已经映射到 feature 的代码路径，它会要求 staged 文档变更命中对应 feature 的文档；仅修改无关 `noc_docs/` 文件不会被视为覆盖。
+`check` 会识别常见代码、配置、SQL、Shell、Dockerfile、Java、Go、Tcl、SKILL 等工程文件。对于已经映射到 feature 的代码路径，它会要求 staged 文档变更命中对应 feature 的文档；仅修改无关 `noc_docs/` 文件不会被视为覆盖。
 
 通过 `hook install` 安装的 pre-commit hook 默认使用 `--warn-only`，因此它会提示风险，但不会阻断提交。
 
@@ -181,7 +181,7 @@ git push origin v0.5.0
 - 已有 `AGENTS.md` 时只追加或更新 NOC managed block，不覆盖用户规则。
 - 已有 `docs/` 时保持原样，NOC 协议仍固定使用 `noc_docs/`。
 - monorepo 或 3 个以上 app/service 自动进入 Domain Mode。
-- YAML、SQL、Shell、Dockerfile 等工程文件变更会触发文档同步检查。
+- YAML、SQL、Shell、Dockerfile、Java、Go、Tcl、SKILL 等工程文件变更会触发文档同步检查。
 
 真实项目 dogfood 结果记录到：
 
@@ -351,7 +351,7 @@ python scripts/noc.py check /path/to/project --staged
 
 By default, the manual `check` command exits with failure when staged code changes have no staged `noc_docs/` changes. Use `--warn-only` when you want advisory output only.
 
-`check` recognizes common code, config, SQL, shell, Dockerfile, and related engineering files. For code paths mapped to a feature, staged documentation changes must touch that affected feature's docs; unrelated `noc_docs/` edits do not count as coverage.
+`check` recognizes common code, config, SQL, shell, Dockerfile, Java, Go, Tcl, SKILL, and related engineering files. For code paths mapped to a feature, staged documentation changes must touch that affected feature's docs; unrelated `noc_docs/` edits do not count as coverage.
 
 The pre-commit hook installed by `hook install` uses `--warn-only` by default, so it warns about risk without blocking commits.
 
@@ -395,7 +395,7 @@ The test suite covers realistic migration cases:
 - Existing `AGENTS.md` content is preserved while the NOC managed block is appended or updated.
 - Existing `docs/` directories are left untouched; the protocol still uses fixed `noc_docs/`.
 - Monorepos or projects with 3 or more apps/services automatically use Domain Mode.
-- YAML, SQL, shell, Dockerfile, and related engineering changes trigger documentation sync checks.
+- YAML, SQL, shell, Dockerfile, Java, Go, Tcl, SKILL, and related engineering changes trigger documentation sync checks.
 
 Record real-project dogfood results in:
 

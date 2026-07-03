@@ -122,6 +122,42 @@ class NocCliTests(unittest.TestCase):
             self.assertEqual(result.returncode, 1)
             self.assertIn("code changed but no noc_docs files changed", result.stdout)
 
+    def test_check_treats_java_go_as_code(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            git(project, ["init"])
+            run(["init", str(project), "--mode", "small"])
+            git(project, ["add", "."])
+            git(project, ["commit", "-m", "init"], check=False)
+
+            (project / "src").mkdir()
+            (project / "src/Main.java").write_text("class Main {}\n", encoding="utf-8")
+            (project / "src/main.go").write_text("package main\n", encoding="utf-8")
+            git(project, ["add", "."])
+
+            result = run(["check", str(project), "--staged"], check=False)
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("code changed but no noc_docs files changed", result.stdout)
+
+    def test_check_treats_tcl_and_skill_as_code(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            git(project, ["init"])
+            run(["init", str(project), "--mode", "small"])
+            git(project, ["add", "."])
+            git(project, ["commit", "-m", "init"], check=False)
+
+            (project / "src").mkdir()
+            (project / "src/flow.tcl").write_text("puts hello\n", encoding="utf-8")
+            (project / "src/layout.skill").write_text("; SKILL script\n", encoding="utf-8")
+            git(project, ["add", "."])
+
+            result = run(["check", str(project), "--staged"], check=False)
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("code changed but no noc_docs files changed", result.stdout)
+
     def test_check_rejects_unrelated_docs_for_mapped_feature(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp)
