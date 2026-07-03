@@ -111,6 +111,24 @@ def feature_entry(target: Path, feature_dir: Path, domain: str | None, existing:
     def rel(name: str) -> str:
         return (feature_dir / name).relative_to(target).as_posix()
 
+    doc_names = {
+        "agent-guide.md": "entry",
+        "requirements.md": "requirements",
+        "status.md": "status",
+        "guardrails.md": "guardrails",
+        "test-record.md": "tests",
+        "change-record.md": "change_record",
+        "notes.md": "notes",
+    }
+    existing_docs = [feature_dir / name for name in doc_names if (feature_dir / name).exists()]
+    missing_docs = [name for name in doc_names if not (feature_dir / name).exists()]
+    last_doc_update = None
+    if existing_docs:
+        last_doc_update = datetime.fromtimestamp(
+            max(path.stat().st_mtime for path in existing_docs),
+            timezone.utc,
+        ).isoformat()
+
     preserved = {
         key: value
         for key, value in existing.items()
@@ -124,17 +142,22 @@ def feature_entry(target: Path, feature_dir: Path, domain: str | None, existing:
             "change_record",
             "notes",
             "domain",
+            "freshness",
+            "completeness",
         }
     }
     entry = {
         **preserved,
-        "entry": rel("agent-guide.md"),
-        "requirements": rel("requirements.md"),
-        "status": rel("status.md"),
-        "guardrails": rel("guardrails.md"),
-        "tests": rel("test-record.md"),
-        "change_record": rel("change-record.md"),
-        "notes": rel("notes.md"),
+        **{field: rel(name) for name, field in doc_names.items()},
+        "freshness": {
+            "last_doc_update": last_doc_update,
+            "last_indexed": datetime.now(timezone.utc).isoformat(),
+        },
+        "completeness": {
+            "required_docs": sorted(doc_names),
+            "missing_docs": missing_docs,
+            "complete": not missing_docs,
+        },
     }
     entry.setdefault("paths", [])
     if domain:

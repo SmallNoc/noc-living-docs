@@ -91,6 +91,13 @@ noc_docs/.living-docs/feature-map.json
 
 Agent 应该先使用这些索引做路由，再读取最小必要范围的源文档。
 
+`feature-map.json` 还会记录每个 feature 的文档可信度信号：
+
+- `paths`：代码路径到 feature 的映射。
+- `freshness.last_doc_update`：该 feature 源文档最近更新时间。
+- `completeness.missing_docs`：缺失的标准 feature 文档。
+- `completeness.complete`：是否具备完整标准文档集合。
+
 ### 校验
 
 校验本仓库：
@@ -129,6 +136,8 @@ python scripts/noc.py check /path/to/project --staged
 ```
 
 默认情况下，手动运行 `check` 时，如果 staged 代码变更没有对应 staged `noc_docs/` 变更，该命令会失败。需要只提示不失败时，可以使用 `--warn-only`。
+
+`check` 会识别常见代码、配置、SQL、Shell、Dockerfile 等工程文件。对于已经映射到 feature 的代码路径，它会要求 staged 文档变更命中对应 feature 的文档；仅修改无关 `noc_docs/` 文件不会被视为覆盖。
 
 通过 `hook install` 安装的 pre-commit hook 默认使用 `--warn-only`，因此它会提示风险，但不会阻断提交。
 
@@ -248,6 +257,13 @@ noc_docs/.living-docs/feature-map.json
 
 Agents should use these files for routing, then read the smallest relevant source documents.
 
+`feature-map.json` also records trust signals for each feature:
+
+- `paths`: code path mappings for the feature.
+- `freshness.last_doc_update`: latest source documentation update for that feature.
+- `completeness.missing_docs`: missing standard feature documents.
+- `completeness.complete`: whether the feature has the complete standard document set.
+
 ### Validate
 
 Validate this repository:
@@ -286,6 +302,8 @@ python scripts/noc.py check /path/to/project --staged
 ```
 
 By default, the manual `check` command exits with failure when staged code changes have no staged `noc_docs/` changes. Use `--warn-only` when you want advisory output only.
+
+`check` recognizes common code, config, SQL, shell, Dockerfile, and related engineering files. For code paths mapped to a feature, staged documentation changes must touch that affected feature's docs; unrelated `noc_docs/` edits do not count as coverage.
 
 The pre-commit hook installed by `hook install` uses `--warn-only` by default, so it warns about risk without blocking commits.
 

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import subprocess
 import sys
@@ -145,32 +146,86 @@ def load_feature_map(target: Path) -> dict:
 def command_check(args: argparse.Namespace) -> int:
     target = Path(args.target).resolve()
     files = changed_files(target, args.staged)
-    code_files = [f for f in files if not f.startswith("noc_docs/") and Path(f).suffix.lower() in CODE_EXTS]
+    code_files = [f for f in files if not f.startswith("noc_docs/") and is_code_file(f)]
     docs_files = [f for f in files if f.startswith("noc_docs/")]
 
     if not code_files:
         print("No staged code changes requiring NOC docs check." if args.staged else "No code changes requiring NOC docs check.")
         return 0
 
-    if docs_files:
-        print(f"NOC docs changed with code: {len(docs_files)} doc file(s).")
-        return 0
-
     feature_map = load_feature_map(target)
-    mapped = []
+    mapped: list[str] = []
     for feature_id, info in feature_map.get("features", {}).items():
         paths = info.get("paths", [])
         for changed in code_files:
-            if any(changed.startswith(prefix.rstrip("*")) for prefix in paths):
+            if any(path_matches(changed, pattern) for pattern in paths):
                 mapped.append(feature_id)
+
+    mapped = sorted(set(mapped))
+    if docs_files:
+        if not mapped:
+            print(f"NOC docs changed with code: {len(docs_files)} doc file(s).")
+            return 0
+        covered = [feature_id for feature_id in mapped if feature_docs_changed(feature_map["features"].get(feature_id, {}), docs_files)]
+        if covered:
+            print("NOC docs changed for affected feature(s): " + ", ".join(covered))
+            missing = sorted(set(mapped) - set(covered))
+            if missing:
+                print("WARNING: missing docs for affected feature(s): " + ", ".join(missing))
+                return 0 if args.warn_only else 1
+            return 0
+        print("WARNING: docs changed, but not for affected feature(s): " + ", ".join(mapped))
+        return 0 if args.warn_only else 1
 
     print("WARNING: code changed but no noc_docs files changed.")
     if mapped:
-        print("Affected mapped feature(s): " + ", ".join(sorted(set(mapped))))
+        print("Affected mapped feature(s): " + ", ".join(mapped))
     else:
         print("No feature mapping found. Update noc_docs or run index after documenting the feature.")
     print("If docs are intentionally unchanged, mention that in the commit or final agent response.")
     return 0 if args.warn_only else 1
+
+
+def is_code_file(path: str) -> bool:
+    name = Path(path).name
+    return Path(path).suffix.lower() in CODE_EXTS or name in CODE_FILENAMES
+
+
+def path_matches(changed: str, pattern: str) -> bool:
+    normalized = pattern.replace("\\", "/").lstrip("./")
+    changed = changed.replace("\\", "/")
+    if not normalized:
+        return False
+    if any(char in normalized for char in "*?[]"):
+        return fnmatch.fnmatch(changed, normalized)
+    if normalized.endswith("/"):
+        return changed.startswith(normalized)
+    return changed == normalized or changed.startswith(normalized.rstrip("/") + "/")
+
+
+def feature_docs_changed(info: dict, docs_files: list[str]) -> bool:
+    doc_paths = {
+        value.replace("\\", "/")
+        for key, value in info.items()
+        if key
+        in {
+            "entry",
+            "requirements",
+            "status",
+            "guardrails",
+            "tests",
+            "change_record",
+            "notes",
+        }
+        and isinstance(value, str)
+    }
+    entry = info.get("entry")
+    if isinstance(entry, str):
+        doc_paths.add(str(Path(entry).parent).replace("\\", "/") + "/")
+    for doc in docs_files:
+        if any(path_matches(doc, expected) for expected in doc_paths):
+            return True
+    return False
 
 
 CODE_EXTS = {
@@ -192,6 +247,38 @@ CODE_EXTS = {
     ".cpp",
     ".h",
     ".hpp",
+    ".json",
+    ".jsonc",
+    ".yaml",
+    ".yml",
+    ".toml",
+    ".ini",
+    ".cfg",
+    ".conf",
+    ".sql",
+    ".sh",
+    ".bash",
+    ".zsh",
+    ".fish",
+    ".ps1",
+    ".bat",
+    ".cmd",
+    ".env",
+    ".env.example",
+    ".proto",
+    ".graphql",
+    ".gql",
+}
+
+
+CODE_FILENAMES = {
+    "Dockerfile",
+    "Containerfile",
+    "Makefile",
+    "Justfile",
+    "Procfile",
+    "docker-compose.yaml",
+    "docker-compose.yml",
 }
 
 
