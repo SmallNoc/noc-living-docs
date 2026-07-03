@@ -13,6 +13,17 @@ ROOT = Path(__file__).resolve().parents[1]
 TEMPLATES = ROOT / "templates"
 START = "<!-- noc-living-docs:start -->"
 END = "<!-- noc-living-docs:end -->"
+PROJECT_MARKERS = {
+    "pom.xml",
+    "package.json",
+    "build.gradle",
+    "build.gradle.kts",
+    "settings.gradle",
+    "settings.gradle.kts",
+    "pyproject.toml",
+    "go.mod",
+    "Cargo.toml",
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -49,6 +60,16 @@ def detect_mode(target: Path, requested: str) -> tuple[str, list[str]]:
     if any((target / marker).exists() for marker in monorepo_markers):
         score += 2
         reasons.append("monorepo marker detected")
+
+    top_level_projects = []
+    for child in target.iterdir():
+        if not child.is_dir() or child.name.startswith(".") or child.name in {"node_modules", "target", "build", "dist", "out"}:
+            continue
+        if any((child / marker).exists() for marker in PROJECT_MARKERS):
+            top_level_projects.append(child)
+    if len(top_level_projects) >= 3:
+        reasons.append(f"detected {len(top_level_projects)} top-level project directories")
+        return "domain", reasons
 
     app_service_dirs = []
     for name in ["apps", "packages", "services"]:

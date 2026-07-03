@@ -15,6 +15,17 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_DIR = ROOT / "scripts"
 START = "# noc-living-docs:start"
 END = "# noc-living-docs:end"
+PROJECT_MARKERS = {
+    "pom.xml",
+    "package.json",
+    "build.gradle",
+    "build.gradle.kts",
+    "settings.gradle",
+    "settings.gradle.kts",
+    "pyproject.toml",
+    "go.mod",
+    "Cargo.toml",
+}
 
 
 def run_script(name: str, args: list[str]) -> int:
@@ -239,6 +250,7 @@ def command_suggest_map(args: argparse.Namespace) -> int:
 
 def suggest_mappings(target: Path) -> list[dict[str, str]]:
     suggestions: list[dict[str, str]] = []
+    suggestions.extend(suggest_top_level_project_mappings(target))
     suggestions.extend(suggest_java_package_mappings(target))
     for base in ["src", "app", "apps", "packages", "services", "modules", "domains"]:
         root = target / base
@@ -258,6 +270,22 @@ def suggest_mappings(target: Path) -> list[dict[str, str]]:
                 }
             )
     return dedupe_suggestions(suggestions)
+
+
+def suggest_top_level_project_mappings(target: Path) -> list[dict[str, str]]:
+    ignored = {"node_modules", "target", "build", "dist", "out", "noc_docs"}
+    suggestions = []
+    for child in sorted(target.iterdir()):
+        if not child.is_dir() or child.name.startswith(".") or child.name in ignored:
+            continue
+        if any((child / marker).exists() for marker in PROJECT_MARKERS):
+            suggestions.append(
+                {
+                    "feature": child.name,
+                    "path": child.relative_to(target).as_posix() + "/",
+                }
+            )
+    return suggestions
 
 
 def suggest_java_package_mappings(target: Path) -> list[dict[str, str]]:

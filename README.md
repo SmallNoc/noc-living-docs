@@ -68,6 +68,8 @@ python scripts/noc.py init /path/to/project
 - `--force` 覆盖 `noc_docs/` 内已有文件
 - `--no-index` 初始化后跳过索引生成
 
+`auto` 会识别常见 monorepo marker、3 个以上 app/service 目录，以及 3 个以上带 `pom.xml`、`package.json`、`go.mod`、`pyproject.toml` 等项目标记的顶层项目目录。
+
 初始化脚本不会覆盖已有 Agent 规则。它只会添加或更新以下受控区块：
 
 ```md
@@ -202,7 +204,7 @@ git push origin v0.5.0
 
 - 已有 `AGENTS.md` 时只追加或更新 NOC managed block，不覆盖用户规则。
 - 已有 `docs/` 时保持原样，NOC 协议仍固定使用 `noc_docs/`。
-- monorepo 或 3 个以上 app/service 自动进入 Domain Mode。
+- monorepo、3 个以上 app/service、或 3 个以上顶层项目目录自动进入 Domain Mode。
 - YAML、SQL、Shell、Dockerfile、Java、Go、Tcl、SKILL 等工程文件变更会触发文档同步检查。
 
 真实项目 dogfood 结果记录到：
@@ -303,6 +305,8 @@ Options:
 - `--agent-file AGENTS.md|CLAUDE.md|GEMINI.md`
 - `--force` to overwrite existing files inside `noc_docs/`
 - `--no-index` to skip index generation after init
+
+`auto` detects common monorepo markers, 3 or more app/service directories, and 3 or more top-level project directories with markers such as `pom.xml`, `package.json`, `go.mod`, or `pyproject.toml`.
 
 The initializer never overwrites existing agent rules. It adds or updates only the managed block between:
 
@@ -438,7 +442,7 @@ The test suite covers realistic migration cases:
 
 - Existing `AGENTS.md` content is preserved while the NOC managed block is appended or updated.
 - Existing `docs/` directories are left untouched; the protocol still uses fixed `noc_docs/`.
-- Monorepos or projects with 3 or more apps/services automatically use Domain Mode.
+- Monorepos, projects with 3 or more apps/services, or projects with 3 or more top-level project directories automatically use Domain Mode.
 - YAML, SQL, shell, Dockerfile, Java, Go, Tcl, SKILL, and related engineering changes trigger documentation sync checks.
 
 Record real-project dogfood results in:

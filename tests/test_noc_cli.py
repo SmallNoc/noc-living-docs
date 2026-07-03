@@ -296,6 +296,25 @@ class NocCliTests(unittest.TestCase):
             self.assertTrue((project / "noc_docs/domains").exists())
             self.assertFalse((project / "noc_docs/features").exists())
 
+    def test_migration_auto_selects_domain_mode_for_top_level_project_dirs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            for name in ["edm-console", "edm-server", "edm-ui"]:
+                child = project / name
+                child.mkdir()
+                if name == "edm-ui":
+                    (child / "package.json").write_text('{"scripts":{}}\n', encoding="utf-8")
+                else:
+                    (child / "pom.xml").write_text("<project></project>\n", encoding="utf-8")
+
+            run(["init", str(project), "--mode", "auto"])
+            run(["validate", "--target", str(project)])
+
+            config = json.loads((project / "noc_docs/.living-docs/config.json").read_text(encoding="utf-8"))
+            self.assertEqual(config["mode"], "domain")
+            self.assertTrue((project / "noc_docs/domains").exists())
+            self.assertFalse((project / "noc_docs/features").exists())
+
     def test_migration_config_heavy_project_triggers_docs_check(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp)
@@ -372,6 +391,24 @@ class NocCliTests(unittest.TestCase):
             self.assertNotIn("main", features)
             self.assertNotIn("test", features)
             self.assertNotIn("src/test/", paths)
+
+    def test_suggest_map_outputs_top_level_project_dirs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            run(["init", str(project), "--mode", "domain"])
+            for name in ["edm-console", "edm-server", "edm-ui"]:
+                child = project / name
+                child.mkdir()
+                marker = "package.json" if name == "edm-ui" else "pom.xml"
+                (child / marker).write_text("{}\n", encoding="utf-8")
+
+            result = run(["suggest-map", str(project)])
+            suggestions = json.loads(result.stdout)["suggestions"]
+            paths = {suggestion["path"] for suggestion in suggestions}
+
+            self.assertIn("edm-console/", paths)
+            self.assertIn("edm-server/", paths)
+            self.assertIn("edm-ui/", paths)
 
     def test_suggest_map_write_merges_without_overwriting_existing_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
