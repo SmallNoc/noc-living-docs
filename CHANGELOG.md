@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+
+- Added `noc.py suggest-map` to print candidate feature path mappings without modifying project files.
+- Added lightweight change hints in `noc.py check` for schema, deployment, CI, security, and API-looking changes.
+
 ## [0.5.0] - 2026-07-04
 
 ### Added

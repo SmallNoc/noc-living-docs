@@ -314,6 +314,41 @@ class NocCliTests(unittest.TestCase):
             self.assertEqual(result.returncode, 1)
             self.assertIn("code changed but no noc_docs files changed", result.stdout)
 
+    def test_check_outputs_lightweight_change_hints(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            git(project, ["init"])
+            run(["init", str(project), "--mode", "small"])
+            git(project, ["add", "."])
+            git(project, ["commit", "-m", "init"], check=False)
+
+            (project / "migrations").mkdir()
+            (project / "migrations/001.sql").write_text("alter table users add column name text;\n", encoding="utf-8")
+            (project / "Dockerfile").write_text("FROM python:3.12\n", encoding="utf-8")
+            git(project, ["add", "."])
+
+            result = run(["check", str(project), "--staged"], check=False)
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("Detected change type(s): deployment, schema", result.stdout)
+            self.assertIn("Suggested docs: status.md, test-record.md, development/testing.md", result.stdout)
+
+    def test_suggest_map_outputs_candidate_feature_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            run(["init", str(project), "--mode", "small"])
+            (project / "src/auth").mkdir(parents=True)
+            (project / "src/auth/login.py").write_text("print('login')\n", encoding="utf-8")
+            (project / "services/billing").mkdir(parents=True)
+            (project / "services/billing/app.go").write_text("package billing\n", encoding="utf-8")
+
+            result = run(["suggest-map", str(project)])
+
+            self.assertIn("auth", result.stdout)
+            self.assertIn("src/auth/", result.stdout)
+            self.assertIn("billing", result.stdout)
+            self.assertIn("services/billing/", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

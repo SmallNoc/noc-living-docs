@@ -139,7 +139,23 @@ python scripts/noc.py check /path/to/project --staged
 
 `check` 会识别常见代码、配置、SQL、Shell、Dockerfile、Java、Go、Tcl、SKILL 等工程文件。对于已经映射到 feature 的代码路径，它会要求 staged 文档变更命中对应 feature 的文档；仅修改无关 `noc_docs/` 文件不会被视为覆盖。
 
+当检测到 SQL、Docker、CI、security、API 等路径或文件类型时，`check` 会输出轻量提示，建议检查 `status.md`、`test-record.md`、`guardrails.md`、`requirements.md` 或 `development/testing.md`。这是提示，不是静态分析器。
+
 通过 `hook install` 安装的 pre-commit hook 默认使用 `--warn-only`，因此它会提示风险，但不会阻断提交。
+
+### 映射建议
+
+`suggest-map` 会扫描常见代码目录并输出 feature path 映射建议，但不会写入文件：
+
+```bash
+python scripts/noc.py suggest-map /path/to/project
+```
+
+你可以把确认后的建议写入：
+
+```text
+noc_docs/.living-docs/feature-map.json
+```
 
 ### 发布检查
 
@@ -353,7 +369,23 @@ By default, the manual `check` command exits with failure when staged code chang
 
 `check` recognizes common code, config, SQL, shell, Dockerfile, Java, Go, Tcl, SKILL, and related engineering files. For code paths mapped to a feature, staged documentation changes must touch that affected feature's docs; unrelated `noc_docs/` edits do not count as coverage.
 
+When SQL, Docker, CI, security, or API-looking paths are detected, `check` prints lightweight hints suggesting `status.md`, `test-record.md`, `guardrails.md`, `requirements.md`, or `development/testing.md`. This is advisory, not a static analyzer.
+
 The pre-commit hook installed by `hook install` uses `--warn-only` by default, so it warns about risk without blocking commits.
+
+### Mapping Suggestions
+
+`suggest-map` scans common code directories and prints feature path mapping suggestions without writing files:
+
+```bash
+python scripts/noc.py suggest-map /path/to/project
+```
+
+After review, copy useful suggestions into:
+
+```text
+noc_docs/.living-docs/feature-map.json
+```
 
 ### Release Check
 

@@ -114,6 +114,14 @@ python scripts/noc.py check /path/to/project --staged --warn-only
 
 The installed Git hook is advisory by default. It should warn when code changes lack related staged `noc_docs/` changes, but it must not block commits that intentionally leave docs unchanged.
 
+When changed paths do not map to a feature, use mapping suggestions if available:
+
+```bash
+python scripts/noc.py suggest-map /path/to/project
+```
+
+Treat suggestions as candidates. Do not write them into `feature-map.json` unless the mapping is clear from the project structure or user intent.
+
 ## Index Trust Signals
 
 Use `.living-docs/feature-map.json` for routing, but treat it as a cache.

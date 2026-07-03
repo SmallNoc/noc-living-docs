@@ -178,12 +178,86 @@ def command_check(args: argparse.Namespace) -> int:
         return 0 if args.warn_only else 1
 
     print("WARNING: code changed but no noc_docs files changed.")
+    print_change_hints(code_files)
     if mapped:
         print("Affected mapped feature(s): " + ", ".join(mapped))
     else:
         print("No feature mapping found. Update noc_docs or run index after documenting the feature.")
     print("If docs are intentionally unchanged, mention that in the commit or final agent response.")
     return 0 if args.warn_only else 1
+
+
+def print_change_hints(code_files: list[str]) -> None:
+    change_types = detect_change_types(code_files)
+    if not change_types:
+        return
+    suggested_docs = suggested_docs_for(change_types)
+    print("Detected change type(s): " + ", ".join(change_types))
+    print("Suggested docs: " + ", ".join(suggested_docs))
+
+
+def detect_change_types(files: list[str]) -> list[str]:
+    detected: set[str] = set()
+    for file in files:
+        normalized = file.replace("\\", "/").lower()
+        name = Path(normalized).name
+        suffix = Path(normalized).suffix
+        if suffix == ".sql" or "migration" in normalized:
+            detected.add("schema")
+        if name in {"dockerfile", "containerfile", "docker-compose.yml", "docker-compose.yaml"}:
+            detected.add("deployment")
+        if normalized.startswith(".github/workflows/") or "/.github/workflows/" in normalized:
+            detected.add("ci")
+        if any(part in normalized for part in ["auth", "permission", "security"]):
+            detected.add("security")
+        if any(part in normalized for part in ["api", "routes", "controllers"]):
+            detected.add("api")
+    return sorted(detected)
+
+
+def suggested_docs_for(change_types: list[str]) -> list[str]:
+    docs = ["status.md", "test-record.md"]
+    if "deployment" in change_types or "ci" in change_types:
+        docs.append("development/testing.md")
+    if "security" in change_types:
+        docs.append("guardrails.md")
+    if "api" in change_types:
+        docs.append("requirements.md")
+    return list(dict.fromkeys(docs))
+
+
+def command_suggest_map(args: argparse.Namespace) -> int:
+    target = Path(args.target).resolve()
+    suggestions = suggest_mappings(target)
+    print(json.dumps({"suggestions": suggestions}, indent=2, ensure_ascii=False))
+    return 0
+
+
+def suggest_mappings(target: Path) -> list[dict[str, str]]:
+    suggestions: list[dict[str, str]] = []
+    for base in ["src", "app", "apps", "packages", "services", "modules", "domains"]:
+        root = target / base
+        if not root.is_dir():
+            continue
+        for child in sorted(root.iterdir()):
+            if not child.is_dir() or child.name.startswith(".") or child.name.startswith("_"):
+                continue
+            if not directory_has_code(child):
+                continue
+            suggestions.append(
+                {
+                    "feature": child.name,
+                    "path": child.relative_to(target).as_posix() + "/",
+                }
+            )
+    return suggestions
+
+
+def directory_has_code(path: Path) -> bool:
+    for child in path.rglob("*"):
+        if child.is_file() and is_code_file(child.name):
+            return True
+    return False
 
 
 def is_code_file(path: str) -> bool:
@@ -314,6 +388,10 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("--staged", action="store_true")
     check.add_argument("--warn-only", action="store_true", help="Return success even when docs are missing.")
     check.set_defaults(func=command_check)
+
+    suggest_map = sub.add_parser("suggest-map", help="Suggest feature path mappings without writing files.")
+    suggest_map.add_argument("target", nargs="?", default=".")
+    suggest_map.set_defaults(func=command_suggest_map)
 
     return parser
 
