@@ -51,3 +51,5 @@ The repository has two dogfood reports:
 v1 still needs one external dogfood run for:
 
 - a monorepo or multi-service project.
+
+See `docs/v1-manual-dogfood.md` for the required user input, safety rules, commands, and acceptance criteria.
