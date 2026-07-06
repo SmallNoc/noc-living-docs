@@ -485,7 +485,7 @@ noc check /path/to/project --staged
 }
 ```
 
-`paths` 预留给路径级严格度配置，目前只是 schema-only：`check.strictness.paths` 已记录在配置结构中，但 `check` 还不会按路径匹配执行不同严格度。当前版本只支持全局和环境级严格度。每次 `check` 输出都会说明实际严格度和来源。
+`paths` 预留给路径级严格度配置。当前版本会读取全局和环境级严格度，但不会按路径分别判定。每次 `check` 输出都会说明实际严格度和来源。
 
 `check` 会识别常见代码、配置、SQL、Shell、Dockerfile、Java、Go、Tcl、SKILL 等工程文件。对于已经映射到 feature 的代码路径，它会要求 staged 文档变更命中对应 feature 的文档；仅修改无关 `noc_docs/` 文件不会被视为覆盖。
 
@@ -499,7 +499,7 @@ CI 中推荐使用 GitHub annotations：
 noc check /path/to/project --staged --environment ci --github-annotations
 ```
 
-当前版本还没有实现 PR comment 自动评论。GitHub 集成使用 Actions annotations 和可复用 workflow，避免引入 token 权限和仓库写权限复杂度。
+当前 GitHub 集成只输出 Actions annotations，并提供可复用 workflow；不会自动在 PR 下发表评论。
 
 ### 工作清单
 
@@ -1043,7 +1043,7 @@ Strictness source priority:
 3. `noc_docs/.living-docs/config.json` under `check.strictness`.
 4. Environment default: `--environment local` defaults to `warn`; `--environment ci` or `CI=true` defaults to `fail`; manual runs default to `fail`.
 
-Path-level strictness is currently schema-only: `check.strictness.paths` is documented and reserved, but `check` does not enforce path matching yet. This release supports global and environment-level strictness. Each `check` run prints the selected strictness and source.
+`check.strictness.paths` is reserved for path-level strictness. This release reads global and environment-level strictness only; it does not apply separate rules per path. Each `check` run prints the selected strictness and source.
 
 `check` recognizes common code, config, SQL, shell, Dockerfile, Java, Go, Tcl, SKILL, and related engineering files. For code paths mapped to a feature, staged documentation changes must touch that affected feature's docs; unrelated `noc_docs/` edits do not count as coverage.
 
@@ -1057,7 +1057,7 @@ For GitHub Actions annotations:
 noc check /path/to/project --staged --environment ci --github-annotations
 ```
 
-PR comments are not implemented yet. The GitHub integration uses Actions annotations and a reusable workflow to avoid adding token permission and repository write-access complexity.
+GitHub integration currently reports through Actions annotations and the reusable workflow. It does not post PR comments.
 
 ### Work Plan
 
