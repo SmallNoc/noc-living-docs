@@ -1,12 +1,64 @@
 # NOC Living Docs
 
+![CI](https://github.com/SmallNoc/noc-living-docs/actions/workflows/ci.yml/badge.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Codex Skill](https://img.shields.io/badge/Codex-Skill-blue)
+![Living Docs](https://img.shields.io/badge/Living%20Docs-NOC-green)
+
 中文 | [English](#english)
+
+Keep code changes and project living docs in sync.
+
+让项目在改代码前知道该读哪些文档，改完后知道该同步哪些需求、现状、测试和变更记录。
 
 NOC Living Docs 是一套项目活文档规范和配套工具。
 
 它解决的问题很具体：项目文档分散、容易过期，代码改了以后没人知道哪些需求、现状、限制和测试记录也该同步更新。NOC 把这些内容放进固定目录 `noc_docs/`，再用脚本做初始化、索引、校验和变更提醒。
 
 它不会替代 README、产品文档、接口文档或项目管理工具。它只负责一件事：让项目的“需求、现状、限制、测试、变更记录”有固定位置，并且能跟代码变更保持同步。
+
+## 快速开始
+
+安装并校验工具仓库：
+
+```bash
+git clone https://github.com/SmallNoc/noc-living-docs.git
+cd noc-living-docs
+python scripts/noc.py validate
+```
+
+初始化目标项目：
+
+```bash
+python scripts/noc.py init /path/to/project
+python scripts/noc.py validate --target /path/to/project
+```
+
+讨论完需求、准备改代码时，先用 `work` 生成本次改动的文档清单，再实现代码并同步相关记录。
+
+生成本次改动的文档清单：
+
+```bash
+python scripts/noc.py work /path/to/project --feature user-login --intent "登录失败 5 次后锁定账号"
+```
+
+如果使用 Codex，可以安装或引用：
+
+```text
+skills/codex/project-living-docs
+```
+
+## Commands / 常用命令
+
+| Command | Purpose / 作用 | When to use / 使用时机 |
+|---|---|---|
+| `init` | Initialize `noc_docs/` in a target project.<br>在目标项目中初始化 `noc_docs/`。 | First time using NOC Living Docs in a project.<br>第一次在项目中使用 NOC Living Docs。 |
+| `index` | Rebuild the living-docs index and metadata.<br>重建活文档索引和元数据。 | After docs are created or updated.<br>创建或更新文档后使用。 |
+| `validate` | Validate the structure and required files.<br>校验结构和必需文件是否完整。 | Before release or after manual edits.<br>发布前或手动改文档后使用。 |
+| `hook` | Install or manage Git hooks for checks.<br>安装或管理用于检查的 Git hook。 | When checks should run during Git workflow.<br>希望 Git 流程中自动提示时使用。 |
+| `check` | Check whether code changes need docs updates.<br>检查代码变更是否需要同步文档。 | Before commit or after code changes.<br>提交前或代码改完后使用。 |
+| `suggest-map` | Suggest feature-to-path mappings for `feature-map.json`.<br>建议功能和代码路径的映射。 | After initializing a large or existing project.<br>初始化大型项目或旧项目后使用。 |
+| `work` | Print docs to read before coding and update after coding.<br>输出改代码前要读、改完后要更新的文档清单。 | Before changing a feature.<br>改功能前使用。 |
 
 ## 能帮你做什么
 
@@ -40,9 +92,9 @@ NOC 本身是本地文件和脚本，运行 `init`、`index`、`validate`、`che
 ## 仓库结构
 
 ```text
-protocol/       与具体 Agent 无关的通用协议
+protocol/       通用协议文档
 templates/      AGENTS.md 和 noc_docs/ 项目模板
-skills/         面向具体 Agent 的 skill 适配层
+skills/         Codex 等工具的 skill 适配层
 scripts/        初始化、索引、校验和 Git hook 工具
 examples/       小项目和大项目示例
 ```
@@ -141,7 +193,7 @@ python scripts/noc.py init /path/to/project
 
 如果安装了 Git Hook，hook 会引用当前仓库里的 `scripts/noc.py`。因此不要随意移动或删除这个工具仓库。
 
-## 快速开始
+## 详细使用流程
 
 初始化目标项目：
 
@@ -169,31 +221,15 @@ python scripts/noc.py index /path/to/project
 python scripts/noc.py check /path/to/project --staged
 ```
 
-如果你使用编程助手，可以告诉它：
-
-```text
-Use NOC Living Docs before changing this project.
-```
-
 如果使用 Codex，可以安装或引用：
 
 ```text
 skills/codex/project-living-docs
 ```
 
-## 和 Agent 协作时怎么用
+## 和 Codex / Claude Code 协作时怎么用
 
-当你和 Agent 讨论完一个需求，并准备让它改代码时，可以这样说：
-
-```text
-Use NOC Living Docs for this change.
-First write the agreed requirement into the related feature docs.
-Then implement the code.
-After implementation, update status, test-record, and change-record.
-Run index and check.
-```
-
-这会让 Agent 把“需求确认、代码实现、文档同步、测试记录”当成同一个任务处理。
+讨论完一个需求，并准备改代码时，先把确认后的需求写进对应功能文档，再实现代码。改完后同步 `status.md`、`test-record.md` 和 `change-record.md`。
 
 如果已经知道功能名，可以先生成本次改动的文档清单：
 
@@ -306,7 +342,7 @@ python scripts/noc.py init /path/to/project
 
 `auto` 会识别常见 monorepo marker、3 个以上 app/service 目录，以及 3 个以上带 `pom.xml`、`package.json`、`go.mod`、`pyproject.toml` 等项目标记的顶层项目目录。
 
-初始化脚本不会覆盖已有 Agent 规则。它只会添加或更新以下受控区块：
+初始化脚本不会覆盖已有项目规则。它只会添加或更新以下受控区块：
 
 ```md
 <!-- noc-living-docs:start -->
@@ -327,7 +363,7 @@ noc_docs/.living-docs/docs-index.json
 noc_docs/.living-docs/feature-map.json
 ```
 
-Agent 应该先使用这些索引做路由，再读取最小必要范围的源文档。
+工具应先使用这些索引做路由，再读取最小必要范围的源文档。
 
 `feature-map.json` 还会记录每个 feature 的文档可信度信号：
 
@@ -480,7 +516,7 @@ docs/migration-reports/YYYY-MM-DD-<repo>.md
 }
 ```
 
-这表示：正文默认中文，结构保持英文，以便 Agent、脚本和跨项目协作稳定解析。
+这表示：正文默认中文，结构保持英文，以便脚本和跨项目协作稳定解析。
 
 ## 状态
 
@@ -511,11 +547,11 @@ It does not replace your README, product docs, API docs, or project management s
 
 NOC itself is local files and scripts. Running `init`, `index`, `validate`, or `check` does not consume model tokens.
 
-If a coding assistant reads these docs, that content still uses context. NOC is meant to reduce that cost: `feature-map.json` and the index files help the assistant read only the docs related to the current change instead of loading the whole project documentation set.
+If a tool reads these docs, that content still uses context. NOC is meant to reduce that cost: `feature-map.json` and the index files help route to the docs related to the current change instead of loading the whole project documentation set.
 
 In practice:
 
-- Without NOC: you often repeat project background or ask the assistant to read many unrelated docs.
+- Without NOC: you often repeat project background or load many unrelated docs.
 - With NOC: route to the affected feature first, then read only the needed `requirements.md`, `status.md`, `guardrails.md`, `test-record.md`, and related files.
 
 ## Core Rules
@@ -530,9 +566,9 @@ In practice:
 ## Repository Layout
 
 ```text
-protocol/       Agent-neutral protocol documents
+protocol/       General protocol documents
 templates/      Project templates for AGENTS.md and noc_docs/
-skills/         Agent-specific skill adapters
+skills/         Skill adapters for Codex and similar tools
 scripts/        Initialization, indexing, validation, and Git hook tools
 examples/       Small-project and domain-project examples
 ```
@@ -659,31 +695,15 @@ Check before commit:
 python scripts/noc.py check /path/to/project --staged
 ```
 
-If you use a coding assistant, tell it:
-
-```text
-Use NOC Living Docs before changing this project.
-```
-
 For Codex, install or reference:
 
 ```text
 skills/codex/project-living-docs
 ```
 
-## Working With An Agent
+## Working With Codex / Claude Code
 
-After discussing a requirement with an agent and before asking it to change code, use:
-
-```text
-Use NOC Living Docs for this change.
-First write the agreed requirement into the related feature docs.
-Then implement the code.
-After implementation, update status, test-record, and change-record.
-Run index and check.
-```
-
-This makes requirement capture, implementation, documentation updates, and verification part of one task.
+After discussing a requirement and before changing code, write the agreed requirement into the related feature docs first. After implementation, update `status.md`, `test-record.md`, and `change-record.md`.
 
 If you know the feature name, generate the docs checklist first:
 
@@ -796,7 +816,7 @@ Options:
 
 `auto` detects common monorepo markers, 3 or more app/service directories, and 3 or more top-level project directories with markers such as `pom.xml`, `package.json`, `go.mod`, or `pyproject.toml`.
 
-The initializer never overwrites existing agent rules. It adds or updates only the managed block between:
+The initializer never overwrites existing project rules. It adds or updates only the managed block between:
 
 ```md
 <!-- noc-living-docs:start -->
@@ -817,7 +837,7 @@ noc_docs/.living-docs/docs-index.json
 noc_docs/.living-docs/feature-map.json
 ```
 
-Agents should use these files for routing, then read the smallest relevant source documents.
+Tools should use these files for routing, then read the smallest relevant source documents.
 
 `feature-map.json` also records trust signals for each feature:
 
@@ -970,7 +990,7 @@ Default mode:
 }
 ```
 
-This means prose is Chinese by default, while structure remains English for stable parsing and cross-agent use.
+This means prose is Chinese by default, while structure remains English for stable parsing across scripts and projects.
 
 ## Status
 
