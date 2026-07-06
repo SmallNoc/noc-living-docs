@@ -450,19 +450,40 @@ docs/migration-reports/YYYY-MM-DD-<repo>.md
 
 [中文](#noc-living-docs) | English
 
-NOC Living Docs is a living documentation protocol for AI coding agents.
+NOC Living Docs is a project living-docs convention with a small set of local tools.
 
-It gives projects a stable documentation structure that helps Codex, Claude Code, Gemini CLI, or other agents understand current behavior, requirements, guardrails, testing expectations, and change history before modifying code.
+It solves a concrete problem: project documentation gets scattered, goes stale, and code changes often leave requirements, current behavior, constraints, and test records behind. NOC puts that information in a fixed `noc_docs/` directory, then uses scripts to initialize, index, validate, and check documentation changes.
 
-## Core Ideas
+It does not replace your README, product docs, API docs, or project management system. It only gives requirements, current behavior, guardrails, tests, and change history a stable place that can stay in sync with code changes.
+
+## What It Does
+
+- Generates a living-docs structure for new or existing projects.
+- Preserves existing `docs/`, `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md` files.
+- Maps code paths to feature docs, so checks can identify the feature affected by a change.
+- Checks before commit whether code changes have matching documentation changes.
+- Supports domain-based layout for larger projects.
+- Runs locally and does not call a model or consume tokens.
+
+## Token Cost
+
+NOC itself is local files and scripts. Running `init`, `index`, `validate`, or `check` does not consume model tokens.
+
+If a coding assistant reads these docs, that content still uses context. NOC is meant to reduce that cost: `feature-map.json` and the index files help the assistant read only the docs related to the current change instead of loading the whole project documentation set.
+
+In practice:
+
+- Without NOC: you often repeat project background or ask the assistant to read many unrelated docs.
+- With NOC: route to the affected feature first, then read only the needed `requirements.md`, `status.md`, `guardrails.md`, `test-record.md`, and related files.
+
+## Core Rules
 
 - The documentation root is always `noc_docs/`.
-- Human-facing prose can be written in Chinese by default.
-- Machine-facing structure stays English: file names, headings, IDs, JSON keys, status values, and commands.
+- Human-facing prose defaults to Chinese for Chinese teams.
+- File names, JSON keys, status values, and commands stay English so scripts can parse them reliably.
 - Small projects use `noc_docs/features/`.
 - Large projects use `noc_docs/domains/<domain>/features/`.
-- Agents should read only the relevant docs for the affected feature or domain.
-- Existing `AGENTS.md`, `CLAUDE.md`, or `GEMINI.md` files must be merged, not overwritten.
+- Existing project rules are merged, not overwritten.
 
 ## Repository Layout
 
@@ -474,19 +495,132 @@ scripts/        Initialization, indexing, validation, and Git hook tools
 examples/       Small-project and domain-project examples
 ```
 
+## Generated Project Structure
+
+Small projects generate this layout by default:
+
+```text
+noc_docs/
+├─ docs-map.md
+├─ project-status.md
+├─ development/
+│  ├─ git-workflow.md
+│  ├─ testing.md
+│  └─ documentation-policy.md
+├─ features/
+│  └─ <feature>/
+│     ├─ agent-guide.md
+│     ├─ requirements.md
+│     ├─ status.md
+│     ├─ guardrails.md
+│     ├─ test-record.md
+│     ├─ change-record.md
+│     └─ notes.md
+└─ .living-docs/
+   ├─ feature-map.json
+   ├─ docs-index.json
+   └─ manifest.json
+```
+
+Large projects add a domain layer:
+
+```text
+noc_docs/
+└─ domains/
+   └─ <domain>/
+      ├─ guardrails.md
+      └─ features/
+         └─ <feature>/
+```
+
+A `domain` can be a business area such as `auth`, `billing`, `admin`, or `reporting`, or a larger subsystem.
+
+## What Each Markdown File Is For
+
+| File | Purpose |
+|---|---|
+| `docs-map.md` | Documentation map. Explains how the docs are organized and where to find each kind of information. |
+| `project-status.md` | Project-level status. Records the current phase, major modules, current focus, and known issues. |
+| `development/git-workflow.md` | Git workflow. Records branch, commit, PR, and pre-release rules. |
+| `development/testing.md` | Testing guide. Records test commands, expectations, and when verification is required. |
+| `development/documentation-policy.md` | Documentation maintenance rules. Explains when docs should be updated and how to handle code/docs conflicts. |
+| `features/<feature>/agent-guide.md` | Feature maintenance guide. Records related code paths, docs to read before changes, and common notes. |
+| `features/<feature>/requirements.md` | Feature requirements. Records what the feature is expected to do. |
+| `features/<feature>/status.md` | Feature status. Records what the feature currently does in the codebase. |
+| `features/<feature>/guardrails.md` | Constraints and boundaries. Records rules, safety limits, compatibility requirements, and things not to break. |
+| `features/<feature>/test-record.md` | Test record. Records test commands, verification results, and known coverage gaps. |
+| `features/<feature>/change-record.md` | Change record. Records important changes, reasons, and impact. |
+| `features/<feature>/notes.md` | Notes. Stores temporary findings, investigation notes, or information not ready for formal docs. |
+
+The most important distinction is:
+
+- `requirements.md` describes expected behavior.
+- `status.md` describes current behavior.
+
+If the code does not match the requirement yet, do not rewrite `requirements.md` to match the code silently. Record the real behavior in `status.md`, then decide whether to fix the code or change the requirement.
+
+## What The JSON Files Are For
+
+The JSON files under `.living-docs/` are indexes for scripts and tools. They are not the main human-written documentation.
+
+| File | Purpose |
+|---|---|
+| `feature-map.json` | Maps features to code paths. For example, `src/api/` can belong to the `api` feature. `check` uses this to detect which feature a code change affects. |
+| `docs-index.json` | Documentation index. Stores titles, summaries, and tags so related docs can be found quickly. |
+| `manifest.json` | Documentation manifest. Stores file hashes, sizes, and index time so tooling can detect changes. |
+
+In normal use, humans review `feature-map.json` mappings. `docs-index.json` and `manifest.json` are usually generated by `index`.
+
+## Install
+
+The current recommended setup is to use the scripts from this repository:
+
+```bash
+git clone https://github.com/SmallNoc/noc-living-docs.git
+cd noc-living-docs
+python scripts/noc.py validate
+```
+
+Then initialize a target project:
+
+```bash
+python scripts/noc.py init /path/to/project
+```
+
+If you install the Git hook, it references `scripts/noc.py` from this repository, so keep this tool repository in place.
+
 ## Quick Start
 
-Initialize a project:
+Initialize the target project:
 
 ```bash
 python scripts/noc.py init /path/to/project
 python scripts/noc.py validate --target /path/to/project
 ```
 
-Then ask your agent:
+Generate mapping suggestions:
+
+```bash
+python scripts/noc.py suggest-map /path/to/project
+```
+
+After reviewing the suggestions, write them:
+
+```bash
+python scripts/noc.py suggest-map /path/to/project --write
+python scripts/noc.py index /path/to/project
+```
+
+Check before commit:
+
+```bash
+python scripts/noc.py check /path/to/project --staged
+```
+
+If you use a coding assistant, tell it:
 
 ```text
-Initialize NOC Living Docs for this project.
+Use NOC Living Docs before changing this project.
 ```
 
 For Codex, install or reference:
@@ -494,6 +628,82 @@ For Codex, install or reference:
 ```text
 skills/codex/project-living-docs
 ```
+
+## Daily Use
+
+Common flow:
+
+1. Before editing code, identify the affected feature.
+2. Read that feature's `requirements.md`, `status.md`, `guardrails.md`, and `test-record.md`.
+3. After code changes, update the related docs if behavior, tests, or constraints changed.
+4. Run `index` to refresh indexes.
+5. Run `check --staged` to catch code/docs drift.
+
+Common commands:
+
+```bash
+python scripts/noc.py suggest-map /path/to/project
+python scripts/noc.py index /path/to/project
+python scripts/noc.py check /path/to/project --staged
+python scripts/noc.py validate --target /path/to/project
+```
+
+## Update
+
+Update this tool repository:
+
+```bash
+git pull
+python scripts/noc.py validate
+```
+
+Update the target project's managed block and indexes:
+
+```bash
+python scripts/noc.py init /path/to/project
+python scripts/noc.py index /path/to/project
+python scripts/noc.py validate --target /path/to/project
+```
+
+Existing files under `noc_docs/` are not overwritten by default. Use `--force` only when you intentionally want to overwrite existing template files:
+
+```bash
+python scripts/noc.py init /path/to/project --force
+```
+
+`--force` does not overwrite content outside the managed block in `AGENTS.md`, `CLAUDE.md`, or `GEMINI.md`.
+
+## Uninstall
+
+NOC does not modify application code. To uninstall it, remove the docs, managed block, and optional hook.
+
+If you installed the Git hook, uninstall it first:
+
+```bash
+python scripts/noc.py hook uninstall /path/to/project
+```
+
+Delete the docs directory from the target project:
+
+```bash
+rm -rf /path/to/project/noc_docs
+```
+
+Windows PowerShell:
+
+```powershell
+Remove-Item -Recurse -Force /path/to/project/noc_docs
+```
+
+If `AGENTS.md`, `CLAUDE.md`, or `GEMINI.md` contains this block, remove it:
+
+```md
+<!-- noc-living-docs:start -->
+...
+<!-- noc-living-docs:end -->
+```
+
+If you no longer use this tool repository, you can also delete the cloned `noc-living-docs` directory.
 
 ## Commands
 
