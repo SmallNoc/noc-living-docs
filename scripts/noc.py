@@ -248,6 +248,108 @@ def command_suggest_map(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_work(args: argparse.Namespace) -> int:
+    target = Path(args.target).resolve()
+    feature_map = load_feature_map(target)
+    features = resolve_work_features(feature_map, args.feature, args.path or [])
+
+    print("NOC work plan")
+    print("=============")
+    if args.intent:
+        print(f"Intent: {args.intent}")
+    if args.path:
+        print("Changed or planned path(s): " + ", ".join(args.path))
+    print()
+
+    if features:
+        for feature_id in features:
+            print_feature_work_plan(feature_id, feature_map.get("features", {}).get(feature_id, {}))
+    else:
+        print("Feature: unresolved")
+        print("Read before code:")
+        print("- noc_docs/docs-map.md")
+        print("- noc_docs/project-status.md")
+        print("- noc_docs/.living-docs/feature-map.json")
+        print("Before coding:")
+        print("- Decide the affected feature or create one under noc_docs/features/ or noc_docs/domains/<domain>/features/.")
+        print("- Write the agreed requirement into requirements.md or capture uncertain discussion in notes.md.")
+        print("Update after code:")
+        print("- status.md when actual behavior changes")
+        print("- test-record.md with verification commands and results")
+        print("- change-record.md for important changes")
+        print("- guardrails.md if new limits or compatibility rules appear")
+        print()
+
+    print("Finish:")
+    print("- Run: python scripts/noc.py index <project>")
+    print("- Before commit, run: python scripts/noc.py check <project> --staged")
+    return 0
+
+
+def resolve_work_features(feature_map: dict, feature: str | None, paths: list[str]) -> list[str]:
+    all_features = feature_map.get("features", {})
+    resolved: set[str] = set()
+    if feature:
+        resolved.add(feature)
+    for changed in paths:
+        for feature_id, info in all_features.items():
+            if any(path_matches(changed, pattern) for pattern in info.get("paths", [])):
+                resolved.add(feature_id)
+    return sorted(resolved)
+
+
+def print_feature_work_plan(feature_id: str, info: dict) -> None:
+    print(f"Feature: {feature_id}")
+    if info.get("domain"):
+        print(f"Domain: {info['domain']}")
+
+    read_docs = work_docs(info, ["entry", "requirements", "status", "guardrails", "tests"])
+    print("Read before code:")
+    for doc in read_docs:
+        print(f"- {doc}")
+    if not read_docs:
+        print("- noc_docs/docs-map.md")
+        print("- noc_docs/project-status.md")
+
+    print("Before coding:")
+    if info.get("requirements"):
+        print(f"- Put the agreed requirement or behavior change in {info['requirements']}.")
+    else:
+        print("- Create or update requirements.md with the agreed requirement.")
+    if info.get("notes"):
+        print(f"- Put uncertain discussion or open questions in {info['notes']}.")
+
+    print("Update after code:")
+    after_docs = [
+        ("status", "when actual behavior changes"),
+        ("tests", "with verification commands and results"),
+        ("change_record", "for important changes and reasons"),
+        ("guardrails", "if new limits, risks, or compatibility rules appear"),
+        ("requirements", "only when intended behavior changes"),
+    ]
+    printed = False
+    for key, reason in after_docs:
+        if info.get(key):
+            print(f"- {info[key]} {reason}")
+            printed = True
+    if not printed:
+        print("- status.md when actual behavior changes")
+        print("- test-record.md with verification commands and results")
+        print("- change-record.md for important changes and reasons")
+        print("- guardrails.md if new limits, risks, or compatibility rules appear")
+        print("- requirements.md only when intended behavior changes")
+    print()
+
+
+def work_docs(info: dict, keys: list[str]) -> list[str]:
+    docs = []
+    for key in keys:
+        value = info.get(key)
+        if isinstance(value, str) and value not in docs:
+            docs.append(value)
+    return docs
+
+
 def suggest_mappings(target: Path) -> list[dict[str, str]]:
     suggestions: list[dict[str, str]] = []
     suggestions.extend(suggest_top_level_project_mappings(target))
@@ -484,6 +586,13 @@ def build_parser() -> argparse.ArgumentParser:
     suggest_map.add_argument("target", nargs="?", default=".")
     suggest_map.add_argument("--write", action="store_true", help="Merge suggestions into feature-map.json without overwriting existing paths.")
     suggest_map.set_defaults(func=command_suggest_map)
+
+    work = sub.add_parser("work", help="Print the docs workflow for a planned code change.")
+    work.add_argument("target", nargs="?", default=".")
+    work.add_argument("--feature", help="Affected feature id.")
+    work.add_argument("--path", action="append", help="Planned or changed code path. Can be repeated.")
+    work.add_argument("--intent", help="Short description of the agreed requirement or change.")
+    work.set_defaults(func=command_work)
 
     return parser
 

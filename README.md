@@ -181,6 +181,32 @@ Use NOC Living Docs before changing this project.
 skills/codex/project-living-docs
 ```
 
+## 和 Agent 协作时怎么用
+
+当你和 Agent 讨论完一个需求，并准备让它改代码时，可以这样说：
+
+```text
+Use NOC Living Docs for this change.
+First write the agreed requirement into the related feature docs.
+Then implement the code.
+After implementation, update status, test-record, and change-record.
+Run index and check.
+```
+
+这会让 Agent 把“需求确认、代码实现、文档同步、测试记录”当成同一个任务处理。
+
+如果已经知道功能名，可以先生成本次改动的文档清单：
+
+```bash
+python scripts/noc.py work /path/to/project --feature user-login --intent "登录失败 5 次后锁定账号"
+```
+
+如果只知道代码路径：
+
+```bash
+python scripts/noc.py work /path/to/project --path src/auth/login.py
+```
+
 ## 日常使用
 
 常见流程：
@@ -354,6 +380,22 @@ python scripts/noc.py check /path/to/project --staged
 当检测到 SQL、Docker、CI、security、API 等路径或文件类型时，`check` 会输出轻量提示，建议检查 `status.md`、`test-record.md`、`guardrails.md`、`requirements.md` 或 `development/testing.md`。这是提示，不是静态分析器。
 
 通过 `hook install` 安装的 pre-commit hook 默认使用 `--warn-only`，因此它会提示风险，但不会阻断提交。
+
+### 工作清单
+
+讨论完需求、准备改代码前，可以生成本次改动应读取和维护的文档清单：
+
+```bash
+python scripts/noc.py work /path/to/project --feature user-login --intent "登录失败 5 次后锁定账号"
+python scripts/noc.py work /path/to/project --path src/auth/login.py
+```
+
+`work` 不会修改文件。它只输出：
+
+- 改代码前应该读取哪些文档。
+- 已确认需求应该写到哪里。
+- 改完代码后应该更新哪些文档。
+- 最后应该运行哪些检查。
 
 ### 映射建议
 
@@ -629,6 +671,32 @@ For Codex, install or reference:
 skills/codex/project-living-docs
 ```
 
+## Working With An Agent
+
+After discussing a requirement with an agent and before asking it to change code, use:
+
+```text
+Use NOC Living Docs for this change.
+First write the agreed requirement into the related feature docs.
+Then implement the code.
+After implementation, update status, test-record, and change-record.
+Run index and check.
+```
+
+This makes requirement capture, implementation, documentation updates, and verification part of one task.
+
+If you know the feature name, generate the docs checklist first:
+
+```bash
+python scripts/noc.py work /path/to/project --feature user-login --intent "lock the account after 5 failed login attempts"
+```
+
+If you only know the code path:
+
+```bash
+python scripts/noc.py work /path/to/project --path src/auth/login.py
+```
+
 ## Daily Use
 
 Common flow:
@@ -802,6 +870,22 @@ By default, the manual `check` command exits with failure when staged code chang
 When SQL, Docker, CI, security, or API-looking paths are detected, `check` prints lightweight hints suggesting `status.md`, `test-record.md`, `guardrails.md`, `requirements.md`, or `development/testing.md`. This is advisory, not a static analyzer.
 
 The pre-commit hook installed by `hook install` uses `--warn-only` by default, so it warns about risk without blocking commits.
+
+### Work Plan
+
+Before changing code after discussing a requirement, generate the docs checklist for the change:
+
+```bash
+python scripts/noc.py work /path/to/project --feature user-login --intent "lock the account after 5 failed login attempts"
+python scripts/noc.py work /path/to/project --path src/auth/login.py
+```
+
+`work` does not modify files. It only prints:
+
+- Which docs to read before coding.
+- Where confirmed requirements should be written.
+- Which docs to update after coding.
+- Which checks to run at the end.
 
 ### Mapping Suggestions
 

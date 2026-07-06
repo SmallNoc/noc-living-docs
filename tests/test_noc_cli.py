@@ -441,6 +441,69 @@ class NocCliTests(unittest.TestCase):
             self.assertEqual(entry["owner"], "auth-team")
             self.assertEqual(entry["paths"], ["legacy/auth/", "src/auth/"])
 
+    def test_work_outputs_docs_plan_for_named_feature(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            run(["init", str(project), "--mode", "small"])
+
+            feature = project / "noc_docs/features/user-login"
+            template = project / "noc_docs/features/_feature"
+            feature.mkdir(parents=True)
+            for file in template.iterdir():
+                if file.is_file():
+                    (feature / file.name).write_text(file.read_text(encoding="utf-8"), encoding="utf-8")
+            run(["index", str(project)])
+
+            result = run(["work", str(project), "--feature", "user-login", "--intent", "lock account after failed login"])
+
+            self.assertIn("NOC work plan", result.stdout)
+            self.assertIn("Intent: lock account after failed login", result.stdout)
+            self.assertIn("Feature: user-login", result.stdout)
+            self.assertIn("noc_docs/features/user-login/requirements.md", result.stdout)
+            self.assertIn("Put the agreed requirement", result.stdout)
+            self.assertIn("noc_docs/features/user-login/change-record.md", result.stdout)
+            self.assertIn("python scripts/noc.py check <project> --staged", result.stdout)
+
+    def test_work_resolves_feature_from_path_mapping(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            run(["init", str(project), "--mode", "small"])
+
+            feature = project / "noc_docs/features/user-login"
+            template = project / "noc_docs/features/_feature"
+            feature.mkdir(parents=True)
+            for file in template.iterdir():
+                if file.is_file():
+                    (feature / file.name).write_text(file.read_text(encoding="utf-8"), encoding="utf-8")
+            feature_map_path = project / "noc_docs/.living-docs/feature-map.json"
+            feature_map_path.write_text(
+                json.dumps(
+                    {
+                        "mode": "small",
+                        "features": {
+                            "user-login": {
+                                "paths": ["src/auth/"],
+                                "entry": "noc_docs/features/user-login/agent-guide.md",
+                                "requirements": "noc_docs/features/user-login/requirements.md",
+                                "status": "noc_docs/features/user-login/status.md",
+                                "guardrails": "noc_docs/features/user-login/guardrails.md",
+                                "tests": "noc_docs/features/user-login/test-record.md",
+                                "change_record": "noc_docs/features/user-login/change-record.md",
+                                "notes": "noc_docs/features/user-login/notes.md",
+                            }
+                        },
+                    },
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+
+            result = run(["work", str(project), "--path", "src/auth/login.py"])
+
+            self.assertIn("Changed or planned path(s): src/auth/login.py", result.stdout)
+            self.assertIn("Feature: user-login", result.stdout)
+            self.assertIn("noc_docs/features/user-login/status.md when actual behavior changes", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

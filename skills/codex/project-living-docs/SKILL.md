@@ -15,6 +15,7 @@ Use NOC Living Docs as executable project memory: route through indexes, read th
 - Preserve existing user rules and merge NOC rules in a managed block.
 - Use Chinese prose by default and English structure for file names, headings, IDs, JSON keys, and status values.
 - Treat code as current behavior; treat `requirements.md` as product intent.
+- When discussion with the user creates or changes product intent, capture that intent in the affected feature docs before or as part of coding.
 - Read only relevant docs for normal development unless auditing.
 
 ## Execution Loop
@@ -24,11 +25,12 @@ Use NOC Living Docs as executable project memory: route through indexes, read th
 3. Read common routing files: agent entry file, `noc_docs/docs-map.md`, and `.living-docs/*.json` when present.
 4. Choose Light, Deep, Audit, or Query mode.
 5. Read required docs using the fallback rules below.
-6. Make the requested change.
-7. Update NOC docs when behavior, intent, guardrails, tests, or feature lists changed.
-8. Run `python scripts/noc.py index <project>` after doc structure or feature mapping changes.
-9. Run `python scripts/noc.py check <project> --staged --warn-only` before commits when Git is available.
-10. Final response must list NOC docs checked, updated, or intentionally unchanged.
+6. For code changes, turn the agreed requirement into a docs work plan before editing code.
+7. Make the requested change.
+8. Update NOC docs when behavior, intent, guardrails, tests, or feature lists changed.
+9. Run `python scripts/noc.py index <project>` after doc structure or feature mapping changes.
+10. Run `python scripts/noc.py check <project> --staged --warn-only` before commits when Git is available.
+11. Final response must list NOC docs checked, updated, or intentionally unchanged.
 
 ## Modes
 
@@ -85,11 +87,22 @@ Never initialize both `features/` and `domains/` unless the user explicitly requ
 
 ## Maintain During Development
 
+When the user discusses a requirement and then asks for code changes, do not treat the discussion as disposable chat. Convert the agreed intent into the affected feature docs as part of the same task.
+
 Before editing code:
 
 1. Identify affected feature or domain from changed paths, task text, and `.living-docs/feature-map.json` if available.
-2. Read affected `agent-guide.md` and `guardrails.md`.
-3. Read `requirements.md`, `status.md`, and `test-record.md` when behavior, requirements, or verification may change.
+2. When scripts are available, run a work plan:
+
+```bash
+python scripts/noc.py work /path/to/project --feature <feature> --intent "<agreed requirement>"
+```
+
+Use `--path <code/path>` instead of `--feature` when code paths are clearer than the feature name.
+
+3. Read affected `agent-guide.md`, `requirements.md`, `status.md`, `guardrails.md`, and `test-record.md` according to the work plan.
+4. Put confirmed new or changed intent in `requirements.md` before or alongside implementation.
+5. Put uncertain discussion, open questions, or unconfirmed ideas in `notes.md`; do not promote them to requirements.
 
 After editing code:
 
