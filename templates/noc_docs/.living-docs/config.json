@@ -4,6 +4,16 @@
   "documentation_root": "noc_docs",
   "language": "zh-CN",
   "machine_keys": "en-US",
-  "mode": "small"
+  "mode": "small",
+  "check": {
+    "strictness": {
+      "default": "fail",
+      "environments": {
+        "local": "warn",
+        "ci": "fail"
+      },
+      "paths": []
+    }
+  }
 }
 

@@ -14,7 +14,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
-      - run: python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py
+      - run: python -m py_compile scripts/__init__.py scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py
+      - run: python -m pip install -e .
+      - run: noc --help
       - run: python scripts/release.py --check
       - run: python scripts/validate-noc-docs.py
       - run: python scripts/validate-noc-docs.py --target examples/small-project

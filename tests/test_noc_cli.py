@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import csv
+import os
 import subprocess
 import sys
 import tempfile
@@ -13,10 +14,18 @@ ROOT = Path(__file__).resolve().parents[1]
 CLI = ROOT / "scripts/noc.py"
 
 
-def run(args: list[str], cwd: Path = ROOT, check: bool = True) -> subprocess.CompletedProcess[str]:
+def run(
+    args: list[str],
+    cwd: Path = ROOT,
+    check: bool = True,
+    input_text: str | None = None,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
     result = subprocess.run(
         [sys.executable, str(CLI), *args],
         cwd=cwd,
+        input=input_text,
+        env={**os.environ, **(env or {})},
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -42,14 +51,20 @@ class NocCliTests(unittest.TestCase):
     def test_cli_help_lists_required_subcommands(self) -> None:
         result = run(["--help"])
 
-        for command in ["init", "index", "validate", "hook", "check", "suggest-map", "work"]:
+        for command in ["init", "index", "validate", "hook", "check", "suggest-map", "work", "doctor"]:
             self.assertIn(command, result.stdout)
 
     def test_each_required_subcommand_has_help(self) -> None:
-        for command in ["init", "index", "validate", "hook", "check", "suggest-map", "work"]:
+        for command in ["init", "index", "validate", "hook", "check", "suggest-map", "work", "doctor"]:
             with self.subTest(command=command):
                 result = run([command, "--help"])
                 self.assertIn("usage:", result.stdout)
+
+    def test_pyproject_exposes_noc_console_script(self) -> None:
+        pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+
+        self.assertIn('name = "noc-living-docs"', pyproject)
+        self.assertIn('noc = "scripts.noc:main"', pyproject)
 
     def test_codex_skill_frontmatter_contains_name_and_description(self) -> None:
         skill = (ROOT / "skills/codex/project-living-docs/SKILL.md").read_text(encoding="utf-8")
@@ -87,7 +102,9 @@ class NocCliTests(unittest.TestCase):
             expected_shebang = f"#!{Path(sys.executable).resolve().as_posix()}\n".encode()
             self.assertIn(expected_shebang, data)
             self.assertNotIn(b"\r\n", data)
-            self.assertIn(b"--warn-only", data)
+            self.assertIn(b"'noc'", data)
+            self.assertIn(b"--environment", data)
+            self.assertIn(b"local", data)
 
     def test_warn_only_hook_does_not_block_code_only_commit(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -407,6 +424,108 @@ class NocCliTests(unittest.TestCase):
             self.assertIn("Detected change type(s): deployment, schema", result.stdout)
             self.assertIn("Suggested docs: status.md, test-record.md, development/testing.md", result.stdout)
 
+    def test_check_warn_only_maps_to_warn_strictness(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            git(project, ["init"])
+            run(["init", str(project), "--mode", "small"])
+            git(project, ["add", "."])
+            git(project, ["commit", "-m", "init"], check=False)
+
+            (project / "src").mkdir()
+            (project / "src/app.py").write_text("print('hello')\n", encoding="utf-8")
+            git(project, ["add", "."])
+
+            result = run(["check", str(project), "--staged", "--warn-only"], check=False)
+
+            self.assertEqual(result.returncode, 0)
+            self.assertIn("Strictness: warn (source: --warn-only)", result.stdout)
+
+    def test_check_uses_configured_strictness(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            git(project, ["init"])
+            run(["init", str(project), "--mode", "small"])
+            config_path = project / "noc_docs/.living-docs/config.json"
+            config = json.loads(config_path.read_text(encoding="utf-8"))
+            config["check"] = {"strictness": {"default": "warn"}}
+            config_path.write_text(json.dumps(config, indent=2), encoding="utf-8")
+            git(project, ["add", "."])
+            git(project, ["commit", "-m", "init"], check=False)
+
+            (project / "src").mkdir()
+            (project / "src/app.py").write_text("print('hello')\n", encoding="utf-8")
+            git(project, ["add", "."])
+
+            result = run(["check", str(project), "--staged"], check=False)
+
+            self.assertEqual(result.returncode, 0)
+            self.assertIn("Strictness: warn (source: config default)", result.stdout)
+
+    def test_check_cli_strictness_overrides_config_and_can_disable(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            git(project, ["init"])
+            run(["init", str(project), "--mode", "small"])
+            git(project, ["add", "."])
+            git(project, ["commit", "-m", "init"], check=False)
+
+            (project / "src").mkdir()
+            (project / "src/app.py").write_text("print('hello')\n", encoding="utf-8")
+            git(project, ["add", "."])
+
+            result = run(["check", str(project), "--staged", "--strictness", "off"], check=False)
+
+            self.assertEqual(result.returncode, 0)
+            self.assertIn("Strictness: off (source: --strictness)", result.stdout)
+
+    def test_check_ci_environment_defaults_to_fail_and_emits_annotations(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            git(project, ["init"])
+            run(["init", str(project), "--mode", "small"])
+            git(project, ["add", "."])
+            git(project, ["commit", "-m", "init"], check=False)
+
+            (project / "src").mkdir()
+            (project / "src/api.py").write_text("print('api')\n", encoding="utf-8")
+            git(project, ["add", "."])
+
+            result = run(["check", str(project), "--staged", "--github-annotations"], check=False, env={"CI": "true"})
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("Strictness: fail (source: config environment ci)", result.stdout)
+            self.assertIn("::error", result.stdout)
+            self.assertIn("Suggested docs:", result.stdout)
+
+    def test_doctor_reports_project_health(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            git(project, ["init"])
+            run(["init", str(project), "--mode", "small"])
+            run(["hook", "install", str(project)])
+
+            result = run(["doctor", str(project)])
+
+            self.assertEqual(result.returncode, 0)
+            self.assertIn("OK: Python", result.stdout)
+            self.assertIn("OK: Git is available", result.stdout)
+            self.assertIn("OK: target is inside Git repository", result.stdout)
+            self.assertIn("OK: mode small matches noc_docs/features", result.stdout)
+            self.assertIn("OK: pre-commit hook references noc", result.stdout)
+            self.assertIn("Fix suggestions:", result.stdout)
+
+    def test_doctor_returns_error_for_missing_noc_docs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            git(project, ["init"])
+
+            result = run(["doctor", str(project)], check=False)
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("ERROR: missing noc_docs/", result.stdout)
+            self.assertIn("Run: noc init", result.stdout)
+
     def test_suggest_map_outputs_candidate_feature_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp)
@@ -488,13 +607,41 @@ class NocCliTests(unittest.TestCase):
             (project / "src/auth").mkdir(parents=True)
             (project / "src/auth/login.py").write_text("print('login')\n", encoding="utf-8")
 
-            result = run(["suggest-map", str(project), "--write"])
+            result = run(["suggest-map", str(project), "--write", "--yes"])
 
             self.assertIn("Updated feature-map.json with 1 suggestion(s).", result.stdout)
             feature_map = json.loads(feature_map_path.read_text(encoding="utf-8"))
             entry = feature_map["features"]["auth"]
             self.assertEqual(entry["owner"], "auth-team")
             self.assertEqual(entry["paths"], ["legacy/auth/", "src/auth/"])
+
+    def test_suggest_map_write_requires_yes_when_not_interactive(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            run(["init", str(project), "--mode", "small"])
+            (project / "src/auth").mkdir(parents=True)
+            (project / "src/auth/login.py").write_text("print('login')\n", encoding="utf-8")
+
+            result = run(["suggest-map", str(project), "--write"], check=False)
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("Refusing to write suggestions without confirmation", result.stdout)
+            self.assertIn("--write --yes", result.stdout)
+
+    def test_suggest_map_interactive_accepts_selected_suggestions(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            run(["init", str(project), "--mode", "small"])
+            (project / "src/auth").mkdir(parents=True)
+            (project / "src/auth/login.py").write_text("print('login')\n", encoding="utf-8")
+
+            result = run(["suggest-map", str(project), "--interactive"], input_text="y\n", check=False)
+
+            self.assertEqual(result.returncode, 0)
+            self.assertIn("Feature: auth", result.stdout)
+            self.assertIn("Reason:", result.stdout)
+            feature_map = json.loads((project / "noc_docs/.living-docs/feature-map.json").read_text(encoding="utf-8"))
+            self.assertEqual(feature_map["features"]["auth"]["paths"], ["src/auth/"])
 
     def test_work_outputs_docs_plan_for_named_feature(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

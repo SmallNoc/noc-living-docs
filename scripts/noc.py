@@ -6,6 +6,8 @@ from __future__ import annotations
 import argparse
 import fnmatch
 import json
+import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -74,9 +76,13 @@ def hook_block() -> str:
             f"#!{python_path}",
             "import subprocess",
             "import sys",
+            "import shutil",
             "",
             START,
-            f"raise SystemExit(subprocess.call([sys.executable, {cli_path!r}, 'check', '--staged', '--warn-only']))",
+            f"fallback = [sys.executable, {cli_path!r}, 'check', '--staged', '--environment', 'local']",
+            "entry = shutil.which('noc')",
+            "cmd = [entry, 'check', '--staged', '--environment', 'local'] if entry else fallback",
+            "raise SystemExit(subprocess.call(cmd))",
             END,
             "",
         ]
@@ -156,6 +162,8 @@ def load_feature_map(target: Path) -> dict:
 
 def command_check(args: argparse.Namespace) -> int:
     target = Path(args.target).resolve()
+    strictness, strictness_source = resolve_check_strictness(target, args)
+    print(f"Strictness: {strictness} (source: {strictness_source})")
     files = changed_files(target, args.staged)
     code_files = [f for f in files if not f.startswith("noc_docs/") and is_code_file(f)]
     docs_files = [f for f in files if f.startswith("noc_docs/")]
@@ -183,10 +191,12 @@ def command_check(args: argparse.Namespace) -> int:
             missing = sorted(set(mapped) - set(covered))
             if missing:
                 print("WARNING: missing docs for affected feature(s): " + ", ".join(missing))
-                return 0 if args.warn_only else 1
+                emit_github_annotation(args, "missing docs for affected feature(s): " + ", ".join(missing), "warning" if strictness == "warn" else "error")
+                return check_result(strictness)
             return 0
         print("WARNING: docs changed, but not for affected feature(s): " + ", ".join(mapped))
-        return 0 if args.warn_only else 1
+        emit_github_annotation(args, "docs changed, but not for affected feature(s): " + ", ".join(mapped), "warning" if strictness == "warn" else "error")
+        return check_result(strictness)
 
     print("WARNING: code changed but no noc_docs files changed.")
     print_change_hints(code_files)
@@ -195,7 +205,59 @@ def command_check(args: argparse.Namespace) -> int:
     else:
         print("No feature mapping found. Update noc_docs or run index after documenting the feature.")
     print("If docs are intentionally unchanged, mention that in the commit or final agent response.")
-    return 0 if args.warn_only else 1
+    emit_github_annotation(args, "code changed but no noc_docs files changed", "warning" if strictness == "warn" else "error")
+    return check_result(strictness)
+
+
+def resolve_check_strictness(target: Path, args: argparse.Namespace) -> tuple[str, str]:
+    if args.warn_only:
+        return "warn", "--warn-only"
+    if args.strictness:
+        return args.strictness, "--strictness"
+
+    config = load_config(target)
+    check_config = config.get("check", {}) if isinstance(config, dict) else {}
+    strictness_config = check_config.get("strictness", {}) if isinstance(check_config, dict) else {}
+    environment = args.environment or ("ci" if os.environ.get("CI") else "manual")
+
+    if isinstance(strictness_config, dict):
+        environments = strictness_config.get("environments", {})
+        if isinstance(environments, dict) and environment in environments:
+            value = environments[environment]
+            if value in {"off", "warn", "fail"}:
+                return value, f"config environment {environment}"
+        value = strictness_config.get("default")
+        if value in {"off", "warn", "fail"}:
+            return value, "config default"
+
+    if environment == "local":
+        return "warn", "local environment"
+    if environment == "ci":
+        return "fail", "CI environment"
+    return "fail", "default"
+
+
+def load_config(target: Path) -> dict:
+    path = target / "noc_docs/.living-docs/config.json"
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+
+
+def check_result(strictness: str) -> int:
+    if strictness in {"off", "warn"}:
+        return 0
+    return 1
+
+
+def emit_github_annotation(args: argparse.Namespace, message: str, level: str) -> None:
+    if not getattr(args, "github_annotations", False):
+        return
+    command = "warning" if level == "warning" else "error"
+    print(f"::{command} title=NOC Living Docs::{message}")
 
 
 def print_change_hints(code_files: list[str]) -> None:
@@ -240,7 +302,15 @@ def suggested_docs_for(change_types: list[str]) -> list[str]:
 def command_suggest_map(args: argparse.Namespace) -> int:
     target = Path(args.target).resolve()
     suggestions = suggest_mappings(target)
+    if args.interactive:
+        count = interactive_write_suggestions(target, suggestions)
+        print(f"Updated feature-map.json with {count} confirmed suggestion(s).")
+        return 0
     if args.write:
+        if not args.yes:
+            print("Refusing to write suggestions without confirmation.")
+            print("Use `noc suggest-map <project> --interactive` to review one by one, or `--write --yes` for automation.")
+            return 1
         count = write_suggestions(target, suggestions)
         print(f"Updated feature-map.json with {count} suggestion(s).")
         return 0
@@ -284,6 +354,137 @@ def command_work(args: argparse.Namespace) -> int:
     print("- Run: python scripts/noc.py index <project>")
     print("- Before commit, run: python scripts/noc.py check <project> --staged")
     return 0
+
+
+def command_doctor(args: argparse.Namespace) -> int:
+    target = Path(args.target).resolve()
+    report = DoctorReport()
+
+    report.ok(f"Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
+    if shutil.which("git"):
+        report.ok("Git is available")
+    else:
+        report.error("Git is not available on PATH")
+        report.fix("Install Git and ensure `git` is on PATH.")
+
+    try:
+        root = git_root(target)
+        report.ok(f"target is inside Git repository: {root}")
+    except SystemExit:
+        root = None
+        report.error("target is not inside a Git repository")
+        report.fix("Run `git init` in the project or choose a project already managed by Git.")
+
+    noc_docs = target / "noc_docs"
+    if noc_docs.is_dir():
+        report.ok("found noc_docs/")
+    else:
+        report.error("missing noc_docs/")
+        report.fix(f"Run: noc init {target}")
+
+    living_docs = noc_docs / ".living-docs"
+    config = doctor_json(report, living_docs / "config.json", ["documentation_root", "mode"])
+    feature_map = doctor_json(report, living_docs / "feature-map.json", ["mode", "features"])
+    doctor_json(report, living_docs / "docs-index.json", ["documents"])
+    doctor_json(report, living_docs / "manifest.json", ["files"])
+
+    mode = config.get("mode") if isinstance(config, dict) else None
+    feature_mode = feature_map.get("mode") if isinstance(feature_map, dict) else None
+    if mode and feature_mode and mode != feature_mode:
+        report.warn(f"config mode {mode} differs from feature-map mode {feature_mode}")
+        report.fix("Run: noc index <project>")
+
+    has_features = (noc_docs / "features").is_dir()
+    has_domains = (noc_docs / "domains").is_dir()
+    if mode == "small":
+        if has_features and not has_domains:
+            report.ok("mode small matches noc_docs/features")
+        else:
+            report.error("mode small does not match directory structure")
+            report.fix("Use `noc init <project> --mode small` or update noc_docs/.living-docs/config.json.")
+    elif mode == "domain":
+        if has_domains and not has_features:
+            report.ok("mode domain matches noc_docs/domains")
+        else:
+            report.error("mode domain does not match directory structure")
+            report.fix("Use `noc init <project> --mode domain` or update noc_docs/.living-docs/config.json.")
+    elif mode is not None:
+        report.error(f"unknown mode: {mode}")
+        report.fix("Set config mode to `small` or `domain`.")
+
+    doctor_hook(report, root)
+
+    print("Fix suggestions:")
+    if report.fixes:
+        for fix in report.fixes:
+            print(f"- {fix}")
+    else:
+        print("- No action needed.")
+    return 1 if report.errors else 0
+
+
+class DoctorReport:
+    def __init__(self) -> None:
+        self.errors = 0
+        self.warnings = 0
+        self.fixes: list[str] = []
+
+    def ok(self, message: str) -> None:
+        print(f"OK: {message}")
+
+    def warn(self, message: str) -> None:
+        self.warnings += 1
+        print(f"WARN: {message}")
+
+    def error(self, message: str) -> None:
+        self.errors += 1
+        print(f"ERROR: {message}")
+
+    def fix(self, message: str) -> None:
+        if message not in self.fixes:
+            self.fixes.append(message)
+
+
+def doctor_json(report: DoctorReport, path: Path, required_keys: list[str]) -> dict:
+    rel = path.as_posix()
+    if not path.exists():
+        report.error(f"missing {rel}")
+        report.fix("Run: noc init <project> && noc index <project>")
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        report.error(f"invalid JSON in {rel}: {exc.msg}")
+        report.fix(f"Fix JSON syntax in {rel}.")
+        return {}
+    report.ok(f"parsed {rel}")
+    for key in required_keys:
+        if key in data:
+            report.ok(f"{rel} contains `{key}`")
+        else:
+            report.error(f"{rel} missing required key `{key}`")
+            report.fix(f"Run: noc index <project> or restore `{key}` in {rel}.")
+    return data if isinstance(data, dict) else {}
+
+
+def doctor_hook(report: DoctorReport, root: Path | None) -> None:
+    if root is None:
+        return
+    hook_path = root / ".git/hooks/pre-commit"
+    if not hook_path.exists():
+        report.warn("pre-commit hook is not installed")
+        report.fix("Run: noc hook install <project>")
+        return
+    text = hook_path.read_text(encoding="utf-8", errors="replace")
+    if START not in text or END not in text:
+        report.warn("pre-commit hook exists without NOC managed block")
+        report.fix("Run: noc hook install <project> to add the NOC managed block.")
+        return
+    if "'noc'" in text or '"noc"' in text or "scripts/noc.py" in text:
+        report.ok("pre-commit hook references noc")
+    else:
+        report.error("pre-commit hook NOC block does not reference a valid entry")
+        report.fix("Run: noc hook install <project> to refresh the hook.")
 
 
 def resolve_work_features(feature_map: dict, feature: str | None, paths: list[str]) -> list[str]:
@@ -423,6 +624,47 @@ def dedupe_suggestions(suggestions: list[dict[str, str]]) -> list[dict[str, str]
         seen.add(key)
         deduped.append(suggestion)
     return deduped
+
+
+def suggestion_reason(path: str) -> str:
+    if path.startswith("src/main/java/"):
+        return "detected Java package branch containing code files"
+    if path.split("/", 1)[0] in {"src", "app", "apps", "packages", "services", "modules", "domains"}:
+        return "detected code directory under a common project root"
+    return "detected top-level project directory with a project marker"
+
+
+def interactive_write_suggestions(target: Path, suggestions: list[dict[str, str]]) -> int:
+    if not sys.stdin.isatty() and sys.stdin.closed:
+        print("Cannot run interactive confirmation without stdin.")
+        print("Use --write --yes for automation or omit --write to print suggestions.")
+        return 0
+
+    existing = load_feature_map(target).get("features", {})
+    accepted: list[dict[str, str]] = []
+    for suggestion in suggestions:
+        feature_id = suggestion["feature"]
+        candidate_path = suggestion["path"]
+        existing_paths = existing.get(feature_id, {}).get("paths", [])
+        print(f"Feature: {feature_id}")
+        print(f"Candidate path: {candidate_path}")
+        print(f"Reason: {suggestion_reason(candidate_path)}")
+        print("Existing feature: " + ("yes" if feature_id in existing else "no"))
+        if candidate_path in existing_paths:
+            print("Already mapped: yes")
+            print()
+            continue
+        try:
+            answer = input("Write this path to feature-map.json? [y/N] ").strip().lower()
+        except EOFError:
+            print()
+            print("Interactive confirmation needs stdin.")
+            print("Use --write --yes for automation or omit --write to print suggestions.")
+            break
+        if answer in {"y", "yes"}:
+            accepted.append(suggestion)
+        print()
+    return write_suggestions(target, accepted)
 
 
 def directory_has_code(path: Path) -> bool:
@@ -579,12 +821,17 @@ def build_parser() -> argparse.ArgumentParser:
     check = sub.add_parser("check", help="Check whether code changes need NOC docs updates.")
     check.add_argument("target", nargs="?", default=".")
     check.add_argument("--staged", action="store_true")
+    check.add_argument("--strictness", choices=["off", "warn", "fail"], help="Override check strictness.")
+    check.add_argument("--environment", choices=["manual", "local", "ci"], help="Select strictness environment.")
+    check.add_argument("--github-annotations", action="store_true", help="Emit GitHub Actions warning/error annotations.")
     check.add_argument("--warn-only", action="store_true", help="Return success even when docs are missing.")
     check.set_defaults(func=command_check)
 
     suggest_map = sub.add_parser("suggest-map", help="Suggest feature path mappings.")
     suggest_map.add_argument("target", nargs="?", default=".")
     suggest_map.add_argument("--write", action="store_true", help="Merge suggestions into feature-map.json without overwriting existing paths.")
+    suggest_map.add_argument("--yes", action="store_true", help="Confirm --write without interactive review.")
+    suggest_map.add_argument("--interactive", action="store_true", help="Confirm suggestions one by one before writing.")
     suggest_map.set_defaults(func=command_suggest_map)
 
     work = sub.add_parser("work", help="Print the docs workflow for a planned code change.")
@@ -593,6 +840,10 @@ def build_parser() -> argparse.ArgumentParser:
     work.add_argument("--path", action="append", help="Planned or changed code path. Can be repeated.")
     work.add_argument("--intent", help="Short description of the agreed requirement or change.")
     work.set_defaults(func=command_work)
+
+    doctor = sub.add_parser("doctor", help="Check local NOC setup and print repair suggestions.")
+    doctor.add_argument("target", nargs="?", default=".")
+    doctor.set_defaults(func=command_doctor)
 
     return parser
 

@@ -39,7 +39,11 @@ def check_required_paths() -> None:
         "README.md",
         "CHANGELOG.md",
         "VERSION",
+        "pyproject.toml",
+        ".github/PULL_REQUEST_TEMPLATE.md",
+        ".github/workflows/noc-check.yml",
         "docs/migration-reports/TEMPLATE.md",
+        "docs/comparisons.md",
         "protocol/AGENT_PROTOCOL.md",
         "protocol/DOCUMENT_STRUCTURE.md",
         "protocol/LANGUAGE_POLICY.md",
@@ -105,6 +109,24 @@ def check_no_docs_root_template() -> None:
         fail("templates/docs must not exist; use templates/noc_docs")
 
 
+def check_installed_package() -> None:
+    required = [
+        "scripts/noc.py",
+        "scripts/init-noc-docs.py",
+        "scripts/index-noc-docs.py",
+        "scripts/validate-noc-docs.py",
+        "templates/AGENTS.md",
+        "templates/noc_docs/project-status.md",
+        "templates/noc_docs/docs-map.md",
+        "templates/noc_docs/.living-docs/config.json",
+        "templates/noc_docs/.living-docs/feature-map.json",
+    ]
+    for path in required:
+        if not (ROOT / path).exists():
+            fail(f"installed package missing required path: {path}")
+    check_config()
+
+
 def check_project(target: Path) -> None:
     noc_docs = target / "noc_docs"
     if not noc_docs.exists():
@@ -143,6 +165,10 @@ def main() -> None:
         check_project(Path(args.target).resolve())
         print("NOC project validation passed.")
     else:
+        if not (ROOT / "README.md").exists():
+            check_installed_package()
+            print("NOC CLI installation validation passed.")
+            return
         check_required_paths()
         check_config()
         check_skill_frontmatter()
