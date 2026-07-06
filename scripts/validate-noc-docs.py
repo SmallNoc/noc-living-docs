@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import csv
 import argparse
 import sys
 from pathlib import Path
@@ -54,6 +55,11 @@ def check_required_paths() -> None:
         "templates/noc_docs/docs-map.md",
         "templates/noc_docs/.living-docs/config.json",
         "skills/codex/project-living-docs/SKILL.md",
+        "skills/codex/project-living-docs/references/workflow.md",
+        "skills/codex/project-living-docs/references/feature-doc-template.md",
+        "skills/codex/project-living-docs/references/domain-mode-guide.md",
+        "skills/codex/project-living-docs/references/codex-prompts.md",
+        "skills/codex/project-living-docs/evals/project-living-docs.prompts.csv",
     ]
     for path in required:
         require(path)
@@ -78,6 +84,19 @@ def check_skill_frontmatter() -> None:
         fail("Codex skill name must be project-living-docs")
     if "description: Use when" not in skill:
         fail("Codex skill description must start with Use when")
+
+
+def check_skill_evals() -> None:
+    path = ROOT / "skills/codex/project-living-docs/evals/project-living-docs.prompts.csv"
+    rows = list(csv.DictReader(path.read_text(encoding="utf-8").splitlines()))
+    if len(rows) < 15:
+        fail("project-living-docs evals must contain at least 15 prompts")
+    values = {row.get("should_trigger", "").lower() for row in rows}
+    if not {"true", "false"}.issubset(values):
+        fail("project-living-docs evals must include should_trigger=true and should_trigger=false")
+    for row in rows:
+        if not row.get("prompt") or row.get("should_trigger", "").lower() not in {"true", "false"}:
+            fail("project-living-docs eval rows must include prompt and boolean should_trigger")
 
 
 def check_no_docs_root_template() -> None:
@@ -127,6 +146,7 @@ def main() -> None:
         check_required_paths()
         check_config()
         check_skill_frontmatter()
+        check_skill_evals()
         check_no_docs_root_template()
         print("NOC Living Docs validation passed.")
 

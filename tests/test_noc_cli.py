@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import csv
 import subprocess
 import sys
 import tempfile
@@ -38,6 +39,41 @@ def git(project: Path, args: list[str], check: bool = True) -> subprocess.Comple
 
 
 class NocCliTests(unittest.TestCase):
+    def test_cli_help_lists_required_subcommands(self) -> None:
+        result = run(["--help"])
+
+        for command in ["init", "index", "validate", "hook", "check", "suggest-map", "work"]:
+            self.assertIn(command, result.stdout)
+
+    def test_each_required_subcommand_has_help(self) -> None:
+        for command in ["init", "index", "validate", "hook", "check", "suggest-map", "work"]:
+            with self.subTest(command=command):
+                result = run([command, "--help"])
+                self.assertIn("usage:", result.stdout)
+
+    def test_codex_skill_frontmatter_contains_name_and_description(self) -> None:
+        skill = (ROOT / "skills/codex/project-living-docs/SKILL.md").read_text(encoding="utf-8")
+
+        self.assertTrue(skill.startswith("---\n"))
+        self.assertIn("name: project-living-docs", skill)
+        self.assertIn("description: Use when", skill)
+
+    def test_codex_skill_references_and_evals_exist(self) -> None:
+        skill_root = ROOT / "skills/codex/project-living-docs"
+        for path in [
+            "references/workflow.md",
+            "references/feature-doc-template.md",
+            "references/domain-mode-guide.md",
+            "references/codex-prompts.md",
+            "evals/project-living-docs.prompts.csv",
+        ]:
+            self.assertTrue((skill_root / path).exists(), path)
+
+        evals = list(csv.DictReader((skill_root / "evals/project-living-docs.prompts.csv").read_text(encoding="utf-8").splitlines()))
+        self.assertGreaterEqual(len(evals), 15)
+        self.assertIn("true", {row["should_trigger"] for row in evals})
+        self.assertIn("false", {row["should_trigger"] for row in evals})
+
     def test_hook_install_writes_lf_and_warn_only_hook(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp)
@@ -133,6 +169,25 @@ class NocCliTests(unittest.TestCase):
             (project / "src").mkdir()
             (project / "src/Main.java").write_text("class Main {}\n", encoding="utf-8")
             (project / "src/main.go").write_text("package main\n", encoding="utf-8")
+            git(project, ["add", "."])
+
+            result = run(["check", str(project), "--staged"], check=False)
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("code changed but no noc_docs files changed", result.stdout)
+
+    def test_check_treats_python_js_and_ts_as_code(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            git(project, ["init"])
+            run(["init", str(project), "--mode", "small"])
+            git(project, ["add", "."])
+            git(project, ["commit", "-m", "init"], check=False)
+
+            (project / "src").mkdir()
+            (project / "src/app.py").write_text("print('hello')\n", encoding="utf-8")
+            (project / "src/app.js").write_text("console.log('hello')\n", encoding="utf-8")
+            (project / "src/app.ts").write_text("console.log('hello')\n", encoding="utf-8")
             git(project, ["add", "."])
 
             result = run(["check", str(project), "--staged"], check=False)
@@ -503,6 +558,25 @@ class NocCliTests(unittest.TestCase):
             self.assertIn("Changed or planned path(s): src/auth/login.py", result.stdout)
             self.assertIn("Feature: user-login", result.stdout)
             self.assertIn("noc_docs/features/user-login/status.md when actual behavior changes", result.stdout)
+
+    def test_work_does_not_modify_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            run(["init", str(project), "--mode", "small"])
+            before = {
+                path.relative_to(project).as_posix(): path.read_bytes()
+                for path in project.rglob("*")
+                if path.is_file()
+            }
+
+            run(["work", str(project), "--feature", "new-feature", "--intent", "new behavior"])
+
+            after = {
+                path.relative_to(project).as_posix(): path.read_bytes()
+                for path in project.rglob("*")
+                if path.is_file()
+            }
+            self.assertEqual(before, after)
 
 
 if __name__ == "__main__":

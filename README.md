@@ -484,7 +484,7 @@ docs/migration-reports/YYYY-MM-DD-<repo>.md
 
 ## 状态
 
-当前是 v1.0.0 小而硬的稳定协议版本，包含初始化、索引、校验、Git hook、相关文档检查、feature-map 建议、轻量变更提示和真实项目迁移报告。
+当前是 v1.0.0 小而硬的稳定协议版本，包含初始化、索引、校验、Git hook、work 工作清单、相关文档检查、feature-map 建议、轻量变更提示、skill references/evals 和真实项目迁移报告。
 
 ---
 
@@ -974,4 +974,4 @@ This means prose is Chinese by default, while structure remains English for stab
 
 ## Status
 
-This repository is the small-but-hard v1.0.0 protocol release with initialization, indexing, validation, Git hook, related-document checks, feature-map suggestions, lightweight change hints, and real-project migration reports.
+This repository is the small-but-hard v1.0.0 protocol release with initialization, indexing, validation, Git hook, work plans, related-document checks, feature-map suggestions, lightweight change hints, skill references/evals, and real-project migration reports.

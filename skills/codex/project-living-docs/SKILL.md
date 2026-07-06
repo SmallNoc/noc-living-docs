@@ -1,171 +1,87 @@
 ---
 name: project-living-docs
-description: Use when initializing, auditing, querying, or maintaining project living documentation for AI-assisted development, especially when code changes may affect requirements, current behavior, guardrails, tests, change history, Git workflow, or agent guidance.
+description: Use when code changes, feature work, refactors, API/schema/security changes, bug fixes, or project initialization need NOC Living Docs kept in sync with requirements, current behavior, guardrails, tests, or change history.
 ---
 
 # Project Living Docs
 
-Use NOC Living Docs as executable project memory: route through indexes, read the smallest relevant docs, update current behavior and verification records when code changes.
+Use NOC Living Docs as executable project memory. Route through `noc_docs/`, read only the affected docs, update the living docs when code or intent changes, then verify with the CLI.
 
-## Non-Negotiables
+## Trigger
 
-- Use `noc_docs/` as the fixed documentation root.
-- Do not create `docs/` for this protocol.
-- Do not overwrite existing `AGENTS.md`, `CLAUDE.md`, or `GEMINI.md`.
-- Preserve existing user rules and merge NOC rules in a managed block.
-- Use Chinese prose by default and English structure for file names, headings, IDs, JSON keys, and status values.
-- Treat code as current behavior; treat `requirements.md` as product intent.
-- When discussion with the user creates or changes product intent, capture that intent in the affected feature docs before or as part of coding.
-- Read only relevant docs for normal development unless auditing.
+Use this skill for:
 
-## Execution Loop
+- initializing or migrating `noc_docs/`
+- discussing a requirement and then changing code
+- new features, bug fixes, refactors, API/data/security/deployment changes
+- checking whether code changes need docs updates
+- querying or auditing project living docs
 
-1. Identify the task type: initialize, code change, docs query, audit, or migration.
-2. Identify affected feature/domain from user request, changed paths, and `noc_docs/.living-docs/feature-map.json`.
-3. Read common routing files: agent entry file, `noc_docs/docs-map.md`, and `.living-docs/*.json` when present.
-4. Choose Light, Deep, Audit, or Query mode.
-5. Read required docs using the fallback rules below.
-6. For code changes, turn the agreed requirement into a docs work plan before editing code.
-7. Make the requested change.
-8. Update NOC docs when behavior, intent, guardrails, tests, or feature lists changed.
-9. Run `python scripts/noc.py index <project>` after doc structure or feature mapping changes.
-10. Run `python scripts/noc.py check <project> --staged --warn-only` before commits when Git is available.
-11. Final response must list NOC docs checked, updated, or intentionally unchanged.
+Do not use it for general questions that do not involve project memory, code behavior, requirements, guardrails, tests, or NOC documentation.
 
-## Modes
+## Execution
 
-| Mode | Use When | Read Scope |
-|---|---|---|
-| Light | narrow implementation or bug fix | entry file, `docs-map.md`, feature map, affected `agent-guide.md`, `guardrails.md` |
-| Deep | new feature, refactor, API/data/security behavior change | Light docs plus `requirements.md`, `status.md`, `test-record.md`, `change-record.md` |
-| Audit | initialization, migration, consistency review | full `noc_docs/` tree as needed |
-| Query | answering docs questions | route through index, then read smallest relevant docs |
-
-Escalate Light to Deep when changed code affects behavior, requirements, tests, security, public API, data schema, persistence, permissions, billing, deployment, or cross-feature contracts.
-
-## Read Fallbacks
-
-For each affected feature:
-
-1. Read feature `agent-guide.md` if present.
-2. Read feature `guardrails.md` if present.
-3. If feature guardrails are missing in Domain Mode, read `noc_docs/domains/<domain>/guardrails.md`.
-4. If feature docs are missing or no feature maps to the changed path, read `noc_docs/docs-map.md`, `noc_docs/project-status.md`, and the closest domain or feature index.
-5. If `feature-map.json` has `completeness.complete=false`, missing docs, or stale-looking entries, say so and use Deep mode.
-
-Do not invent requirements to fill missing docs. Record the gap in `status.md`, `notes.md`, or the final response.
-
-## Initialize
-
-Prefer the repository script when available:
-
-```bash
-python scripts/noc.py init /path/to/project
-python scripts/noc.py validate --target /path/to/project
-```
-
-If the scripts are unavailable:
-
-1. Scan the project structure, package files, apps/services, existing docs, and agent entry files.
-2. Decide Small Mode or Domain Mode.
-3. Create `noc_docs/` from templates if missing.
-4. Create or merge the project agent entry file.
-5. Create `.living-docs/config.json` with `language: zh-CN` and `machine_keys: en-US`.
-6. Report the mode decision and the files created or merged.
-
-Default to Small Mode unless evidence supports Domain Mode. Use Domain Mode when any condition applies:
-
-- feature count is 20 or more
-- domain count is 3 or more
-- app/service count is 3 or more
-- monorepo is detected
-- domain-level guardrails are required
-
-When choosing Domain Mode, explain the specific trigger. Example: `Domain Mode because this repo has 4 services and shared domain-level guardrails.`
-
-Never initialize both `features/` and `domains/` unless the user explicitly requests migration planning.
-
-## Maintain During Development
-
-When the user discusses a requirement and then asks for code changes, do not treat the discussion as disposable chat. Convert the agreed intent into the affected feature docs as part of the same task.
-
-Before editing code:
-
-1. Identify affected feature or domain from changed paths, task text, and `.living-docs/feature-map.json` if available.
-2. When scripts are available, run a work plan:
+1. Identify affected feature/domain from the request, changed paths, and `noc_docs/.living-docs/feature-map.json`.
+2. Run a work plan when code may change:
 
 ```bash
 python scripts/noc.py work /path/to/project --feature <feature> --intent "<agreed requirement>"
 ```
 
-Use `--path <code/path>` instead of `--feature` when code paths are clearer than the feature name.
+Use `--path <code/path>` when paths are clearer than feature names.
 
-3. Read affected `agent-guide.md`, `requirements.md`, `status.md`, `guardrails.md`, and `test-record.md` according to the work plan.
-4. Put confirmed new or changed intent in `requirements.md` before or alongside implementation.
-5. Put uncertain discussion, open questions, or unconfirmed ideas in `notes.md`; do not promote them to requirements.
+3. Read the smallest relevant docs: `agent-guide.md`, `requirements.md`, `status.md`, `guardrails.md`, `test-record.md`, plus domain guardrails when present.
+4. Write confirmed new/changed intent to `requirements.md`; put uncertain discussion in `notes.md`.
+5. Change code.
+6. Update `status.md`, `test-record.md`, `change-record.md`, and `guardrails.md` when behavior, verification, important changes, or constraints changed.
+7. Run `python scripts/noc.py index <project>` after docs, feature, or mapping changes.
+8. Run `python scripts/noc.py check <project> --staged --warn-only` before commit when Git is available.
 
-After editing code:
+For detailed workflow rules, read `references/workflow.md`.
 
-1. Update `status.md` when actual behavior changes.
-2. Update `requirements.md` only when intended behavior changes.
-3. Append `change-record.md` for important changes.
-4. Append `test-record.md` with verification results.
-5. Update indexes when feature or domain lists change.
-6. Final response must say which NOC docs were checked, updated, or intentionally unchanged.
+## Do Not Proceed
 
-After documentation changes, run the index script when available:
+Stop and ask the user before editing code when:
 
-```bash
-python scripts/noc.py index /path/to/project
+- the request conflicts with `guardrails.md` or domain guardrails
+- product intent conflicts with `requirements.md` and the intended direction is unclear
+- affected feature/domain cannot be identified and the change is not obviously global
+- required docs are missing and the task depends on unknown requirements or constraints
+- the user asks to silently rewrite requirements to match current code
+- the change touches security, permissions, billing, data loss, migrations, or public API contracts and the requested behavior is ambiguous
+
+## Definition Of Done
+
+A task using this skill is done only when:
+
+- affected docs were identified through feature map, paths, or explicit feature name
+- required docs were read or missing docs were called out
+- code changes and docs changes agree
+- `requirements.md` changed only for intended behavior changes
+- `status.md` reflects current behavior after code changes
+- `test-record.md` records verification or explains why verification was not run
+- `change-record.md` records important implementation changes
+- indexes/checks were run when available, or skipped with reason
+
+## Final Response Format
+
+End with:
+
+```text
+NOC Living Docs:
+- docs checked:
+- docs updated:
+- docs intentionally unchanged:
+- commands run:
+- tests run:
+- remaining risks:
 ```
 
-Before commits, use the change check when available:
+Keep the lists short. Use `none` when a category does not apply.
 
-```bash
-python scripts/noc.py check /path/to/project --staged --warn-only
-```
+## References
 
-The installed Git hook is advisory by default. It should warn when code changes lack related staged `noc_docs/` changes, but it must not block commits that intentionally leave docs unchanged.
-
-When changed paths do not map to a feature, use mapping suggestions if available:
-
-```bash
-python scripts/noc.py suggest-map /path/to/project
-```
-
-Treat suggestions as candidates. If the mapping is clear from the project structure or user intent, merge them with:
-
-```bash
-python scripts/noc.py suggest-map /path/to/project --write
-```
-
-Do not use `--write` when the suggested feature names are ambiguous.
-
-## Index Trust Signals
-
-Use `.living-docs/feature-map.json` for routing, but treat it as a cache.
-
-- `paths` maps code paths to features.
-- `freshness.last_doc_update` shows the newest source doc update for a feature.
-- `completeness.missing_docs` lists missing expected feature docs.
-- `completeness.complete=false` means answer cautiously and prefer Deep or Audit mode.
-
-## Conflict Handling
-
-If docs conflict with code, treat code as current behavior and update `status.md`.
-
-If requirements conflict with code, do not silently rewrite requirements. Ask the user when product intent is unclear.
-
-If the user request conflicts with `guardrails.md`, stop before editing and ask for explicit confirmation.
-
-## Managed Block
-
-When adding NOC rules to an existing agent file, use:
-
-```md
-<!-- noc-living-docs:start -->
-...
-<!-- noc-living-docs:end -->
-```
-
-Only replace text inside this block on future updates.
+- `references/workflow.md`: mode selection, fallback rules, conflict handling, work loop
+- `references/feature-doc-template.md`: what each feature doc should contain
+- `references/domain-mode-guide.md`: when and how to use domain mode
+- `references/codex-prompts.md`: recommended user prompts for Codex plan/goal/code workflows
