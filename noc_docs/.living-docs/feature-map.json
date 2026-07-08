@@ -1,0 +1,159 @@
+{
+  "mode": "small",
+  "features": {
+    "agent-protocol": {
+      "paths": [
+        "protocol/",
+        "templates/AGENTS.md",
+        "templates/CLAUDE.md",
+        "templates/GEMINI.md"
+      ],
+      "entry": "noc_docs/features/agent-protocol/agent-guide.md",
+      "requirements": "noc_docs/features/agent-protocol/requirements.md",
+      "status": "noc_docs/features/agent-protocol/status.md",
+      "guardrails": "noc_docs/features/agent-protocol/guardrails.md",
+      "tests": "noc_docs/features/agent-protocol/test-record.md",
+      "change_record": "noc_docs/features/agent-protocol/change-record.md",
+      "notes": "noc_docs/features/agent-protocol/notes.md",
+      "freshness": {
+        "last_doc_update": "2026-07-08T10:25:24.214311+00:00",
+        "last_indexed": "2026-07-08T10:26:08.889315+00:00"
+      },
+      "completeness": {
+        "required_docs": [
+          "agent-guide.md",
+          "change-record.md",
+          "guardrails.md",
+          "notes.md",
+          "requirements.md",
+          "status.md",
+          "test-record.md"
+        ],
+        "missing_docs": [],
+        "complete": true
+      }
+    },
+    "cli-core": {
+      "paths": [
+        "scripts/noc.py"
+      ],
+      "entry": "noc_docs/features/cli-core/agent-guide.md",
+      "requirements": "noc_docs/features/cli-core/requirements.md",
+      "status": "noc_docs/features/cli-core/status.md",
+      "guardrails": "noc_docs/features/cli-core/guardrails.md",
+      "tests": "noc_docs/features/cli-core/test-record.md",
+      "change_record": "noc_docs/features/cli-core/change-record.md",
+      "notes": "noc_docs/features/cli-core/notes.md",
+      "freshness": {
+        "last_doc_update": "2026-07-08T10:25:24.214311+00:00",
+        "last_indexed": "2026-07-08T10:26:08.892313+00:00"
+      },
+      "completeness": {
+        "required_docs": [
+          "agent-guide.md",
+          "change-record.md",
+          "guardrails.md",
+          "notes.md",
+          "requirements.md",
+          "status.md",
+          "test-record.md"
+        ],
+        "missing_docs": [],
+        "complete": true
+      }
+    },
+    "codex-skill": {
+      "paths": [
+        "skills/codex/project-living-docs/"
+      ],
+      "entry": "noc_docs/features/codex-skill/agent-guide.md",
+      "requirements": "noc_docs/features/codex-skill/requirements.md",
+      "status": "noc_docs/features/codex-skill/status.md",
+      "guardrails": "noc_docs/features/codex-skill/guardrails.md",
+      "tests": "noc_docs/features/codex-skill/test-record.md",
+      "change_record": "noc_docs/features/codex-skill/change-record.md",
+      "notes": "noc_docs/features/codex-skill/notes.md",
+      "freshness": {
+        "last_doc_update": "2026-07-08T10:25:24.215311+00:00",
+        "last_indexed": "2026-07-08T10:26:08.894316+00:00"
+      },
+      "completeness": {
+        "required_docs": [
+          "agent-guide.md",
+          "change-record.md",
+          "guardrails.md",
+          "notes.md",
+          "requirements.md",
+          "status.md",
+          "test-record.md"
+        ],
+        "missing_docs": [],
+        "complete": true
+      }
+    },
+    "init-index-validate": {
+      "paths": [
+        "scripts/init-noc-docs.py",
+        "scripts/index-noc-docs.py",
+        "scripts/validate-noc-docs.py"
+      ],
+      "entry": "noc_docs/features/init-index-validate/agent-guide.md",
+      "requirements": "noc_docs/features/init-index-validate/requirements.md",
+      "status": "noc_docs/features/init-index-validate/status.md",
+      "guardrails": "noc_docs/features/init-index-validate/guardrails.md",
+      "tests": "noc_docs/features/init-index-validate/test-record.md",
+      "change_record": "noc_docs/features/init-index-validate/change-record.md",
+      "notes": "noc_docs/features/init-index-validate/notes.md",
+      "freshness": {
+        "last_doc_update": "2026-07-08T10:25:24.215817+00:00",
+        "last_indexed": "2026-07-08T10:26:08.897313+00:00"
+      },
+      "completeness": {
+        "required_docs": [
+          "agent-guide.md",
+          "change-record.md",
+          "guardrails.md",
+          "notes.md",
+          "requirements.md",
+          "status.md",
+          "test-record.md"
+        ],
+        "missing_docs": [],
+        "complete": true
+      }
+    },
+    "release-quality": {
+      "paths": [
+        "tests/",
+        "scripts/release.py",
+        "pyproject.toml",
+        "CHANGELOG.md",
+        "VERSION"
+      ],
+      "entry": "noc_docs/features/release-quality/agent-guide.md",
+      "requirements": "noc_docs/features/release-quality/requirements.md",
+      "status": "noc_docs/features/release-quality/status.md",
+      "guardrails": "noc_docs/features/release-quality/guardrails.md",
+      "tests": "noc_docs/features/release-quality/test-record.md",
+      "change_record": "noc_docs/features/release-quality/change-record.md",
+      "notes": "noc_docs/features/release-quality/notes.md",
+      "freshness": {
+        "last_doc_update": "2026-07-08T10:25:24.216919+00:00",
+        "last_indexed": "2026-07-08T10:26:08.900313+00:00"
+      },
+      "completeness": {
+        "required_docs": [
+          "agent-guide.md",
+          "change-record.md",
+          "guardrails.md",
+          "notes.md",
+          "requirements.md",
+          "status.md",
+          "test-record.md"
+        ],
+        "missing_docs": [],
+        "complete": true
+      }
+    }
+  }
+}

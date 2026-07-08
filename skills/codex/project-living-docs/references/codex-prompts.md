@@ -9,14 +9,14 @@ Use NOC Living Docs to build the plan. Read only the affected feature docs, incl
 ## Goal Mode
 
 ```text
-Use NOC Living Docs throughout this goal. Before coding, run the work plan. After changes, update related feature docs, then run index and check.
+Use NOC Living Docs throughout this goal. Before coding, run `noc work` with `--json` for the affected path or feature. After changes, update related feature docs, then run index and check.
 ```
 
 ## Code Change After Requirement Discussion
 
 ```text
 Use NOC Living Docs for this change.
-First write the agreed requirement into the related feature docs.
+First run `noc work <project> --path <code/path> --json` and write the agreed requirement into the related feature docs.
 Then implement the code.
 After implementation, update status, test-record, and change-record.
 Run index and check.

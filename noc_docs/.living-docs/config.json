@@ -1,0 +1,18 @@
+{
+  "protocol": "noc-living-docs",
+  "version": "0.1.0",
+  "documentation_root": "noc_docs",
+  "language": "zh-CN",
+  "machine_keys": "en-US",
+  "mode": "small",
+  "check": {
+    "strictness": {
+      "default": "fail",
+      "environments": {
+        "local": "warn",
+        "ci": "fail"
+      },
+      "paths": []
+    }
+  }
+}

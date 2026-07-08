@@ -1,0 +1,325 @@
+{
+  "generated_at": "2026-07-08T10:26:08.862897+00:00",
+  "documents": {
+    "noc_docs/development/documentation-policy.md": {
+      "title": "Documentation Policy",
+      "summary": "Update NOC docs only when the change affects: - behavior - requirements - API or CLI contracts - configuration - tests or verification strategy - deployment or operations - guardrails - architecture or module boundaries Pure formatting, internal cleanup, or no-behavior-change refactors do not require feature doc update",
+      "tags": [
+        "development"
+      ]
+    },
+    "noc_docs/development/git-workflow.md": {
+      "title": "Git Workflow",
+      "summary": "- Use `feature/<short-name>` for features. - Use `fix/<short-name>` for fixes. - Use `docs/<short-name>` for documentation-only changes. Use Conventional Commits: - `feat: add password reset` - `fix: handle expired sessions` - `docs: update login status`",
+      "tags": [
+        "development"
+      ]
+    },
+    "noc_docs/development/testing.md": {
+      "title": "Testing",
+      "summary": "- Unit tests: `python -m unittest tests.test_noc_cli tests.test_release_cli` - Protocol validation: `python scripts/noc.py validate` - Release check: `python scripts/release.py --check` - Compile check: `python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/va",
+      "tags": [
+        "development"
+      ]
+    },
+    "noc_docs/docs-map.md": {
+      "title": "Docs Map",
+      "summary": "| Situation | Read | |---|---| | Any code change | `AGENTS.md`, `noc_docs/project-status.md` | | Feature change | affected feature `agent-guide.md`, `guardrails.md` | | Requirement change | affected feature `requirements.md` | | Behavior change | affected feature `status.md` |",
+      "tags": []
+    },
+    "noc_docs/features/agent-protocol/agent-guide.md": {
+      "title": "Agent Guide: agent-protocol",
+      "summary": "",
+      "tags": [
+        "agent-guide",
+        "features"
+      ]
+    },
+    "noc_docs/features/agent-protocol/change-record.md": {
+      "title": "Change Record: agent-protocol",
+      "summary": "Agents need a deterministic first step before reading broader project context. - `templates/AGENTS.md` and generated `AGENTS.md` now instruct agents to run `noc work <project> --path <code/path> --json` when the CLI is available. - Agents can route through NOC with less free-text interpretation.",
+      "tags": [
+        "change-record",
+        "features"
+      ]
+    },
+    "noc_docs/features/agent-protocol/guardrails.md": {
+      "title": "Guardrails: agent-protocol",
+      "summary": "",
+      "tags": [
+        "features",
+        "guardrails"
+      ]
+    },
+    "noc_docs/features/agent-protocol/notes.md": {
+      "title": "Notes: agent-protocol",
+      "summary": "- How much Claude/Gemini-specific guidance should live in their templates versus the canonical AGENTS block? - Template consistency is currently checked by targeted text assertions, not a full protocol diff. - Add examples showing a generic agent consuming `work --json`.",
+      "tags": [
+        "features",
+        "notes"
+      ]
+    },
+    "noc_docs/features/agent-protocol/requirements.md": {
+      "title": "Requirements: agent-protocol",
+      "summary": "",
+      "tags": [
+        "features",
+        "requirements"
+      ]
+    },
+    "noc_docs/features/agent-protocol/status.md": {
+      "title": "Current Status: agent-protocol",
+      "summary": "",
+      "tags": [
+        "features",
+        "status"
+      ]
+    },
+    "noc_docs/features/agent-protocol/test-record.md": {
+      "title": "Test Record: agent-protocol",
+      "summary": "",
+      "tags": [
+        "features",
+        "test-record"
+      ]
+    },
+    "noc_docs/features/cli-core/agent-guide.md": {
+      "title": "Agent Guide: cli-core",
+      "summary": "",
+      "tags": [
+        "agent-guide",
+        "features"
+      ]
+    },
+    "noc_docs/features/cli-core/change-record.md": {
+      "title": "Change Record: cli-core",
+      "summary": "Codex 和其他 agent 需要稳定读取“该读哪些文档、该更新哪些文档、最后跑哪些命令”，自由文本不适合作为自动化接口。 - `noc work` 增加 `--json`。 - 抽出 work plan 构建逻辑，让文本输出和 JSON 输出共用同一份数据。 - 增加 unittest 覆盖 JSON 输出和旧文本输出兼容性。 - agent 可以直接解析 work plan。 - 人类默认使用方式不变。",
+      "tags": [
+        "change-record",
+        "features"
+      ]
+    },
+    "noc_docs/features/cli-core/guardrails.md": {
+      "title": "Guardrails: cli-core",
+      "summary": "",
+      "tags": [
+        "features",
+        "guardrails"
+      ]
+    },
+    "noc_docs/features/cli-core/notes.md": {
+      "title": "Notes: cli-core",
+      "summary": "- Should `doctor` and `check` also grow `--json` in the next iteration? - `scripts/noc.py` is a large single-file CLI. Keep changes localized unless a split becomes necessary for real complexity. - Add stable schema documentation for `work --json`.",
+      "tags": [
+        "features",
+        "notes"
+      ]
+    },
+    "noc_docs/features/cli-core/requirements.md": {
+      "title": "Requirements: cli-core",
+      "summary": "",
+      "tags": [
+        "features",
+        "requirements"
+      ]
+    },
+    "noc_docs/features/cli-core/status.md": {
+      "title": "Current Status: cli-core",
+      "summary": "",
+      "tags": [
+        "features",
+        "status"
+      ]
+    },
+    "noc_docs/features/cli-core/test-record.md": {
+      "title": "Test Record: cli-core",
+      "summary": "",
+      "tags": [
+        "features",
+        "test-record"
+      ]
+    },
+    "noc_docs/features/codex-skill/agent-guide.md": {
+      "title": "Agent Guide: codex-skill",
+      "summary": "",
+      "tags": [
+        "agent-guide",
+        "features"
+      ]
+    },
+    "noc_docs/features/codex-skill/change-record.md": {
+      "title": "Change Record: codex-skill",
+      "summary": "Codex 使用结构化 work plan 比解析自由文本更稳定，能更容易定位需要读取和更新的 NOC 文档。 - Codex skill 的执行步骤改为优先运行 `work ... --json`。 - 明确 JSON 不可用时才 fallback 到文本输出。 - Codex 和 CLI 的 agent-first 路由方式保持一致。",
+      "tags": [
+        "change-record",
+        "features"
+      ]
+    },
+    "noc_docs/features/codex-skill/guardrails.md": {
+      "title": "Guardrails: codex-skill",
+      "summary": "",
+      "tags": [
+        "features",
+        "guardrails"
+      ]
+    },
+    "noc_docs/features/codex-skill/notes.md": {
+      "title": "Notes: codex-skill",
+      "summary": "- Should Codex eval prompts cover JSON output usage explicitly? - Skill evals check trigger examples, but do not execute a full coding workflow. - Add a short Codex prompt recipe for using `work --json` before implementation.",
+      "tags": [
+        "features",
+        "notes"
+      ]
+    },
+    "noc_docs/features/codex-skill/requirements.md": {
+      "title": "Requirements: codex-skill",
+      "summary": "",
+      "tags": [
+        "features",
+        "requirements"
+      ]
+    },
+    "noc_docs/features/codex-skill/status.md": {
+      "title": "Current Status: codex-skill",
+      "summary": "",
+      "tags": [
+        "features",
+        "status"
+      ]
+    },
+    "noc_docs/features/codex-skill/test-record.md": {
+      "title": "Test Record: codex-skill",
+      "summary": "",
+      "tags": [
+        "features",
+        "test-record"
+      ]
+    },
+    "noc_docs/features/index.md": {
+      "title": "Features",
+      "summary": "| Feature | Status | Entry | Requirements | Current Status | Guardrails | Tests | |---|---|---|---|---|---|---| | agent-protocol | active | ./agent-protocol/agent-guide.md | ./agent-protocol/requirements.md | ./agent-protocol/status.md | ./agent-protocol/guardrails.md | ./agent-protocol/test-record.md |",
+      "tags": [
+        "features"
+      ]
+    },
+    "noc_docs/features/init-index-validate/agent-guide.md": {
+      "title": "Agent Guide: init-index-validate",
+      "summary": "",
+      "tags": [
+        "agent-guide",
+        "features"
+      ]
+    },
+    "noc_docs/features/init-index-validate/change-record.md": {
+      "title": "Change Record: init-index-validate",
+      "summary": "The NOC project itself should be the best example of how to structure living docs for agents and maintainers. - Initialized `AGENTS.md` and `noc_docs/` in the main repository. - Created five real feature doc folders and mapped core source paths.",
+      "tags": [
+        "change-record",
+        "features"
+      ]
+    },
+    "noc_docs/features/init-index-validate/guardrails.md": {
+      "title": "Guardrails: init-index-validate",
+      "summary": "",
+      "tags": [
+        "features",
+        "guardrails"
+      ]
+    },
+    "noc_docs/features/init-index-validate/notes.md": {
+      "title": "Notes: init-index-validate",
+      "summary": "- Should `suggest-map` explain empty suggestions more explicitly for flat CLI/tooling repositories? - Auto mode heuristics are intentionally simple and covered by examples rather than full static analysis. - Add `doctor --json` after `work --json` proves useful.",
+      "tags": [
+        "features",
+        "notes"
+      ]
+    },
+    "noc_docs/features/init-index-validate/requirements.md": {
+      "title": "Requirements: init-index-validate",
+      "summary": "",
+      "tags": [
+        "features",
+        "requirements"
+      ]
+    },
+    "noc_docs/features/init-index-validate/status.md": {
+      "title": "Current Status: init-index-validate",
+      "summary": "",
+      "tags": [
+        "features",
+        "status"
+      ]
+    },
+    "noc_docs/features/init-index-validate/test-record.md": {
+      "title": "Test Record: init-index-validate",
+      "summary": "",
+      "tags": [
+        "features",
+        "test-record"
+      ]
+    },
+    "noc_docs/features/release-quality/agent-guide.md": {
+      "title": "Agent Guide: release-quality",
+      "summary": "",
+      "tags": [
+        "agent-guide",
+        "features"
+      ]
+    },
+    "noc_docs/features/release-quality/change-record.md": {
+      "title": "Change Record: release-quality",
+      "summary": "Structured work output and agent entry guidance are core usability behavior and should be regression-tested. - Added unittest coverage for `work --json`. - Added unittest coverage that agent entry and Codex skill prefer JSON work plans. - Future changes are less likely to remove the agent-first path accidentally.",
+      "tags": [
+        "change-record",
+        "features"
+      ]
+    },
+    "noc_docs/features/release-quality/guardrails.md": {
+      "title": "Guardrails: release-quality",
+      "summary": "",
+      "tags": [
+        "features",
+        "guardrails"
+      ]
+    },
+    "noc_docs/features/release-quality/notes.md": {
+      "title": "Notes: release-quality",
+      "summary": "- Should release checks include a direct `noc doctor .` gate now that the repo dogfoods NOC? - Tests use subprocess calls heavily, which is faithful but slower than unit-level parser tests. - Add CI coverage for `python scripts/noc.py work . --path scripts/noc.py --json`.",
+      "tags": [
+        "features",
+        "notes"
+      ]
+    },
+    "noc_docs/features/release-quality/requirements.md": {
+      "title": "Requirements: release-quality",
+      "summary": "",
+      "tags": [
+        "features",
+        "requirements"
+      ]
+    },
+    "noc_docs/features/release-quality/status.md": {
+      "title": "Current Status: release-quality",
+      "summary": "",
+      "tags": [
+        "features",
+        "status"
+      ]
+    },
+    "noc_docs/features/release-quality/test-record.md": {
+      "title": "Test Record: release-quality",
+      "summary": "",
+      "tags": [
+        "features",
+        "test-record"
+      ]
+    },
+    "noc_docs/project-status.md": {
+      "title": "Project Status",
+      "summary": "",
+      "tags": [
+        "status"
+      ]
+    }
+  }
+}

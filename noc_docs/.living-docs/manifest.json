@@ -1,0 +1,210 @@
+{
+  "generated_at": "2026-07-08T10:26:08.862897+00:00",
+  "files": {
+    "noc_docs/development/documentation-policy.md": {
+      "sha256": "a3e8a0665cef1cf79567bc51acfeaab7d5498398a481dfb11de513c123872063",
+      "bytes": 674,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/development/git-workflow.md": {
+      "sha256": "37d4d7f2b670c0d56e86b29cf2de608284040ad05acf56242fa7ba4ff7b2e329",
+      "bytes": 736,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/development/testing.md": {
+      "sha256": "4f2f316c941676da8c6b54b4dc5a9c8993ff7dd384450f96f5133b7945140d39",
+      "bytes": 694,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/docs-map.md": {
+      "sha256": "484417693b81302689fce8b71725c2836703f1a26ba38a344162c88d2cea3cfb",
+      "bytes": 685,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/agent-protocol/agent-guide.md": {
+      "sha256": "ae71567bdf80cf1639812996ae8207be251ea41cf877163669f6f7e0081cc35a",
+      "bytes": 1067,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/agent-protocol/change-record.md": {
+      "sha256": "4f12070a64ecf87b9d1b20058cc0a2f18a206a52d3885ee297d840113601b876",
+      "bytes": 428,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/agent-protocol/guardrails.md": {
+      "sha256": "57f4086e41e9ba63d0dbcc37f525a6478be40ba7df7f4bfa283884c6ef2f299f",
+      "bytes": 554,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/agent-protocol/notes.md": {
+      "sha256": "35975042a502f90b73288c1eb0cade973ae1e04db7268b9e759733dd5473f944",
+      "bytes": 358,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/agent-protocol/requirements.md": {
+      "sha256": "3b88352df883f31715f92a8a810d837893541c8ba6e849691525935c87aadd4a",
+      "bytes": 703,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/agent-protocol/status.md": {
+      "sha256": "be9a3f370217e4a1466d55d077c65c9a7cdc435b6dd234a294a520266f8ba819",
+      "bytes": 693,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/agent-protocol/test-record.md": {
+      "sha256": "faf62ad7bbf96b6ec96bc5de77f7ed26e5fc6e69432444a6180b12e8d25430b9",
+      "bytes": 797,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/cli-core/agent-guide.md": {
+      "sha256": "b57725cceb9b466890680a3b217fa7d572b4aae2ebfb92e63453b9956d298fa2",
+      "bytes": 1204,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/cli-core/change-record.md": {
+      "sha256": "ff2a4a0ae2bf7aed40e784aca751fd3f79ec3d98622d726b6cb5adb6a4000938",
+      "bytes": 540,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/cli-core/guardrails.md": {
+      "sha256": "75b6d622e481b7bc0d7526bd6f9dbc931ff698c5ca0b616759c09c6812c578de",
+      "bytes": 721,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/cli-core/notes.md": {
+      "sha256": "a7ed703aeddb44b985b0693a7bec9f26063d773832ff9478f15e9ea3d07d9191",
+      "bytes": 327,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/cli-core/requirements.md": {
+      "sha256": "061da6f71438cb1eeec72b625ea9a7d5191b4f050df0dbf908bc7d2b780ca499",
+      "bytes": 1157,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/cli-core/status.md": {
+      "sha256": "b4ca2897b2fd0702ef0dd4d2c478c787e2ac46058f258ed956df325f78f8d36a",
+      "bytes": 898,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/cli-core/test-record.md": {
+      "sha256": "955b9f15e8a94d8a95c4504b2c4b2d15bcb4ca8298d211649dc0d0a1fdc5c6e7",
+      "bytes": 1212,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/codex-skill/agent-guide.md": {
+      "sha256": "9a919d72717213dfc4fcfbae9387523f8f3db29651f1d7f10b32279a0f1c3233",
+      "bytes": 1049,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/codex-skill/change-record.md": {
+      "sha256": "e349d51ddcc529c317add9aba2cc3c71372cd05eaeaf766ef3b762fc4c898c01",
+      "bytes": 432,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/codex-skill/guardrails.md": {
+      "sha256": "c1ec139cb24884e09717d5230b3aa6d1f625e28b2c0fed90daa0ff857383e3fa",
+      "bytes": 560,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/codex-skill/notes.md": {
+      "sha256": "710737e54e807859e187d6f8b113f5d08c8c63e3b11ddbe6eaa64a8482f4b41a",
+      "bytes": 309,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/codex-skill/requirements.md": {
+      "sha256": "36cd1426252fb89adcb7e078d7044ed262b9e2ccc8bb78318fb80f12ef17aaff",
+      "bytes": 748,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/codex-skill/status.md": {
+      "sha256": "b4cef8446dc70c3bd29ab614d3619ee90f951e18774b9a57ebc8a9e5a8b6918c",
+      "bytes": 768,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/codex-skill/test-record.md": {
+      "sha256": "f2c4f564f28721aead5e342f9fb46a3522c4552b27b17a492528f652dd5f7e11",
+      "bytes": 956,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/index.md": {
+      "sha256": "4ef5817d2baf2d9f50eeac7f1bf54585d7ceaa7e00a0ac9e894af338b57428a2",
+      "bytes": 1080,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/init-index-validate/agent-guide.md": {
+      "sha256": "ea68c647ab027814df01b8a87d9ce82b14b6fc3e0807ce31c753f9f2007a4b7f",
+      "bytes": 1091,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/init-index-validate/change-record.md": {
+      "sha256": "5520d703ee781d2f0ae2feee7dd1b12d4c2cfabdc35336378d18d5e9e200cdaf",
+      "bytes": 479,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/init-index-validate/guardrails.md": {
+      "sha256": "a7abab9972acb5bafcfc6a64542f2dffeb294a8438857edf6797a4ad2b9edd04",
+      "bytes": 563,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/init-index-validate/notes.md": {
+      "sha256": "dabc4c3b6a122be77339a74bdeaf0c4a9d0bc62de2051249a2449c955a0e02f2",
+      "bytes": 354,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/init-index-validate/requirements.md": {
+      "sha256": "17304677dc53add6bf5db9f27993dae70d6381ec6dbce42af3a004d0a5bb9331",
+      "bytes": 729,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/init-index-validate/status.md": {
+      "sha256": "15dfa14cbe98db4f9054722de684ee1fd1f3a5b9cab8484a5e3c0b4ce7f49f06",
+      "bytes": 703,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/init-index-validate/test-record.md": {
+      "sha256": "c8911bf4dcf7ddfa61f0f22d5895cf02a909661c775d841af82e10d4d237a808",
+      "bytes": 685,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/release-quality/agent-guide.md": {
+      "sha256": "d65ca3201acd6186efc8dc711f3624c1006007a4124028dc126fe7e01666eeea",
+      "bytes": 1050,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/release-quality/change-record.md": {
+      "sha256": "0515f824d4b4510f1e2b1ba0b0e05d304e0c2c8b4388554d598a7df66482d92f",
+      "bytes": 446,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/release-quality/guardrails.md": {
+      "sha256": "aa02c0a9bde6be2b6bd6f8e8624a5cb539218a610536aafc7756b57343726fb1",
+      "bytes": 537,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/release-quality/notes.md": {
+      "sha256": "92a2a638ef0a4af889f53599d3205fad7d4a1176d50089e5e0a9db278b03f968",
+      "bytes": 360,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/release-quality/requirements.md": {
+      "sha256": "0bef32be3566fe8b0eef3224fe7f766d1cbeda1ef51244b83a28a5289e27a480",
+      "bytes": 654,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/release-quality/status.md": {
+      "sha256": "3abe518047c856b42210821b6fdb22f1c98bf24a383f0ec2ac4c0d6b89ebb9ff",
+      "bytes": 751,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/features/release-quality/test-record.md": {
+      "sha256": "20b81c51388c05c8564157d84549f0fdaf11de9d075bc712dc55b22345b1f6a5",
+      "bytes": 727,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    },
+    "noc_docs/project-status.md": {
+      "sha256": "23d4bdd4972ce65e68a507ead86943ce3697a0bb172d8d03a1da7b4d90c5d2e2",
+      "bytes": 1106,
+      "last_indexed": "2026-07-08T10:26:08.862897+00:00"
+    }
+  }
+}

@@ -16,7 +16,7 @@ NOC Living Docs is a protocol plus CLI. Agent-specific files are entry points in
 - `templates/AGENTS.md` is the canonical managed block for project entry files.
 - `templates/CLAUDE.md` and `templates/GEMINI.md` must remain consistent with the canonical protocol.
 - Agent entry files must preserve user-authored rules outside the NOC managed block.
-- Agent integrations should call the CLI for deterministic work: `init`, `index`, `validate`, `check`, `hook`, and `suggest-map`.
+- Agent integrations should call the CLI for deterministic work: `init`, `work --json`, `index`, `validate`, `check`, `hook`, and `suggest-map`.
 
 ## v1 Requirement
 

@@ -25,10 +25,10 @@ Do not use it for general questions that do not involve project memory, code beh
 2. Run a work plan when code may change:
 
 ```bash
-python scripts/noc.py work /path/to/project --feature <feature> --intent "<agreed requirement>"
+python scripts/noc.py work /path/to/project --path <code/path> --json --intent "<agreed requirement>"
 ```
 
-Use `--path <code/path>` when paths are clearer than feature names.
+Use `--feature <feature>` when feature names are clearer than paths. Prefer `--json` for machine-readable routing; fall back to the text output only when the installed CLI does not support JSON.
 
 3. Read the smallest relevant docs: `agent-guide.md`, `requirements.md`, `status.md`, `guardrails.md`, `test-record.md`, plus domain guardrails when present.
 4. Write confirmed new/changed intent to `requirements.md`; put uncertain discussion in `notes.md`.

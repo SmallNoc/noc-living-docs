@@ -95,6 +95,14 @@ class NocCliTests(unittest.TestCase):
         self.assertIn("true", {row["should_trigger"] for row in evals})
         self.assertIn("false", {row["should_trigger"] for row in evals})
 
+    def test_agent_entry_and_codex_skill_prefer_work_json(self) -> None:
+        agents = (ROOT / "templates/AGENTS.md").read_text(encoding="utf-8")
+        skill = (ROOT / "skills/codex/project-living-docs/SKILL.md").read_text(encoding="utf-8")
+
+        self.assertIn("noc work <project> --path <code/path> --json", agents)
+        self.assertIn("--json", skill)
+        self.assertIn("machine-readable", skill)
+
     def test_hook_install_writes_lf_and_warn_only_hook(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp)
@@ -711,6 +719,66 @@ class NocCliTests(unittest.TestCase):
             self.assertIn("Changed or planned path(s): src/auth/login.py", result.stdout)
             self.assertIn("Feature: user-login", result.stdout)
             self.assertIn("noc_docs/features/user-login/status.md when actual behavior changes", result.stdout)
+
+    def test_work_json_outputs_machine_readable_plan(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            run(["init", str(project), "--mode", "small"])
+
+            feature = project / "noc_docs/features/user-login"
+            template = project / "noc_docs/features/_feature"
+            feature.mkdir(parents=True)
+            for file in template.iterdir():
+                if file.is_file():
+                    (feature / file.name).write_text(file.read_text(encoding="utf-8"), encoding="utf-8")
+            feature_map_path = project / "noc_docs/.living-docs/feature-map.json"
+            feature_map_path.write_text(
+                json.dumps(
+                    {
+                        "mode": "small",
+                        "features": {
+                            "user-login": {
+                                "paths": ["src/auth/"],
+                                "entry": "noc_docs/features/user-login/agent-guide.md",
+                                "requirements": "noc_docs/features/user-login/requirements.md",
+                                "status": "noc_docs/features/user-login/status.md",
+                                "guardrails": "noc_docs/features/user-login/guardrails.md",
+                                "tests": "noc_docs/features/user-login/test-record.md",
+                                "change_record": "noc_docs/features/user-login/change-record.md",
+                                "notes": "noc_docs/features/user-login/notes.md",
+                            }
+                        },
+                    },
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+
+            result = run(
+                [
+                    "work",
+                    str(project),
+                    "--path",
+                    "src/auth/login.py",
+                    "--intent",
+                    "lock account after failed login",
+                    "--json",
+                ]
+            )
+            plan = json.loads(result.stdout)
+
+            self.assertEqual(plan["intent"], "lock account after failed login")
+            self.assertEqual(plan["paths"], ["src/auth/login.py"])
+            self.assertEqual([feature["id"] for feature in plan["features"]], ["user-login"])
+            self.assertIn("noc_docs/features/user-login/agent-guide.md", plan["features"][0]["read_before_code"])
+            self.assertIn(
+                {
+                    "doc": "noc_docs/features/user-login/status.md",
+                    "reason": "when actual behavior changes",
+                },
+                plan["features"][0]["update_after_code"],
+            )
+            self.assertIn("python scripts/noc.py index <project>", plan["finish_commands"])
 
     def test_work_does_not_modify_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

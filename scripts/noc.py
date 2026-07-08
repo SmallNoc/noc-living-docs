@@ -631,41 +631,158 @@ def command_suggest_map(args: argparse.Namespace) -> int:
     return 0
 
 
-def command_work(args: argparse.Namespace) -> int:
-    target = Path(args.target).resolve()
-    feature_map = load_feature_map(target)
-    features = resolve_work_features(feature_map, args.feature, args.path or [])
+def build_feature_work_plan(feature_id: str, info: dict) -> dict:
+    read_docs = work_docs(info, ["entry", "requirements", "status", "guardrails", "tests"])
+    if not read_docs:
+        read_docs = ["noc_docs/docs-map.md", "noc_docs/project-status.md"]
 
+    before_coding = []
+    if info.get("requirements"):
+        before_coding.append(
+            {
+                "doc": info["requirements"],
+                "action": "Put the agreed requirement or behavior change in this document.",
+            }
+        )
+    else:
+        before_coding.append(
+            {
+                "doc": "requirements.md",
+                "action": "Create or update requirements.md with the agreed requirement.",
+            }
+        )
+    if info.get("notes"):
+        before_coding.append(
+            {
+                "doc": info["notes"],
+                "action": "Put uncertain discussion or open questions in this document.",
+            }
+        )
+
+    update_after_code = []
+    for key, reason in [
+        ("status", "when actual behavior changes"),
+        ("tests", "with verification commands and results"),
+        ("change_record", "for important changes and reasons"),
+        ("guardrails", "if new limits, risks, or compatibility rules appear"),
+        ("requirements", "only when intended behavior changes"),
+    ]:
+        if info.get(key):
+            update_after_code.append({"doc": info[key], "reason": reason})
+    if not update_after_code:
+        update_after_code = [
+            {"doc": "status.md", "reason": "when actual behavior changes"},
+            {"doc": "test-record.md", "reason": "with verification commands and results"},
+            {"doc": "change-record.md", "reason": "for important changes and reasons"},
+            {"doc": "guardrails.md", "reason": "if new limits, risks, or compatibility rules appear"},
+            {"doc": "requirements.md", "reason": "only when intended behavior changes"},
+        ]
+
+    plan = {
+        "id": feature_id,
+        "read_before_code": read_docs,
+        "before_coding": before_coding,
+        "update_after_code": update_after_code,
+    }
+    if info.get("domain"):
+        plan["domain"] = info["domain"]
+    return plan
+
+
+def build_unresolved_work_plan() -> dict:
+    return {
+        "id": "unresolved",
+        "read_before_code": [
+            "noc_docs/docs-map.md",
+            "noc_docs/project-status.md",
+            "noc_docs/.living-docs/feature-map.json",
+        ],
+        "before_coding": [
+            {
+                "doc": "noc_docs/features/ or noc_docs/domains/<domain>/features/",
+                "action": "Decide the affected feature or create one.",
+            },
+            {
+                "doc": "requirements.md or notes.md",
+                "action": "Write the agreed requirement into requirements.md or capture uncertain discussion in notes.md.",
+            },
+        ],
+        "update_after_code": [
+            {"doc": "status.md", "reason": "when actual behavior changes"},
+            {"doc": "test-record.md", "reason": "with verification commands and results"},
+            {"doc": "change-record.md", "reason": "for important changes"},
+            {"doc": "guardrails.md", "reason": "if new limits or compatibility rules appear"},
+        ],
+    }
+
+
+def build_work_plan(target: Path, feature: str | None, paths: list[str], intent: str | None) -> dict:
+    feature_map = load_feature_map(target)
+    features = resolve_work_features(feature_map, feature, paths)
+    feature_plans = [
+        build_feature_work_plan(feature_id, feature_map.get("features", {}).get(feature_id, {}))
+        for feature_id in features
+    ]
+    if not feature_plans:
+        feature_plans = [build_unresolved_work_plan()]
+    return {
+        "intent": intent,
+        "paths": paths,
+        "features": feature_plans,
+        "finish_commands": [
+            "python scripts/noc.py index <project>",
+            "python scripts/noc.py check <project> --staged",
+        ],
+    }
+
+
+def print_work_plan(plan: dict) -> None:
     print("NOC work plan")
     print("=============")
-    if args.intent:
-        print(f"Intent: {args.intent}")
-    if args.path:
-        print("Changed or planned path(s): " + ", ".join(args.path))
+    if plan.get("intent"):
+        print(f"Intent: {plan['intent']}")
+    if plan.get("paths"):
+        print("Changed or planned path(s): " + ", ".join(plan["paths"]))
     print()
 
-    if features:
-        for feature_id in features:
-            print_feature_work_plan(feature_id, feature_map.get("features", {}).get(feature_id, {}))
-    else:
-        print("Feature: unresolved")
+    for feature in plan["features"]:
+        if feature["id"] == "unresolved":
+            print("Feature: unresolved")
+        else:
+            print(f"Feature: {feature['id']}")
+            if feature.get("domain"):
+                print(f"Domain: {feature['domain']}")
+
         print("Read before code:")
-        print("- noc_docs/docs-map.md")
-        print("- noc_docs/project-status.md")
-        print("- noc_docs/.living-docs/feature-map.json")
+        for doc in feature["read_before_code"]:
+            print(f"- {doc}")
+
         print("Before coding:")
-        print("- Decide the affected feature or create one under noc_docs/features/ or noc_docs/domains/<domain>/features/.")
-        print("- Write the agreed requirement into requirements.md or capture uncertain discussion in notes.md.")
+        for item in feature["before_coding"]:
+            if feature["id"] == "unresolved" and item["doc"].startswith("noc_docs/features/"):
+                print("- Decide the affected feature or create one under noc_docs/features/ or noc_docs/domains/<domain>/features/.")
+            elif feature["id"] == "unresolved" and item["doc"] == "requirements.md or notes.md":
+                print("- Write the agreed requirement into requirements.md or capture uncertain discussion in notes.md.")
+            else:
+                print(f"- {item['action'].replace('this document', item['doc'])}")
+
         print("Update after code:")
-        print("- status.md when actual behavior changes")
-        print("- test-record.md with verification commands and results")
-        print("- change-record.md for important changes")
-        print("- guardrails.md if new limits or compatibility rules appear")
+        for item in feature["update_after_code"]:
+            print(f"- {item['doc']} {item['reason']}")
         print()
 
     print("Finish:")
     print("- Run: python scripts/noc.py index <project>")
     print("- Before commit, run: python scripts/noc.py check <project> --staged")
+
+
+def command_work(args: argparse.Namespace) -> int:
+    target = Path(args.target).resolve()
+    plan = build_work_plan(target, args.feature, args.path or [], args.intent)
+    if args.json:
+        print(json.dumps(plan, indent=2, ensure_ascii=False))
+    else:
+        print_work_plan(plan)
     return 0
 
 
@@ -1152,6 +1269,7 @@ def build_parser() -> argparse.ArgumentParser:
     work.add_argument("--feature", help="Affected feature id.")
     work.add_argument("--path", action="append", help="Planned or changed code path. Can be repeated.")
     work.add_argument("--intent", help="Short description of the agreed requirement or change.")
+    work.add_argument("--json", action="store_true", help="Print the work plan as machine-readable JSON.")
     work.set_defaults(func=command_work)
 
     doctor = sub.add_parser("doctor", help="Check local NOC setup and print repair suggestions.")
