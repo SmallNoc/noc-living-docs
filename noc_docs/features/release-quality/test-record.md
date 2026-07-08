@@ -31,4 +31,8 @@ confidence: medium
 | 2026-07-08 | strengthen README product entry | `python -m unittest tests.test_noc_cli.NocCliTests.test_agent_entry_and_codex_skill_prefer_work_json` | PASS | README still contains agent memory router framing. |
 | 2026-07-08 | strengthen README product entry | `python -m unittest tests.test_noc_cli tests.test_release_cli` | PASS | 54 tests passed after README expansion. |
 | 2026-07-08 | strengthen README product entry | `python scripts/noc.py validate` | PASS | NOC Living Docs validation passed. |
+| 2026-07-08 | prepare 1.0.1 release | `python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py` | PASS | Python compile check passed. |
+| 2026-07-08 | prepare 1.0.1 release | `python -m unittest tests.test_noc_cli tests.test_release_cli` | PASS | 54 tests passed. |
+| 2026-07-08 | prepare 1.0.1 release | `python scripts/noc.py validate` | PASS | NOC Living Docs validation passed. |
+| 2026-07-08 | prepare 1.0.1 release | `python scripts/release.py --check` | PASS | Release check passed for 1.0.1. |
 

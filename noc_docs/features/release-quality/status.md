@@ -9,7 +9,7 @@ confidence: medium
 
 ## Current Behavior
 
-测试通过 Python unittest 运行，覆盖 CLI help、init/index/check/doctor/work/feature lifecycle、Codex skill 文件存在性和 release 脚本。当前新增了 `work --json` 和 agent 入口优先 JSON 的测试。
+测试通过 Python unittest 运行，覆盖 CLI help、init/index/check/doctor/work/feature lifecycle、Codex skill 文件存在性和 release 脚本。当前新增了 `work --json`、Git diff routing 和 agent 入口优先 JSON 的测试。当前准备发布版本为 `1.0.1`。
 
 ## Important Files
 

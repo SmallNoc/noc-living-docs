@@ -30,3 +30,18 @@ The previous README preserved the small agent memory router framing but was too 
 
 - New users can understand both the product value and the exact command loop without reading deeper docs first.
 
+## 2026-07-08 - Prepare 1.0.1 release
+
+### Reason
+
+The agent-usability work needs to become the version published from `main`, with a new tag instead of moving the existing `v1.0.0` tag.
+
+### Changed
+
+- Bumped `VERSION` to `1.0.1`.
+- Updated `CHANGELOG.md` with the agent routing and README improvements.
+
+### Impact
+
+- Release bookkeeping can create a new `v1.0.1` tag without rewriting prior tags.
+

@@ -2,12 +2,18 @@
 
 ## Unreleased
 
+## [1.0.1] - 2026-07-08
+
 ### Changed
 
+- Tightened `noc work --json` into a stable agent routing contract with schema version, resolution status, match metadata, confidence, and next actions for unresolved paths.
+- Added `noc work --changed --json` and `noc work --staged --json` so agents can route directly from Git diff state.
+- Reframed README and agent guidance around NOC as an agent memory router, with a concrete JSON example, quick start, workflow, and comparison table.
 - Reworked the Chinese README introduction to explain the project in user-facing terms, including generated document structure, file responsibilities, JSON index roles, token impact, install, update, usage, and uninstall instructions.
 - Synchronized the English README with the clearer user-facing structure, including generated docs layout, Markdown/JSON file roles, token cost, install, update, usage, and uninstall instructions.
 - Added a `noc.py work` command and skill guidance for turning discussed requirements into a docs checklist before code changes.
 - Reworked the Codex skill into a concise executable workflow with Definition of Done, stop conditions, final response format, references, and trigger eval prompts.
+
 
 ## [1.0.0] - 2026-07-04
 
