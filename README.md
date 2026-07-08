@@ -65,6 +65,7 @@ skills/codex/project-living-docs
 | `hook` | Install or manage Git hooks for checks.<br>安装或管理用于检查的 Git hook。 | When checks should run during Git workflow.<br>希望 Git 流程中自动提示时使用。 |
 | `check` | Check whether code changes need docs updates.<br>检查代码变更是否需要同步文档。 | Before commit or after code changes.<br>提交前或代码改完后使用。 |
 | `suggest-map` | Suggest feature-to-path mappings for `feature-map.json`.<br>建议功能和代码路径的映射。 | After initializing a large or existing project.<br>初始化大型项目或旧项目后使用。 |
+| `feature` | Create or rename real feature doc directories.<br>创建或重命名真实 feature 文档目录。 | After init, when replacing `_feature` placeholders with actual feature docs.<br>初始化后，把 `_feature` 占位目录落地成真实功能目录时使用。 |
 | `work` | Print docs to read before coding and update after coding.<br>输出改代码前要读、改完后要更新的文档清单。 | Before changing a feature.<br>改功能前使用。 |
 
 ## 能帮你做什么
@@ -236,6 +237,24 @@ noc index /path/to/project
 
 ```bash
 noc suggest-map /path/to/project --write --yes
+```
+
+把 `_feature` 占位目录落地成真实功能目录：
+
+```bash
+noc feature create /path/to/project solution-assistant --path src/solution/
+```
+
+如果你想直接把现有 `_feature` 转正，而不是复制出一个新目录：
+
+```bash
+noc feature adopt /path/to/project _feature solution-assistant --path src/solution/
+```
+
+重命名已有 feature：
+
+```bash
+noc feature rename /path/to/project solution-assistant bom-completion
 ```
 
 提交前检查：
@@ -811,6 +830,24 @@ Automation must opt in explicitly:
 
 ```bash
 noc suggest-map /path/to/project --write --yes
+```
+
+Create a real feature directory from the `_feature` placeholder:
+
+```bash
+noc feature create /path/to/project solution-assistant --path src/solution/
+```
+
+If you want to promote the existing `_feature` directory instead of copying from the template:
+
+```bash
+noc feature adopt /path/to/project _feature solution-assistant --path src/solution/
+```
+
+Rename an existing feature:
+
+```bash
+noc feature rename /path/to/project solution-assistant bom-completion
 ```
 
 Check before commit:

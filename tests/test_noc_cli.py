@@ -51,13 +51,19 @@ class NocCliTests(unittest.TestCase):
     def test_cli_help_lists_required_subcommands(self) -> None:
         result = run(["--help"])
 
-        for command in ["init", "index", "validate", "hook", "check", "suggest-map", "work", "doctor"]:
+        for command in ["init", "index", "validate", "hook", "check", "suggest-map", "work", "doctor", "feature"]:
             self.assertIn(command, result.stdout)
 
     def test_each_required_subcommand_has_help(self) -> None:
-        for command in ["init", "index", "validate", "hook", "check", "suggest-map", "work", "doctor"]:
+        for command in ["init", "index", "validate", "hook", "check", "suggest-map", "work", "doctor", "feature"]:
             with self.subTest(command=command):
                 result = run([command, "--help"])
+                self.assertIn("usage:", result.stdout)
+
+    def test_feature_subcommands_have_help(self) -> None:
+        for command in [["feature", "create"], ["feature", "rename"], ["feature", "adopt"]]:
+            with self.subTest(command=command):
+                result = run([*command, "--help"])
                 self.assertIn("usage:", result.stdout)
 
     def test_pyproject_exposes_noc_console_script(self) -> None:
@@ -724,6 +730,149 @@ class NocCliTests(unittest.TestCase):
                 if path.is_file()
             }
             self.assertEqual(before, after)
+
+    def test_feature_create_scaffolds_docs_updates_index_and_writes_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            run(["init", str(project), "--mode", "small"])
+            (project / "src/solution").mkdir(parents=True)
+            (project / "src/solution/app.py").write_text("print('ok')\n", encoding="utf-8")
+
+            result = run(
+                [
+                    "feature",
+                    "create",
+                    str(project),
+                    "solution-assistant",
+                    "--path",
+                    "src/solution/",
+                ]
+            )
+
+            self.assertIn("Created feature `solution-assistant`", result.stdout)
+            feature_dir = project / "noc_docs/features/solution-assistant"
+            self.assertTrue(feature_dir.is_dir())
+            self.assertIn(
+                "# Agent Guide: solution-assistant",
+                (feature_dir / "agent-guide.md").read_text(encoding="utf-8"),
+            )
+            self.assertIn(
+                "| solution-assistant | active | ./solution-assistant/agent-guide.md |",
+                (project / "noc_docs/features/index.md").read_text(encoding="utf-8"),
+            )
+            feature_map = json.loads((project / "noc_docs/.living-docs/feature-map.json").read_text(encoding="utf-8"))
+            self.assertEqual(feature_map["features"]["solution-assistant"]["paths"], ["src/solution/"])
+            self.assertEqual(
+                feature_map["features"]["solution-assistant"]["entry"],
+                "noc_docs/features/solution-assistant/agent-guide.md",
+            )
+
+    def test_feature_create_requires_missing_feature_to_avoid_overwriting(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            run(["init", str(project), "--mode", "small"])
+
+            first = run(["feature", "create", str(project), "solution-assistant"])
+            self.assertIn("Created feature `solution-assistant`", first.stdout)
+
+            result = run(["feature", "create", str(project), "solution-assistant"], check=False)
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("already exists", result.stdout)
+
+    def test_feature_rename_updates_structure_index_and_mappings_without_rewriting_body_text(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            run(["init", str(project), "--mode", "small"])
+            run(
+                [
+                    "feature",
+                    "create",
+                    str(project),
+                    "solution-assistant",
+                    "--path",
+                    "src/solution/",
+                ]
+            )
+            guide = project / "noc_docs/features/solution-assistant/agent-guide.md"
+            guide.write_text(
+                guide.read_text(encoding="utf-8") + "\nCustom body mentions solution-assistant and should stay.\n",
+                encoding="utf-8",
+            )
+
+            result = run(
+                [
+                    "feature",
+                    "rename",
+                    str(project),
+                    "solution-assistant",
+                    "bom-completion",
+                ]
+            )
+
+            self.assertIn("Renamed feature `solution-assistant` to `bom-completion`", result.stdout)
+            self.assertFalse((project / "noc_docs/features/solution-assistant").exists())
+            feature_dir = project / "noc_docs/features/bom-completion"
+            self.assertTrue(feature_dir.is_dir())
+            guide_text = (feature_dir / "agent-guide.md").read_text(encoding="utf-8")
+            self.assertIn("# Agent Guide: bom-completion", guide_text)
+            self.assertIn("Custom body mentions solution-assistant and should stay.", guide_text)
+            index_text = (project / "noc_docs/features/index.md").read_text(encoding="utf-8")
+            self.assertIn("| bom-completion | active | ./bom-completion/agent-guide.md |", index_text)
+            self.assertNotIn("solution-assistant/agent-guide.md", index_text)
+            feature_map = json.loads((project / "noc_docs/.living-docs/feature-map.json").read_text(encoding="utf-8"))
+            self.assertIn("bom-completion", feature_map["features"])
+            self.assertNotIn("solution-assistant", feature_map["features"])
+            self.assertEqual(feature_map["features"]["bom-completion"]["paths"], ["src/solution/"])
+
+    def test_feature_adopt_renames_placeholder_directory_into_real_feature(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            run(["init", str(project), "--mode", "small"])
+
+            placeholder = project / "noc_docs/features/_feature"
+            placeholder_guide = placeholder / "agent-guide.md"
+            placeholder_guide.write_text(
+                placeholder_guide.read_text(encoding="utf-8") + "\nPlaceholder note stays in body.\n",
+                encoding="utf-8",
+            )
+
+            result = run(
+                [
+                    "feature",
+                    "adopt",
+                    str(project),
+                    "_feature",
+                    "solution-assistant",
+                    "--path",
+                    "src/solution/",
+                ]
+            )
+
+            self.assertIn("Adopted feature template `_feature` as `solution-assistant`", result.stdout)
+            self.assertFalse((project / "noc_docs/features/_feature").exists())
+            feature_dir = project / "noc_docs/features/solution-assistant"
+            self.assertTrue(feature_dir.is_dir())
+            guide_text = (feature_dir / "agent-guide.md").read_text(encoding="utf-8")
+            self.assertIn("# Agent Guide: solution-assistant", guide_text)
+            self.assertIn("Placeholder note stays in body.", guide_text)
+            index_text = (project / "noc_docs/features/index.md").read_text(encoding="utf-8")
+            self.assertIn("| solution-assistant | active | ./solution-assistant/agent-guide.md |", index_text)
+            feature_map = json.loads((project / "noc_docs/.living-docs/feature-map.json").read_text(encoding="utf-8"))
+            self.assertEqual(feature_map["features"]["solution-assistant"]["paths"], ["src/solution/"])
+
+    def test_feature_adopt_rejects_missing_placeholder_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            run(["init", str(project), "--mode", "small"])
+
+            result = run(
+                ["feature", "adopt", str(project), "_missing", "solution-assistant"],
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("does not exist", result.stdout)
 
 
 if __name__ == "__main__":

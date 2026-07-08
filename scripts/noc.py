@@ -15,6 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_DIR = ROOT / "scripts"
+TEMPLATES = ROOT / "templates/noc_docs"
 START = "# noc-living-docs:start"
 END = "# noc-living-docs:end"
 PROJECT_MARKERS = {
@@ -27,6 +28,24 @@ PROJECT_MARKERS = {
     "pyproject.toml",
     "go.mod",
     "Cargo.toml",
+}
+FEATURE_DOC_FILES = [
+    "agent-guide.md",
+    "requirements.md",
+    "status.md",
+    "guardrails.md",
+    "test-record.md",
+    "change-record.md",
+    "notes.md",
+]
+FEATURE_TITLE_PREFIXES = {
+    "agent-guide.md": "# Agent Guide: ",
+    "requirements.md": "# Requirements: ",
+    "status.md": "# Current Status: ",
+    "guardrails.md": "# Guardrails: ",
+    "test-record.md": "# Test Record: ",
+    "change-record.md": "# Change Record: ",
+    "notes.md": "# Notes: ",
 }
 
 
@@ -160,6 +179,310 @@ def load_feature_map(target: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def save_feature_map(target: Path, feature_map: dict) -> None:
+    path = target / "noc_docs/.living-docs/feature-map.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(feature_map, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def load_config(target: Path) -> dict:
+    path = target / "noc_docs/.living-docs/config.json"
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+
+
+def detect_docs_mode(target: Path) -> str:
+    config = load_config(target)
+    mode = config.get("mode")
+    if mode in {"small", "domain"}:
+        return mode
+    noc_docs = target / "noc_docs"
+    if (noc_docs / "domains").exists() and not (noc_docs / "features").exists():
+        return "domain"
+    return "small"
+
+
+def normalize_feature_id(value: str, kind: str = "feature", allow_template_name: bool = False) -> str:
+    normalized = value.strip()
+    if not normalized:
+        raise SystemExit(f"ERROR: {kind} id cannot be empty")
+    if any(sep in normalized for sep in ["/", "\\"]):
+        raise SystemExit(f"ERROR: {kind} id must be a simple name, not a path")
+    if normalized.startswith("."):
+        raise SystemExit(f"ERROR: {kind} id cannot start with . or _")
+    if normalized.startswith("_") and not allow_template_name:
+        raise SystemExit(f"ERROR: {kind} id cannot start with . or _")
+    return normalized
+
+
+def require_noc_docs(target: Path) -> None:
+    if not (target / "noc_docs").is_dir():
+        raise SystemExit(f"ERROR: {target / 'noc_docs'} does not exist. Run `noc init {target}` first.")
+
+
+def feature_template_dir(mode: str) -> Path:
+    if mode == "domain":
+        return TEMPLATES / "domains/_domain/features/_feature"
+    return TEMPLATES / "features/_feature"
+
+
+def feature_dir(target: Path, mode: str, feature_id: str, domain: str | None = None) -> Path:
+    if mode == "domain":
+        if not domain:
+            raise SystemExit("ERROR: domain mode requires --domain")
+        return target / "noc_docs/domains" / domain / "features" / feature_id
+    return target / "noc_docs/features" / feature_id
+
+
+def domain_dir(target: Path, domain: str) -> Path:
+    return target / "noc_docs/domains" / domain
+
+
+def render_feature_doc(text: str, feature_id: str) -> str:
+    return text.replace("FEATURE_NAME", feature_id)
+
+
+def scaffold_feature_docs(target_dir: Path, template_dir: Path, feature_id: str) -> None:
+    target_dir.mkdir(parents=True, exist_ok=False)
+    for name in FEATURE_DOC_FILES:
+        src = template_dir / name
+        text = src.read_text(encoding="utf-8")
+        (target_dir / name).write_text(render_feature_doc(text, feature_id), encoding="utf-8")
+
+
+def feature_status_for_index(feature_dir_path: Path) -> str:
+    guide = feature_dir_path / "agent-guide.md"
+    if not guide.exists():
+        return "planned"
+    for line in guide.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped.startswith("status:"):
+            return stripped.split(":", 1)[1].strip() or "planned"
+    return "planned"
+
+
+def feature_index_row(feature_id: str, base_path: str, status: str) -> str:
+    return (
+        f"| {feature_id} | {status} | ./{base_path}/agent-guide.md | ./{base_path}/requirements.md | "
+        f"./{base_path}/status.md | ./{base_path}/guardrails.md | ./{base_path}/test-record.md |"
+    )
+
+
+def replace_table(path: Path, headers: list[str], rows: list[str]) -> None:
+    text = path.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    header_index = next((i for i, line in enumerate(lines) if line.strip() == headers[0]), None)
+    if header_index is None:
+        raise SystemExit(f"ERROR: Could not find expected table header in {path}")
+    end_index = header_index + 1
+    while end_index < len(lines) and lines[end_index].startswith("|"):
+        end_index += 1
+    new_lines = lines[:header_index] + headers + rows + lines[end_index:]
+    path.write_text("\n".join(new_lines).rstrip() + "\n", encoding="utf-8")
+
+
+def update_small_features_index(target: Path) -> None:
+    index_path = target / "noc_docs/features/index.md"
+    features_root = target / "noc_docs/features"
+    rows = []
+    if features_root.is_dir():
+        for child in sorted(features_root.iterdir()):
+            if not child.is_dir() or child.name.startswith("_"):
+                continue
+            rows.append(feature_index_row(child.name, child.name, feature_status_for_index(child)))
+    if not rows:
+        rows = ["| TODO | planned | ./TODO/agent-guide.md | ./TODO/requirements.md | ./TODO/status.md | ./TODO/guardrails.md | ./TODO/test-record.md |"]
+    replace_table(
+        index_path,
+        [
+            "| Feature | Status | Entry | Requirements | Current Status | Guardrails | Tests |",
+            "|---|---|---|---|---|---|---|",
+        ],
+        rows,
+    )
+
+
+def update_domain_feature_index(target: Path, domain: str) -> None:
+    index_path = domain_dir(target, domain) / "index.md"
+    features_root = domain_dir(target, domain) / "features"
+    rows = []
+    if features_root.is_dir():
+        for child in sorted(features_root.iterdir()):
+            if not child.is_dir() or child.name.startswith("_"):
+                continue
+            rows.append(f"| {child.name} | {feature_status_for_index(child)} | ./features/{child.name}/agent-guide.md |")
+    if not rows:
+        rows = ["| TODO | planned | ./features/TODO/agent-guide.md |"]
+    replace_table(
+        index_path,
+        [
+            "| Feature | Status | Entry |",
+            "|---|---|---|",
+        ],
+        rows,
+    )
+
+
+def update_feature_indexes(target: Path, mode: str, domain: str | None = None) -> None:
+    if mode == "domain":
+        if not domain:
+            raise SystemExit("ERROR: domain mode requires --domain")
+        update_domain_feature_index(target, domain)
+    else:
+        update_small_features_index(target)
+
+
+def write_feature_paths(target: Path, feature_id: str, paths: list[str], domain: str | None = None) -> None:
+    feature_map = load_feature_map(target)
+    features = feature_map.setdefault("features", {})
+    entry = features.setdefault(feature_id, {})
+    existing_paths = entry.setdefault("paths", [])
+    for path in paths:
+        if path not in existing_paths:
+            existing_paths.append(path)
+    if domain:
+        entry["domain"] = domain
+    save_feature_map(target, feature_map)
+
+
+def run_index_if_requested(target: Path, skip_index: bool) -> None:
+    if skip_index:
+        return
+    code = run_script("index-noc-docs.py", [str(target)])
+    if code != 0:
+        raise SystemExit(code)
+
+
+def command_feature_create(args: argparse.Namespace) -> int:
+    target = Path(args.target).resolve()
+    require_noc_docs(target)
+    mode = detect_docs_mode(target)
+    feature_id = normalize_feature_id(args.feature)
+    domain = normalize_feature_id(args.domain, "domain") if args.domain else None
+    if mode == "domain" and domain:
+        domain_root = domain_dir(target, domain)
+        if not domain_root.is_dir():
+            raise SystemExit(f"ERROR: domain `{domain}` does not exist at {domain_root}")
+    dst = feature_dir(target, mode, feature_id, domain)
+    if dst.exists():
+        print(f"ERROR: feature `{feature_id}` already exists at {dst}")
+        return 1
+
+    scaffold_feature_docs(dst, feature_template_dir(mode), feature_id)
+    update_feature_indexes(target, mode, domain)
+    if args.path:
+        write_feature_paths(target, feature_id, args.path, domain)
+    run_index_if_requested(target, args.no_index)
+
+    print(f"Created feature `{feature_id}` at {dst}")
+    if args.path:
+        print("Mapped paths: " + ", ".join(args.path))
+    return 0
+
+
+def rename_structured_feature_titles(feature_path: Path, old_id: str, new_id: str) -> None:
+    for name, prefix in FEATURE_TITLE_PREFIXES.items():
+        path = feature_path / name
+        if not path.exists():
+            continue
+        lines = path.read_text(encoding="utf-8").splitlines()
+        target_line = prefix + old_id
+        replacement_line = prefix + new_id
+        updated = False
+        for index, line in enumerate(lines):
+            if line == target_line:
+                lines[index] = replacement_line
+                updated = True
+                break
+        if updated:
+            path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+
+
+def command_feature_rename(args: argparse.Namespace) -> int:
+    target = Path(args.target).resolve()
+    require_noc_docs(target)
+    mode = detect_docs_mode(target)
+    old_id = normalize_feature_id(args.old_feature)
+    new_id = normalize_feature_id(args.new_feature)
+    domain = normalize_feature_id(args.domain, "domain") if args.domain else None
+    src = feature_dir(target, mode, old_id, domain)
+    dst = feature_dir(target, mode, new_id, domain)
+    if not src.is_dir():
+        print(f"ERROR: feature `{old_id}` does not exist at {src}")
+        return 1
+    if dst.exists():
+        print(f"ERROR: feature `{new_id}` already exists at {dst}")
+        return 1
+
+    shutil.move(str(src), str(dst))
+    rename_structured_feature_titles(dst, old_id, new_id)
+
+    feature_map = load_feature_map(target)
+    features = feature_map.setdefault("features", {})
+    if old_id in features:
+        entry = features.pop(old_id)
+        if domain:
+            entry["domain"] = domain
+        features[new_id] = entry
+        save_feature_map(target, feature_map)
+
+    update_feature_indexes(target, mode, domain)
+    run_index_if_requested(target, args.no_index)
+
+    print(f"Renamed feature `{old_id}` to `{new_id}`")
+    return 0
+
+
+def command_feature_adopt(args: argparse.Namespace) -> int:
+    target = Path(args.target).resolve()
+    require_noc_docs(target)
+    mode = detect_docs_mode(target)
+    source_name = normalize_feature_id(args.source_feature, "source feature", allow_template_name=True)
+    feature_id = normalize_feature_id(args.feature)
+    domain = normalize_feature_id(args.domain, "domain") if args.domain else None
+    src = feature_dir(target, mode, source_name, domain)
+    dst = feature_dir(target, mode, feature_id, domain)
+    if not src.is_dir():
+        print(f"ERROR: feature template `{source_name}` does not exist at {src}")
+        return 1
+    if source_name == feature_id:
+        print("ERROR: source and destination feature ids must differ")
+        return 1
+    if dst.exists():
+        print(f"ERROR: feature `{feature_id}` already exists at {dst}")
+        return 1
+
+    shutil.move(str(src), str(dst))
+    rename_structured_feature_titles(dst, "FEATURE_NAME", feature_id)
+    rename_structured_feature_titles(dst, source_name, feature_id)
+
+    feature_map = load_feature_map(target)
+    features = feature_map.setdefault("features", {})
+    entry = features.pop(source_name, {}) if source_name in features else {}
+    existing_paths = entry.get("paths", [])
+    for path in args.path or []:
+        if path not in existing_paths:
+            existing_paths.append(path)
+    entry["paths"] = existing_paths
+    if domain:
+        entry["domain"] = domain
+    if entry:
+        features[feature_id] = entry
+        save_feature_map(target, feature_map)
+
+    update_feature_indexes(target, mode, domain)
+    run_index_if_requested(target, args.no_index)
+
+    print(f"Adopted feature template `{source_name}` as `{feature_id}`")
+    if args.path:
+        print("Mapped paths: " + ", ".join(args.path))
+    return 0
+
+
 def command_check(args: argparse.Namespace) -> int:
     target = Path(args.target).resolve()
     strictness, strictness_source = resolve_check_strictness(target, args)
@@ -235,16 +558,6 @@ def resolve_check_strictness(target: Path, args: argparse.Namespace) -> tuple[st
     if environment == "ci":
         return "fail", "CI environment"
     return "fail", "default"
-
-
-def load_config(target: Path) -> dict:
-    path = target / "noc_docs/.living-docs/config.json"
-    if not path.exists():
-        return {}
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return {}
 
 
 def check_result(strictness: str) -> int:
@@ -844,6 +1157,34 @@ def build_parser() -> argparse.ArgumentParser:
     doctor = sub.add_parser("doctor", help="Check local NOC setup and print repair suggestions.")
     doctor.add_argument("target", nargs="?", default=".")
     doctor.set_defaults(func=command_doctor)
+
+    feature = sub.add_parser("feature", help="Create or rename feature documentation directories.")
+    feature_sub = feature.add_subparsers(dest="feature_command", required=True)
+
+    feature_create = feature_sub.add_parser("create", help="Create a real feature directory from the template.")
+    feature_create.add_argument("target", help="Project directory containing noc_docs.")
+    feature_create.add_argument("feature", help="Feature id and directory name to create.")
+    feature_create.add_argument("--domain", help="Domain id when the project uses domain mode.")
+    feature_create.add_argument("--path", action="append", help="Code path to map into feature-map.json. Can be repeated.")
+    feature_create.add_argument("--no-index", action="store_true", help="Skip running `noc index` after creation.")
+    feature_create.set_defaults(func=command_feature_create)
+
+    feature_rename = feature_sub.add_parser("rename", help="Rename an existing feature directory and mapping.")
+    feature_rename.add_argument("target", help="Project directory containing noc_docs.")
+    feature_rename.add_argument("old_feature", help="Existing feature id.")
+    feature_rename.add_argument("new_feature", help="New feature id.")
+    feature_rename.add_argument("--domain", help="Domain id when the project uses domain mode.")
+    feature_rename.add_argument("--no-index", action="store_true", help="Skip running `noc index` after rename.")
+    feature_rename.set_defaults(func=command_feature_rename)
+
+    feature_adopt = feature_sub.add_parser("adopt", help="Adopt an existing placeholder directory as a real feature.")
+    feature_adopt.add_argument("target", help="Project directory containing noc_docs.")
+    feature_adopt.add_argument("source_feature", help="Existing placeholder or template directory name.")
+    feature_adopt.add_argument("feature", help="Real feature id to adopt into.")
+    feature_adopt.add_argument("--domain", help="Domain id when the project uses domain mode.")
+    feature_adopt.add_argument("--path", action="append", help="Code path to map into feature-map.json. Can be repeated.")
+    feature_adopt.add_argument("--no-index", action="store_true", help="Skip running `noc index` after adoption.")
+    feature_adopt.set_defaults(func=command_feature_adopt)
 
     return parser
 
