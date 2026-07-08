@@ -17,7 +17,7 @@
       "notes": "noc_docs/features/agent-protocol/notes.md",
       "freshness": {
         "last_doc_update": "2026-07-08T15:22:15.034158+00:00",
-        "last_indexed": "2026-07-08T15:24:52.697622+00:00"
+        "last_indexed": "2026-07-08T15:37:00.762884+00:00"
       },
       "completeness": {
         "required_docs": [
@@ -46,7 +46,7 @@
       "notes": "noc_docs/features/cli-core/notes.md",
       "freshness": {
         "last_doc_update": "2026-07-08T15:21:46.637645+00:00",
-        "last_indexed": "2026-07-08T15:24:52.697622+00:00"
+        "last_indexed": "2026-07-08T15:37:00.762884+00:00"
       },
       "completeness": {
         "required_docs": [
@@ -75,7 +75,7 @@
       "notes": "noc_docs/features/codex-skill/notes.md",
       "freshness": {
         "last_doc_update": "2026-07-08T14:54:28.947225+00:00",
-        "last_indexed": "2026-07-08T15:24:52.698624+00:00"
+        "last_indexed": "2026-07-08T15:37:00.762884+00:00"
       },
       "completeness": {
         "required_docs": [
@@ -106,7 +106,7 @@
       "notes": "noc_docs/features/init-index-validate/notes.md",
       "freshness": {
         "last_doc_update": "2026-07-08T14:54:28.951605+00:00",
-        "last_indexed": "2026-07-08T15:24:52.698624+00:00"
+        "last_indexed": "2026-07-08T15:37:00.763888+00:00"
       },
       "completeness": {
         "required_docs": [
@@ -128,7 +128,8 @@
         "scripts/release.py",
         "pyproject.toml",
         "CHANGELOG.md",
-        "VERSION"
+        "VERSION",
+        "README.md"
       ],
       "entry": "noc_docs/features/release-quality/agent-guide.md",
       "requirements": "noc_docs/features/release-quality/requirements.md",
@@ -138,8 +139,8 @@
       "change_record": "noc_docs/features/release-quality/change-record.md",
       "notes": "noc_docs/features/release-quality/notes.md",
       "freshness": {
-        "last_doc_update": "2026-07-08T15:24:47.739561+00:00",
-        "last_indexed": "2026-07-08T15:24:52.699623+00:00"
+        "last_doc_update": "2026-07-08T15:36:49.048085+00:00",
+        "last_indexed": "2026-07-08T15:37:00.763888+00:00"
       },
       "completeness": {
         "required_docs": [

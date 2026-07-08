@@ -1,210 +1,210 @@
 {
-  "generated_at": "2026-07-08T15:24:52.685227+00:00",
+  "generated_at": "2026-07-08T15:37:00.750352+00:00",
   "files": {
     "noc_docs/development/documentation-policy.md": {
       "sha256": "8a9a29a014b62675d81046670cdfe8dd50f05f1a64b7e48902566a52b0a3d10b",
       "bytes": 700,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/development/git-workflow.md": {
       "sha256": "e060c473905fa824196c9e609ed92ccb47b91f869edf752bc894850f578e017f",
       "bytes": 764,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/development/testing.md": {
       "sha256": "84cefb980e1d1d54a0af52b9bcfc4d4714fc6f9062930c623c4d0b7744ae71cd",
       "bytes": 715,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/docs-map.md": {
       "sha256": "92edccbdf22518b50f431086032e9294c7538e969c3b72583154a5d86c5ac634",
       "bytes": 703,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/agent-protocol/agent-guide.md": {
       "sha256": "10e8a85beef6596bf6a4e4c072243e1e2924d456c8e3d31d17eb81d04d97f502",
       "bytes": 1070,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/agent-protocol/change-record.md": {
       "sha256": "dc7b9cc46d255d79fb5b21c2788683aa77dc3a07f92d0e05563dccca4edbd209",
       "bytes": 1089,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/agent-protocol/guardrails.md": {
       "sha256": "382bdd8483479e4f035500206dddd0c95cef95f23ca9716680f266796df3844b",
       "bytes": 562,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/agent-protocol/notes.md": {
       "sha256": "b6b68b060be1a5b836a543d5577257531d5be16d37f1d4e31bbf09d395b7992c",
       "bytes": 369,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/agent-protocol/requirements.md": {
       "sha256": "e886b9fdd4ec40513dc9ebcb9e198490ec12af9d347320e43d6bce20f74a1e19",
       "bytes": 929,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/agent-protocol/status.md": {
       "sha256": "38f684d046bfaa51f6f9eb37f9038a3b70cbdc36713e910b724b58374b73a526",
       "bytes": 976,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/agent-protocol/test-record.md": {
       "sha256": "5d875163bad812ef565fef871d271f08db5f644d027ffb98d8e3dbc5a3f009e4",
       "bytes": 1070,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/cli-core/agent-guide.md": {
       "sha256": "f3af8730c539641802de13b8aa413ee7bf16bb778b9bf26fad2eec48dd8b15d2",
       "bytes": 1211,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/cli-core/change-record.md": {
       "sha256": "e5b913a9011af2648f2e0167a63f295d17af2c12a7f4546f058c92ba76bb4272",
       "bytes": 1244,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/cli-core/guardrails.md": {
       "sha256": "2026f611ec20c58f3c7fc67e222266640a159ee848c4244ce22bb8df214a3422",
       "bytes": 744,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/cli-core/notes.md": {
       "sha256": "fc6ba3263074b71e6a5efce1e522afca2bc3422cb0268d5143015ec8066e5d94",
       "bytes": 338,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/cli-core/requirements.md": {
       "sha256": "7d47612ccbae0993fe06edd6ba40d729f9f2b1ed23aa24eea1a1660518eaa489",
       "bytes": 1416,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/cli-core/status.md": {
       "sha256": "e6bc6fc585fdc18b11c79df7ef67f41f634e7846feabfbb3663103ae36a6a1cc",
       "bytes": 1088,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/cli-core/test-record.md": {
       "sha256": "3bb0a2a5fabcfda599dc19d1544e7cba6297b360397270531b8d23cc566a62c1",
       "bytes": 1977,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/codex-skill/agent-guide.md": {
       "sha256": "d3b3407457567148003fa3c52e841bccbc0e8a897b651aa0e05c951f9562496a",
       "bytes": 1052,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/codex-skill/change-record.md": {
       "sha256": "407acda0f4f224fd385fe37fef3ec44a09af6c44bd2833bb4b322f8ece274909",
       "bytes": 448,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/codex-skill/guardrails.md": {
       "sha256": "866d7933b77e1f68d1edbab0862b849493f84aea72d7e991cd1ffa22ed6b5162",
       "bytes": 567,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/codex-skill/notes.md": {
       "sha256": "b60e55a797cf29c3f3e8e8d2f4d0411797adad846052dc8d353469d9c7f48cdb",
       "bytes": 320,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/codex-skill/requirements.md": {
       "sha256": "2401899dc2e43326917f6f2fa5676238ccc1742d46827964954540a042f69ca0",
       "bytes": 756,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/codex-skill/status.md": {
       "sha256": "eb46f9e805258641cb4c95713468c5949bff728ad83d1a665f9be101e7c4184a",
       "bytes": 776,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/codex-skill/test-record.md": {
       "sha256": "051006ab917ba33d5f562b26df811c01fd1106b28eaceaf896956dc4f52de5b4",
       "bytes": 975,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/index.md": {
       "sha256": "4ef5817d2baf2d9f50eeac7f1bf54585d7ceaa7e00a0ac9e894af338b57428a2",
       "bytes": 1080,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/init-index-validate/agent-guide.md": {
       "sha256": "04dd5aa4ca7a54694fba3a59d72536a129f98214a52f6652af503fa23cddfdc2",
       "bytes": 1094,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/init-index-validate/change-record.md": {
       "sha256": "4ab8401758ea03a2aebfc623c587b91f4619f7f357866b9520044959e86c66ac",
       "bytes": 493,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/init-index-validate/guardrails.md": {
       "sha256": "0f6e62826c1d826ce50dc07abb8491d6277c07127c573e1e6ad43b3d79cae508",
       "bytes": 572,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/init-index-validate/notes.md": {
       "sha256": "fbda4e864855c32f325318b5d62fa507d73fa113573f2cb73487396df8a858db",
       "bytes": 365,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/init-index-validate/requirements.md": {
       "sha256": "ec0da4def6347defa8320114eb922e9817f419afd4ac324b6d9fe0a2b6e4d860",
       "bytes": 737,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/init-index-validate/status.md": {
       "sha256": "4bafa9f73465fa54a2e8789bc6653a6188019e6815223d68f8c37dfe8ac8539a",
       "bytes": 712,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/init-index-validate/test-record.md": {
       "sha256": "d9b37e4bddb746eb9d829a2018e3f04e860faa3fcc7c1cf72831848dcff636dd",
       "bytes": 703,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/release-quality/agent-guide.md": {
       "sha256": "dc58566dec715d3ec1c8fc04d623b0f86e0b759a6fc093508a6abc552db73ab6",
       "bytes": 1053,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/release-quality/change-record.md": {
-      "sha256": "f9afe55095fa8bc7cd7016733dbea2292334f80aee0aba135db2b04e1ec9bf22",
-      "bytes": 460,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "sha256": "2b17cce26bd3f2d792bed8fa576f15a23b3f971e75398578decfa68c96a3c816",
+      "bytes": 1075,
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/release-quality/guardrails.md": {
       "sha256": "ad2f05162e14e683a9efb103c9ecc8f2b3e7584240115b228a7491dc578b8372",
       "bytes": 546,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/release-quality/notes.md": {
       "sha256": "2ec3358f2b1df1b12e461937bff0908485ef540fe49713fdf95762ae17b0d8e5",
       "bytes": 371,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/release-quality/requirements.md": {
       "sha256": "f53291de64b4eb84f2cf47943e778e3b8e030da92a968e89e608db78768309c5",
       "bytes": 662,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/release-quality/status.md": {
-      "sha256": "a61edf5feb9fafd0ef4872cb4ddfcd0f3f54acf4f2149ed7c275cabddfc9215d",
-      "bytes": 762,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "sha256": "3325bd1efc13fb921ca3614a1810be3127d2b14b54123b12404213543473eb7e",
+      "bytes": 849,
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/features/release-quality/test-record.md": {
-      "sha256": "e3351dca5a03d76cbca18a81093a3c1516585a029eaccb889de0093f157b0fb0",
-      "bytes": 1627,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "sha256": "0a6273e54e03ea13c0e7e443706f1723a0c9e0d1b958f1d051b9180db176bb07",
+      "bytes": 2131,
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     },
     "noc_docs/project-status.md": {
       "sha256": "2b0858c4bc25f51f2a960346dddc24cac9f05df8f4052f09ba82845ee317a709",
       "bytes": 1146,
-      "last_indexed": "2026-07-08T15:24:52.685227+00:00"
+      "last_indexed": "2026-07-08T15:37:00.750352+00:00"
     }
   }
 }

@@ -28,4 +28,7 @@ confidence: medium
 | 2026-07-08 | tighten agent memory routing | `python scripts/noc.py validate` | PASS | NOC Living Docs validation passed. |
 | 2026-07-08 | tighten agent memory routing | `python scripts/release.py --check` | PASS | Release check passed for 1.0.0. |
 | 2026-07-08 | tighten agent memory routing | `python scripts/noc.py check . --staged --warn-only` | PASS | No staged code changes requiring NOC docs check at verification time. |
+| 2026-07-08 | strengthen README product entry | `python -m unittest tests.test_noc_cli.NocCliTests.test_agent_entry_and_codex_skill_prefer_work_json` | PASS | README still contains agent memory router framing. |
+| 2026-07-08 | strengthen README product entry | `python -m unittest tests.test_noc_cli tests.test_release_cli` | PASS | 54 tests passed after README expansion. |
+| 2026-07-08 | strengthen README product entry | `python scripts/noc.py validate` | PASS | NOC Living Docs validation passed. |
 

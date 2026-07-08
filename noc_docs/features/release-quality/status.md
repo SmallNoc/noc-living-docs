@@ -19,10 +19,12 @@ confidence: medium
 - `pyproject.toml`
 - `CHANGELOG.md`
 - `VERSION`
+- `README.md`
 
 ## Data, API, or Configuration
 
 - Python package entry point: `noc = "scripts.noc:main"`
+- `README.md` 是项目主要产品入口，归入 release-quality 路由。
 
 ## Known Issues
 
