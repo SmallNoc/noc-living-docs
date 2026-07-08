@@ -5,7 +5,7 @@ description: Use when code changes, feature work, refactors, API/schema/security
 
 # Project Living Docs
 
-Use NOC Living Docs as executable project memory. Route through `noc_docs/`, read only the affected docs, update the living docs when code or intent changes, then verify with the CLI.
+Use NOC Living Docs as an agent memory router. Route through `noc_docs/`, read only the affected docs, update only facts that changed, then verify with the CLI.
 
 ## Trigger
 
@@ -30,10 +30,10 @@ python scripts/noc.py work /path/to/project --path <code/path> --json --intent "
 
 Use `--feature <feature>` when feature names are clearer than paths. Prefer `--json` for machine-readable routing; fall back to the text output only when the installed CLI does not support JSON.
 
-3. Read the smallest relevant docs: `agent-guide.md`, `requirements.md`, `status.md`, `guardrails.md`, `test-record.md`, plus domain guardrails when present.
+3. Read the smallest relevant docs listed in the work plan: usually `agent-guide.md`, `status.md`, `guardrails.md`, and `test-record.md`, plus `requirements.md` or domain guardrails when relevant.
 4. Write confirmed new/changed intent to `requirements.md`; put uncertain discussion in `notes.md`.
 5. Change code.
-6. Update `status.md`, `test-record.md`, `change-record.md`, and `guardrails.md` when behavior, verification, important changes, or constraints changed.
+6. Update `status.md`, `test-record.md`, `change-record.md`, and `guardrails.md` only when behavior, verification, important changes, or constraints changed.
 7. Run `python scripts/noc.py index <project>` after docs, feature, or mapping changes.
 8. Run `python scripts/noc.py check <project> --staged --warn-only` before commit when Git is available.
 
@@ -60,7 +60,7 @@ A task using this skill is done only when:
 - `requirements.md` changed only for intended behavior changes
 - `status.md` reflects current behavior after code changes
 - `test-record.md` records verification or explains why verification was not run
-- `change-record.md` records important implementation changes
+- `change-record.md` records important implementation changes, not routine churn
 - indexes/checks were run when available, or skipped with reason
 
 ## Final Response Format

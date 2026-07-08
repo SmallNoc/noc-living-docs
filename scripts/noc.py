@@ -631,7 +631,7 @@ def command_suggest_map(args: argparse.Namespace) -> int:
     return 0
 
 
-def build_feature_work_plan(feature_id: str, info: dict) -> dict:
+def build_feature_work_plan(feature_id: str, info: dict, match: dict | None = None) -> dict:
     read_docs = work_docs(info, ["entry", "requirements", "status", "guardrails", "tests"])
     if not read_docs:
         read_docs = ["noc_docs/docs-map.md", "noc_docs/project-status.md"]
@@ -684,13 +684,22 @@ def build_feature_work_plan(feature_id: str, info: dict) -> dict:
         "before_coding": before_coding,
         "update_after_code": update_after_code,
     }
+    if match:
+        plan.update(
+            {
+                "matched_by": match.get("matched_by"),
+                "matched_path": match.get("matched_path"),
+                "matched_pattern": match.get("matched_pattern"),
+                "confidence": match.get("confidence", "high"),
+            }
+        )
     if info.get("domain"):
         plan["domain"] = info["domain"]
     return plan
 
 
-def build_unresolved_work_plan() -> dict:
-    return {
+def build_unresolved_work_plan(match: dict | None = None) -> dict:
+    plan = {
         "id": "unresolved",
         "read_before_code": [
             "noc_docs/docs-map.md",
@@ -714,21 +723,89 @@ def build_unresolved_work_plan() -> dict:
             {"doc": "guardrails.md", "reason": "if new limits or compatibility rules appear"},
         ],
     }
+    if match:
+        plan.update(
+            {
+                "matched_by": match.get("matched_by"),
+                "matched_path": match.get("matched_path"),
+                "matched_pattern": match.get("matched_pattern"),
+                "confidence": match.get("confidence", "low"),
+            }
+        )
+    return plan
+
+
+def resolve_work_matches(feature_map: dict, feature: str | None, paths: list[str]) -> list[dict]:
+    all_features = feature_map.get("features", {})
+    matches: dict[str, dict] = {}
+    if feature:
+        matches[feature] = {
+            "id": feature,
+            "matched_by": "feature",
+            "matched_path": None,
+            "matched_pattern": None,
+            "confidence": "high" if feature in all_features else "low",
+        }
+    for changed in paths:
+        for feature_id, info in all_features.items():
+            for pattern in info.get("paths", []):
+                if path_matches(changed, pattern):
+                    matches.setdefault(
+                        feature_id,
+                        {
+                            "id": feature_id,
+                            "matched_by": "path",
+                            "matched_path": changed,
+                            "matched_pattern": pattern,
+                            "confidence": "high",
+                        },
+                    )
+                    break
+    return [matches[key] for key in sorted(matches)]
 
 
 def build_work_plan(target: Path, feature: str | None, paths: list[str], intent: str | None) -> dict:
     feature_map = load_feature_map(target)
-    features = resolve_work_features(feature_map, feature, paths)
+    matches = resolve_work_matches(feature_map, feature, paths)
+    all_features = feature_map.get("features", {})
     feature_plans = [
-        build_feature_work_plan(feature_id, feature_map.get("features", {}).get(feature_id, {}))
-        for feature_id in features
+        build_feature_work_plan(match["id"], all_features.get(match["id"], {}), match)
+        for match in matches
     ]
+    resolution_status = "resolved"
     if not feature_plans:
-        feature_plans = [build_unresolved_work_plan()]
+        resolution_status = "unresolved"
+        feature_plans = [
+            build_unresolved_work_plan(
+                {
+                    "matched_by": "fallback",
+                    "matched_path": paths[0] if paths else None,
+                    "matched_pattern": None,
+                    "confidence": "low",
+                }
+            )
+        ]
+    elif any(match["id"] not in all_features for match in matches):
+        resolution_status = "missing_feature"
+    next_actions = []
+    if resolution_status == "missing_feature":
+        missing = next((match["id"] for match in matches if match["id"] not in all_features), "<feature>")
+        path_arg = f" --path {paths[0]}" if paths else ""
+        next_actions.append(f"Run: noc feature create <project> {missing}{path_arg}")
+    elif resolution_status == "unresolved":
+        next_actions.extend(
+            [
+                "Run: noc suggest-map <project> --interactive",
+                "Run: noc feature create <project> <feature> --path <code/path>",
+            ]
+        )
     return {
+        "schema_version": "1.0",
+        "resolution_status": resolution_status,
         "intent": intent,
         "paths": paths,
         "features": feature_plans,
+        "next_actions": next_actions,
         "finish_commands": [
             "python scripts/noc.py index <project>",
             "python scripts/noc.py check <project> --staged",
@@ -778,7 +855,13 @@ def print_work_plan(plan: dict) -> None:
 
 def command_work(args: argparse.Namespace) -> int:
     target = Path(args.target).resolve()
-    plan = build_work_plan(target, args.feature, args.path or [], args.intent)
+    paths = list(args.path or [])
+    if args.changed:
+        paths.extend(changed_files(target, staged=False))
+    if args.staged:
+        paths.extend(changed_files(target, staged=True))
+    paths = list(dict.fromkeys(paths))
+    plan = build_work_plan(target, args.feature, paths, args.intent)
     if args.json:
         print(json.dumps(plan, indent=2, ensure_ascii=False))
     else:
@@ -1268,6 +1351,8 @@ def build_parser() -> argparse.ArgumentParser:
     work.add_argument("target", nargs="?", default=".")
     work.add_argument("--feature", help="Affected feature id.")
     work.add_argument("--path", action="append", help="Planned or changed code path. Can be repeated.")
+    work.add_argument("--changed", action="store_true", help="Use changed Git paths from the working tree.")
+    work.add_argument("--staged", action="store_true", help="Use staged Git paths.")
     work.add_argument("--intent", help="Short description of the agreed requirement or change.")
     work.add_argument("--json", action="store_true", help="Print the work plan as machine-readable JSON.")
     work.set_defaults(func=command_work)

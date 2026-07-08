@@ -14,3 +14,20 @@ Agents need a deterministic first step before reading broader project context.
 
 - Agents can route through NOC with less free-text interpretation.
 
+## 2026-07-08 - Reframe protocol as route-first memory
+
+### Reason
+
+NOC should stay small and hard: route agents to the right project memory, not imply that every task requires a full documentation ritual.
+
+### Changed
+
+- `templates/AGENTS.md` and generated `AGENTS.md` now describe NOC as an agent memory router.
+- The before-code steps say to read only docs listed in the work plan.
+- The after-code steps say not to churn docs that did not materially change.
+
+### Impact
+
+- Agents get clearer permission to keep context narrow.
+- The protocol better matches the product goal of preventing context drift without becoming a documentation platform.
+

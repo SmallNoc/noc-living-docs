@@ -98,8 +98,11 @@ class NocCliTests(unittest.TestCase):
     def test_agent_entry_and_codex_skill_prefer_work_json(self) -> None:
         agents = (ROOT / "templates/AGENTS.md").read_text(encoding="utf-8")
         skill = (ROOT / "skills/codex/project-living-docs/SKILL.md").read_text(encoding="utf-8")
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
 
+        self.assertIn("agent memory router", readme.lower())
         self.assertIn("noc work <project> --path <code/path> --json", agents)
+        self.assertNotIn("must update every feature document", agents.lower())
         self.assertIn("--json", skill)
         self.assertIn("machine-readable", skill)
 
@@ -779,6 +782,173 @@ class NocCliTests(unittest.TestCase):
                 plan["features"][0]["update_after_code"],
             )
             self.assertIn("python scripts/noc.py index <project>", plan["finish_commands"])
+
+    def test_work_json_includes_stable_contract_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            run(["init", str(project), "--mode", "small"])
+
+            feature = project / "noc_docs/features/user-login"
+            template = project / "noc_docs/features/_feature"
+            feature.mkdir(parents=True)
+            for file in template.iterdir():
+                if file.is_file():
+                    (feature / file.name).write_text(file.read_text(encoding="utf-8"), encoding="utf-8")
+            feature_map_path = project / "noc_docs/.living-docs/feature-map.json"
+            feature_map_path.write_text(
+                json.dumps(
+                    {
+                        "mode": "small",
+                        "features": {
+                            "user-login": {
+                                "paths": ["src/auth/"],
+                                "entry": "noc_docs/features/user-login/agent-guide.md",
+                                "requirements": "noc_docs/features/user-login/requirements.md",
+                                "status": "noc_docs/features/user-login/status.md",
+                                "guardrails": "noc_docs/features/user-login/guardrails.md",
+                                "tests": "noc_docs/features/user-login/test-record.md",
+                                "change_record": "noc_docs/features/user-login/change-record.md",
+                                "notes": "noc_docs/features/user-login/notes.md",
+                            }
+                        },
+                    },
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+
+            result = run(["work", str(project), "--path", "src/auth/login.py", "--json"])
+            plan = json.loads(result.stdout)
+
+            self.assertEqual(plan["schema_version"], "1.0")
+            self.assertEqual(plan["resolution_status"], "resolved")
+            self.assertEqual(plan["next_actions"], [])
+            self.assertEqual(plan["features"][0]["id"], "user-login")
+            self.assertEqual(plan["features"][0]["matched_by"], "path")
+            self.assertEqual(plan["features"][0]["matched_path"], "src/auth/login.py")
+            self.assertEqual(plan["features"][0]["matched_pattern"], "src/auth/")
+            self.assertEqual(plan["features"][0]["confidence"], "high")
+
+    def test_work_json_marks_missing_explicit_feature(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            run(["init", str(project), "--mode", "small"])
+
+            result = run(["work", str(project), "--feature", "does-not-exist", "--json"])
+            plan = json.loads(result.stdout)
+
+            self.assertEqual(plan["resolution_status"], "missing_feature")
+            self.assertEqual(plan["features"][0]["id"], "does-not-exist")
+            self.assertEqual(plan["features"][0]["matched_by"], "feature")
+            self.assertEqual(plan["features"][0]["confidence"], "low")
+            self.assertIn("noc feature create", plan["next_actions"][0])
+
+    def test_work_json_marks_unresolved_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            run(["init", str(project), "--mode", "small"])
+
+            result = run(["work", str(project), "--path", "unknown/file.py", "--json"])
+            plan = json.loads(result.stdout)
+
+            self.assertEqual(plan["resolution_status"], "unresolved")
+            self.assertEqual(plan["features"][0]["id"], "unresolved")
+            self.assertEqual(plan["features"][0]["matched_by"], "fallback")
+            self.assertEqual(plan["features"][0]["matched_path"], "unknown/file.py")
+            self.assertEqual(plan["features"][0]["confidence"], "low")
+            self.assertIn("noc suggest-map", " ".join(plan["next_actions"]))
+
+    def test_work_json_collects_staged_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            git(project, ["init"])
+            run(["init", str(project), "--mode", "small"])
+            feature = project / "noc_docs/features/user-login"
+            template = project / "noc_docs/features/_feature"
+            feature.mkdir(parents=True)
+            for file in template.iterdir():
+                if file.is_file():
+                    (feature / file.name).write_text(file.read_text(encoding="utf-8"), encoding="utf-8")
+            feature_map_path = project / "noc_docs/.living-docs/feature-map.json"
+            feature_map_path.write_text(
+                json.dumps(
+                    {
+                        "mode": "small",
+                        "features": {
+                            "user-login": {
+                                "paths": ["src/auth/"],
+                                "entry": "noc_docs/features/user-login/agent-guide.md",
+                                "requirements": "noc_docs/features/user-login/requirements.md",
+                                "status": "noc_docs/features/user-login/status.md",
+                                "guardrails": "noc_docs/features/user-login/guardrails.md",
+                                "tests": "noc_docs/features/user-login/test-record.md",
+                                "change_record": "noc_docs/features/user-login/change-record.md",
+                                "notes": "noc_docs/features/user-login/notes.md",
+                            }
+                        },
+                    },
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            (project / "src/auth").mkdir(parents=True)
+            (project / "src/auth/login.py").write_text("print('login')\n", encoding="utf-8")
+            git(project, ["add", "src/auth/login.py"])
+
+            result = run(["work", str(project), "--staged", "--json"])
+            plan = json.loads(result.stdout)
+
+            self.assertEqual(plan["paths"], ["src/auth/login.py"])
+            self.assertEqual(plan["resolution_status"], "resolved")
+            self.assertEqual(plan["features"][0]["id"], "user-login")
+
+    def test_work_json_collects_changed_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            git(project, ["init"])
+            git(project, ["config", "user.email", "test@example.com"])
+            git(project, ["config", "user.name", "Test User"])
+            run(["init", str(project), "--mode", "small"])
+            feature = project / "noc_docs/features/user-login"
+            template = project / "noc_docs/features/_feature"
+            feature.mkdir(parents=True)
+            for file in template.iterdir():
+                if file.is_file():
+                    (feature / file.name).write_text(file.read_text(encoding="utf-8"), encoding="utf-8")
+            feature_map_path = project / "noc_docs/.living-docs/feature-map.json"
+            feature_map_path.write_text(
+                json.dumps(
+                    {
+                        "mode": "small",
+                        "features": {
+                            "user-login": {
+                                "paths": ["src/auth/"],
+                                "entry": "noc_docs/features/user-login/agent-guide.md",
+                                "requirements": "noc_docs/features/user-login/requirements.md",
+                                "status": "noc_docs/features/user-login/status.md",
+                                "guardrails": "noc_docs/features/user-login/guardrails.md",
+                                "tests": "noc_docs/features/user-login/test-record.md",
+                                "change_record": "noc_docs/features/user-login/change-record.md",
+                                "notes": "noc_docs/features/user-login/notes.md",
+                            }
+                        },
+                    },
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            (project / "src/auth").mkdir(parents=True)
+            (project / "src/auth/login.py").write_text("print('login')\n", encoding="utf-8")
+            git(project, ["add", "."])
+            git(project, ["commit", "-m", "init"])
+            (project / "src/auth/login.py").write_text("print('changed')\n", encoding="utf-8")
+
+            result = run(["work", str(project), "--changed", "--json"])
+            plan = json.loads(result.stdout)
+
+            self.assertEqual(plan["paths"], ["src/auth/login.py"])
+            self.assertEqual(plan["resolution_status"], "resolved")
+            self.assertEqual(plan["features"][0]["id"], "user-login")
 
     def test_work_does_not_modify_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

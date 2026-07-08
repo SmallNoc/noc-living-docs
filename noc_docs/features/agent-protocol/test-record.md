@@ -21,4 +21,5 @@ confidence: medium
 | Date | Change | Command / Method | Result | Notes |
 |---|---|---|---|---|
 | 2026-07-08 | prefer `work --json` in agent entry | `python -m unittest tests.test_noc_cli.NocCliTests.test_agent_entry_and_codex_skill_prefer_work_json` | PASS | 验证模板和 skill 明确提示 JSON work plan。 |
+| 2026-07-08 | route-first protocol wording | `python -m unittest tests.test_noc_cli.NocCliTests.test_agent_entry_and_codex_skill_prefer_work_json` | PASS | 验证 README 包含 agent memory router 定位，模板和 skill 继续优先 JSON work plan。 |
 

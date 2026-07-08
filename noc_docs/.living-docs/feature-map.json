@@ -16,8 +16,8 @@
       "change_record": "noc_docs/features/agent-protocol/change-record.md",
       "notes": "noc_docs/features/agent-protocol/notes.md",
       "freshness": {
-        "last_doc_update": "2026-07-08T10:25:24.214311+00:00",
-        "last_indexed": "2026-07-08T10:26:08.889315+00:00"
+        "last_doc_update": "2026-07-08T15:22:15.034158+00:00",
+        "last_indexed": "2026-07-08T15:24:52.697622+00:00"
       },
       "completeness": {
         "required_docs": [
@@ -45,8 +45,8 @@
       "change_record": "noc_docs/features/cli-core/change-record.md",
       "notes": "noc_docs/features/cli-core/notes.md",
       "freshness": {
-        "last_doc_update": "2026-07-08T10:25:24.214311+00:00",
-        "last_indexed": "2026-07-08T10:26:08.892313+00:00"
+        "last_doc_update": "2026-07-08T15:21:46.637645+00:00",
+        "last_indexed": "2026-07-08T15:24:52.697622+00:00"
       },
       "completeness": {
         "required_docs": [
@@ -74,8 +74,8 @@
       "change_record": "noc_docs/features/codex-skill/change-record.md",
       "notes": "noc_docs/features/codex-skill/notes.md",
       "freshness": {
-        "last_doc_update": "2026-07-08T10:25:24.215311+00:00",
-        "last_indexed": "2026-07-08T10:26:08.894316+00:00"
+        "last_doc_update": "2026-07-08T14:54:28.947225+00:00",
+        "last_indexed": "2026-07-08T15:24:52.698624+00:00"
       },
       "completeness": {
         "required_docs": [
@@ -105,8 +105,8 @@
       "change_record": "noc_docs/features/init-index-validate/change-record.md",
       "notes": "noc_docs/features/init-index-validate/notes.md",
       "freshness": {
-        "last_doc_update": "2026-07-08T10:25:24.215817+00:00",
-        "last_indexed": "2026-07-08T10:26:08.897313+00:00"
+        "last_doc_update": "2026-07-08T14:54:28.951605+00:00",
+        "last_indexed": "2026-07-08T15:24:52.698624+00:00"
       },
       "completeness": {
         "required_docs": [
@@ -138,8 +138,8 @@
       "change_record": "noc_docs/features/release-quality/change-record.md",
       "notes": "noc_docs/features/release-quality/notes.md",
       "freshness": {
-        "last_doc_update": "2026-07-08T10:25:24.216919+00:00",
-        "last_indexed": "2026-07-08T10:26:08.900313+00:00"
+        "last_doc_update": "2026-07-08T15:24:47.739561+00:00",
+        "last_indexed": "2026-07-08T15:24:52.699623+00:00"
       },
       "completeness": {
         "required_docs": [

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-08T10:26:08.862897+00:00",
+  "generated_at": "2026-07-08T15:24:52.685227+00:00",
   "documents": {
     "noc_docs/development/documentation-policy.md": {
       "title": "Documentation Policy",
@@ -93,7 +93,7 @@
     },
     "noc_docs/features/cli-core/change-record.md": {
       "title": "Change Record: cli-core",
-      "summary": "Codex 和其他 agent 需要稳定读取“该读哪些文档、该更新哪些文档、最后跑哪些命令”，自由文本不适合作为自动化接口。 - `noc work` 增加 `--json`。 - 抽出 work plan 构建逻辑，让文本输出和 JSON 输出共用同一份数据。 - 增加 unittest 覆盖 JSON 输出和旧文本输出兼容性。 - agent 可以直接解析 work plan。 - 人类默认使用方式不变。",
+      "summary": "Codex 和其他 agent 需要稳定读取“该读哪些文档、该更新哪些文档、最后跑哪些命令”，自由文本不适合作为自动化接口。 - `noc work` 增加 `--json`。 - 抽出 work plan 构建逻辑，让文本输出和 JSON 输出共用同一份数据。 - 增加 unittest 覆盖 JSON 输出和旧文本输出兼容性。 - agent 可以直接解析 work plan。 - 人类默认使用方式不变。 NOC 的核心目标是作为 agent memory router，而不是让 agent 自己猜路径、解析自由文本或在低置信度场景继续误判。",
       "tags": [
         "change-record",
         "features"

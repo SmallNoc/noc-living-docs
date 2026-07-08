@@ -22,4 +22,10 @@ confidence: medium
 | Date | Change | Command / Method | Result | Notes |
 |---|---|---|---|---|
 | 2026-07-08 | baseline before agent-usability work | `python -m unittest tests.test_noc_cli tests.test_release_cli` | PASS | 47 tests passed before implementation. |
+| 2026-07-08 | tighten agent memory routing | `python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py` | PASS | Python compile check passed. |
+| 2026-07-08 | tighten agent memory routing | `python -m unittest tests.test_noc_cli` | PASS | 48 CLI tests passed. |
+| 2026-07-08 | tighten agent memory routing | `python -m unittest tests.test_release_cli` | PASS | 6 release tests passed. |
+| 2026-07-08 | tighten agent memory routing | `python scripts/noc.py validate` | PASS | NOC Living Docs validation passed. |
+| 2026-07-08 | tighten agent memory routing | `python scripts/release.py --check` | PASS | Release check passed for 1.0.0. |
+| 2026-07-08 | tighten agent memory routing | `python scripts/noc.py check . --staged --warn-only` | PASS | No staged code changes requiring NOC docs check at verification time. |
 
