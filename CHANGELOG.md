@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- Expanded README into a bilingual usage guide with aligned English and Chinese sections for install, update, daily use, commands, generated documents, file responsibilities, machine files, and domain mode.
+
 ## [1.0.1] - 2026-07-08
 
 ### Changed

@@ -45,3 +45,19 @@ The agent-usability work needs to become the version published from `main`, with
 
 - Release bookkeeping can create a new `v1.0.1` tag without rewriting prior tags.
 
+## 2026-07-08 - Expand bilingual README usage guide
+
+### Reason
+
+The README still under-explained update flow, command coverage, generated document structure, and file responsibilities. The English and Chinese sections also needed to stay structurally aligned.
+
+### Changed
+
+- Expanded README with install, update, quick start, daily use, agent workflow, commands, generated documents, document responsibilities, machine files, domain mode, comparisons, and agent usage.
+- Mirrored the same structure in Chinese.
+- Corrected the displayed current version to `1.0.1`.
+
+### Impact
+
+- New users can understand how to install, update, initialize, use, and maintain NOC without jumping into deeper docs first.
+
