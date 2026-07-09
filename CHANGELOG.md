@@ -4,6 +4,7 @@
 
 ### Changed
 
+- Added PyPI publishing readiness: modern package metadata, release documentation, Trusted Publishing GitHub Actions workflow, build artifact ignores, and wheel/package-data validation.
 - Added the standard `.agents/skills/project-living-docs/` Codex skill path while keeping the legacy `skills/codex/project-living-docs/` path for compatibility.
 - Clarified README installation guidance to recommend `pipx install git+https://github.com/SmallNoc/noc-living-docs.git` until PyPI publishing is available.
 - Updated README positioning, Codex skill install instructions, GitHub topic suggestions, and skill trigger description.

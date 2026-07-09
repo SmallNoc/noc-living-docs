@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-09T15:44:42.066134+00:00",
+  "generated_at": "2026-07-09T16:29:53.909671+00:00",
   "documents": {
     "noc_docs/development/documentation-policy.md": {
       "title": "Documentation Policy",
@@ -212,7 +212,7 @@
     },
     "noc_docs/features/init-index-validate/change-record.md": {
       "title": "Change Record: init-index-validate",
-      "summary": "The repository self-check still assumed the legacy skill path and a `Use when` description prefix, while the recommended Codex skill description now starts with `Use for` and the standard install path is `.agents/skills/project-living-docs/`.",
+      "summary": "PyPI publishing support adds release documentation and a tag-triggered workflow that should be part of repository self-validation. - Added `docs/release.md` and `.github/workflows/publish.yml` to required repository paths in `validate-noc-docs.py`.",
       "tags": [
         "change-record",
         "features"
@@ -268,7 +268,7 @@
     },
     "noc_docs/features/release-quality/change-record.md": {
       "title": "Change Record: release-quality",
-      "summary": "The README pointed users at package install commands that may fail before PyPI publication, and `pyproject.toml` still declared `1.0.0` while other release files declared `1.0.1`. - Updated README English and Chinese install guidance to recommend `pipx install git+https://github.com/SmallNoc/noc-living-docs.git` until ",
+      "summary": "The project needs to publish a real `noc-living-docs` package to PyPI so users can install the CLI with `pipx install noc-living-docs` after release. - Updated `pyproject.toml` for modern license metadata, project URLs, explicit package discovery, and package data that includes hidden `.living-docs` template JSON files",
       "tags": [
         "change-record",
         "features"

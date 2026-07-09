@@ -1,5 +1,24 @@
 # Change Record: release-quality
 
+## 2026-07-10 - Add PyPI publishing readiness
+
+### Reason
+
+The project needs to publish a real `noc-living-docs` package to PyPI so users can install the CLI with `pipx install noc-living-docs` after release.
+
+### Changed
+
+- Updated `pyproject.toml` for modern license metadata, project URLs, explicit package discovery, and package data that includes hidden `.living-docs` template JSON files without pycache files.
+- Added `.github/workflows/publish.yml` for tag-triggered PyPI publishing through Trusted Publishing and OIDC.
+- Added `docs/release.md` with local build/twine/test checks and manual PyPI Trusted Publishing setup steps.
+- Extended `scripts/release.py --check` to verify `pyproject.toml` and README version consistency.
+- Added tests for package metadata, publish workflow requirements, release docs, and version mismatch failures.
+- Ignored local build artifacts in `.gitignore`.
+
+### Impact
+
+- Maintainers can build and verify PyPI artifacts locally, then publish from a `v*` tag without storing PyPI credentials in the repository.
+
 ## 2026-07-09 - Standardize install guidance and version metadata
 
 ### Reason

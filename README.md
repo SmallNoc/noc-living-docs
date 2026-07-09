@@ -428,6 +428,7 @@ More reading:
 - [Why NOC](docs/why-noc.md)
 - [Agent Compatibility](docs/agent-compatibility.md)
 - [Comparisons](docs/comparisons.md)
+- [Release](docs/release.md)
 - [v1 Readiness](docs/v1-readiness.md)
 - [Migration Reports](docs/migration-reports/)
 
@@ -858,6 +859,7 @@ project-memory
 - [Why NOC](docs/why-noc.md)
 - [Agent Compatibility](docs/agent-compatibility.md)
 - [Comparisons](docs/comparisons.md)
+- [Release](docs/release.md)
 - [v1 Readiness](docs/v1-readiness.md)
 - [Migration Reports](docs/migration-reports/)
 

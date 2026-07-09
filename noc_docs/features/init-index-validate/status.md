@@ -9,7 +9,7 @@ confidence: medium
 
 ## Current Behavior
 
-`init-noc-docs.py` 负责复制模板和合并 agent managed block；`index-noc-docs.py` 生成 manifest、docs-index 和 feature-map；`validate-noc-docs.py` 校验本仓库或目标项目的协议结构。仓库自检同时要求标准 `.agents/skills/project-living-docs/` 和兼容 `skills/codex/project-living-docs/` skill 路径存在，并允许 skill description 使用 `Use when` 或 `Use for` 开头。
+`init-noc-docs.py` 负责复制模板和合并 agent managed block；`index-noc-docs.py` 生成 manifest、docs-index 和 feature-map；`validate-noc-docs.py` 校验本仓库或目标项目的协议结构。仓库自检同时要求标准 `.agents/skills/project-living-docs/`、兼容 `skills/codex/project-living-docs/`、release 文档和 PyPI publish workflow 存在，并允许 skill description 使用 `Use when` 或 `Use for` 开头。
 
 ## Important Files
 

@@ -71,7 +71,27 @@ class NocCliTests(unittest.TestCase):
 
         self.assertIn('name = "noc-living-docs"', pyproject)
         self.assertIn('version = "1.0.1"', pyproject)
+        self.assertIn('license = "PolyForm-Noncommercial-1.0.0"', pyproject)
+        self.assertIn('license-files = ["LICENSE"]', pyproject)
         self.assertIn('noc = "scripts.noc:main"', pyproject)
+        self.assertIn('include = ["scripts", "templates*"]', pyproject)
+        self.assertIn('"noc_docs/.living-docs/*.json"', pyproject)
+
+    def test_pypi_publish_workflow_uses_trusted_publishing(self) -> None:
+        workflow = (ROOT / ".github/workflows/publish.yml").read_text(encoding="utf-8")
+        release_doc = (ROOT / "docs/release.md").read_text(encoding="utf-8")
+
+        self.assertIn('tags:\n      - "v*"', workflow)
+        self.assertIn("id-token: write", workflow)
+        self.assertIn("environment: pypi", workflow)
+        self.assertIn("python -m build", workflow)
+        self.assertIn("noc init /tmp/noc-publish-check", workflow)
+        self.assertIn("pypa/gh-action-pypi-publish@release/v1", workflow)
+        self.assertNotIn("password:", workflow.lower())
+        self.assertNotIn("api-token", workflow.lower())
+        self.assertIn("Trusted Publishers", release_doc)
+        self.assertIn("Workflow filename: `publish.yml`", release_doc)
+        self.assertIn("Project name: `noc-living-docs`", release_doc)
 
     def test_codex_skill_frontmatter_contains_name_and_description(self) -> None:
         for skill_path in [

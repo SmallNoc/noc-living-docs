@@ -26,10 +26,13 @@ NOC Living Docs 是一个 Python CLI 和文档协议，用固定的 `noc_docs/` 
 - 根据代码路径或 feature 输出 work plan。
 - 检查 staged code changes 是否有对应 NOC docs updates。
 - 为 Codex 和通用 agents 提供入口协议。
+- 支持构建 PyPI wheel/sdist，并通过 GitHub Actions Trusted Publishing 发布 `noc-living-docs`。
 
 ## Important Entry Points
 
 - `scripts/noc.py`
+- `pyproject.toml`
+- `.github/workflows/publish.yml`
 - `.agents/skills/project-living-docs/SKILL.md`
 - `templates/AGENTS.md`
 - `skills/codex/project-living-docs/SKILL.md`

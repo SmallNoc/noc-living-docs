@@ -55,6 +55,31 @@ def changelog_entry(root: Path, version: str) -> str | None:
     return text[start:next_heading]
 
 
+def check_pyproject_version(root: Path, version: str) -> None:
+    path = root / "pyproject.toml"
+    if not path.exists():
+        return
+    text = path.read_text(encoding="utf-8")
+    match = re.search(r'^version\s*=\s*"([^"]+)"', text, re.MULTILINE)
+    if not match:
+        fail("pyproject.toml is missing project version")
+    if match.group(1) != version:
+        fail(f"pyproject.toml version {match.group(1)} does not match VERSION {version}")
+
+
+def check_readme_version(root: Path, version: str) -> None:
+    path = root / "README.md"
+    if not path.exists():
+        return
+    text = path.read_text(encoding="utf-8")
+    markers = [
+        f"Current version: `{version}`.",
+        f"当前版本：`{version}`。",
+    ]
+    if not any(marker in text for marker in markers):
+        fail(f"README.md is missing current version {version}")
+
+
 def current_exact_tag(root: Path) -> str | None:
     result = subprocess.run(
         ["git", "-C", str(root), "describe", "--tags", "--exact-match"],
@@ -74,6 +99,8 @@ def command_check(root: Path) -> None:
         fail(f"CHANGELOG.md is missing entry for {version}")
     if "TODO" in entry:
         fail(f"CHANGELOG.md entry for {version} still contains TODO")
+    check_pyproject_version(root, version)
+    check_readme_version(root, version)
     tag = current_exact_tag(root)
     if tag and tag != f"v{version}":
         fail(f"current tag {tag} does not match VERSION {version}")

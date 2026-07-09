@@ -1,0 +1,52 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install build tools
+        run: python -m pip install --upgrade pip build
+
+      - name: Run tests
+        run: python -m unittest tests.test_noc_cli tests.test_release_cli
+
+      - name: Validate NOC docs
+        run: python scripts/noc.py validate
+
+      - name: Check release metadata
+        run: python scripts/release.py --check
+
+      - name: Build package
+        run: python -m build
+
+      - name: Verify built CLI
+        run: |
+          python -m pip install --force-reinstall dist/*.whl
+          noc --help
+          noc init /tmp/noc-publish-check
+          test -f /tmp/noc-publish-check/noc_docs/.living-docs/config.json
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/*
+
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

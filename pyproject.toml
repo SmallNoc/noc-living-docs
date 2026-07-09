@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,7 +8,8 @@ version = "1.0.1"
 description = "Small local CLI for keeping NOC living docs in sync with code changes."
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "PolyForm Noncommercial License 1.0.0"}
+license = "PolyForm-Noncommercial-1.0.0"
+license-files = ["LICENSE"]
 authors = [
   {name = "SmallNoc"}
 ]
@@ -17,20 +18,27 @@ classifiers = [
   "Development Status :: 4 - Beta",
   "Environment :: Console",
   "Intended Audience :: Developers",
-  "License :: Other/Proprietary License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
   "Topic :: Software Development :: Documentation",
   "Topic :: Software Development :: Version Control :: Git",
 ]
 
+[project.urls]
+Homepage = "https://github.com/SmallNoc/noc-living-docs"
+Source = "https://github.com/SmallNoc/noc-living-docs"
+Issues = "https://github.com/SmallNoc/noc-living-docs/issues"
+
 [project.scripts]
 noc = "scripts.noc:main"
 
 [tool.setuptools]
-packages = ["scripts", "templates"]
-py-modules = []
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["scripts", "templates*"]
+namespaces = true
 
 [tool.setuptools.package-data]
-scripts = ["*.py"]
-templates = ["**/*", "noc_docs/.living-docs/*"]
+templates = ["*.md", "noc_docs/**/*.md", "noc_docs/**/*.json", "noc_docs/.living-docs/*.json"]

@@ -11,6 +11,7 @@ confidence: medium
 
 - G-001: 不要发布未通过 release check 的版本。
 - G-002: 不要只靠手工测试验证新增 CLI 行为。
+- G-003: 不要把 PyPI token、密码或 API key 写入代码、README、workflow 或 NOC 文档。
 
 ## Requires Approval
 
@@ -25,4 +26,7 @@ confidence: medium
 - `scripts/release.py`
 - `VERSION`
 - `CHANGELOG.md`
+- `pyproject.toml`
+- `.github/workflows/publish.yml`
+- `docs/release.md`
 

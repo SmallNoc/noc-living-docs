@@ -44,4 +44,12 @@ confidence: medium
 | 2026-07-09 | standardize skill install and version metadata | `python scripts/release.py --check` | PASS | Release check passed with `VERSION`, `CHANGELOG.md`, README, and `pyproject.toml` aligned at 1.0.1. |
 | 2026-07-09 | standardize skill install and version metadata | `python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py` | PASS | Compile check passed after validation script update. |
 | 2026-07-09 | standardize skill install and version metadata | `python scripts/noc.py check . --staged --warn-only` | PASS | No staged code changes requiring NOC docs check. |
+| 2026-07-10 | add PyPI publishing readiness | `python -m pip install --upgrade pip build twine pytest` | PASS | Installed local release verification tools. |
+| 2026-07-10 | add PyPI publishing readiness | `python -m build` | PASS | Generated `noc_living_docs-1.0.1-py3-none-any.whl` and `noc_living_docs-1.0.1.tar.gz`; wheel contains `.living-docs` JSON and no pycache files. |
+| 2026-07-10 | add PyPI publishing readiness | `python -m twine check dist/*` | PASS | Wheel and sdist passed metadata and README rendering checks. |
+| 2026-07-10 | add PyPI publishing readiness | `pytest` | PASS | 57 tests passed. |
+| 2026-07-10 | add PyPI publishing readiness | `python -m unittest tests.test_noc_cli tests.test_release_cli` | PASS | 57 tests passed. |
+| 2026-07-10 | add PyPI publishing readiness | `python scripts/release.py --check` | PASS | Release check passed for 1.0.1 and now verifies pyproject/README version consistency. |
+| 2026-07-10 | add PyPI publishing readiness | `python -m pip install --force-reinstall dist/noc_living_docs-1.0.1-py3-none-any.whl; noc --help; noc init <temp>` | PASS | Installed wheel exposes `noc` entry point and initializes `noc_docs/.living-docs/config.json`. |
+| 2026-07-10 | add PyPI publishing readiness | `PyYAML safe_load on .github/workflows/*.yml` | PASS | `publish.yml`, `validate.yml`, and `noc-check.yml` parsed successfully. |
 

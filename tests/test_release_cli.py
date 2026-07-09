@@ -91,6 +91,30 @@ class ReleaseCliTests(unittest.TestCase):
             self.assertEqual(result.returncode, 1)
             self.assertIn("CHANGELOG.md entry for 0.4.0 still contains TODO", result.stderr)
 
+    def test_check_rejects_pyproject_version_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            (project / "VERSION").write_text("0.4.0\n", encoding="utf-8")
+            (project / "CHANGELOG.md").write_text("# Changelog\n\n## [0.4.0] - 2026-07-04\n", encoding="utf-8")
+            (project / "pyproject.toml").write_text('[project]\nversion = "0.4.1"\n', encoding="utf-8")
+
+            result = run(["--check"], cwd=project, check=False)
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("pyproject.toml version 0.4.1 does not match VERSION 0.4.0", result.stderr)
+
+    def test_check_rejects_readme_version_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            (project / "VERSION").write_text("0.4.0\n", encoding="utf-8")
+            (project / "CHANGELOG.md").write_text("# Changelog\n\n## [0.4.0] - 2026-07-04\n", encoding="utf-8")
+            (project / "README.md").write_text("Current version: `0.4.1`.\n", encoding="utf-8")
+
+            result = run(["--check"], cwd=project, check=False)
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("README.md is missing current version 0.4.0", result.stderr)
+
     def test_check_rejects_github_ref_tag_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp)

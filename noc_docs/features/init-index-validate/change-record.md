@@ -1,5 +1,19 @@
 # Change Record: init-index-validate
 
+## 2026-07-10 - Validate PyPI release files
+
+### Reason
+
+PyPI publishing support adds release documentation and a tag-triggered workflow that should be part of repository self-validation.
+
+### Changed
+
+- Added `docs/release.md` and `.github/workflows/publish.yml` to required repository paths in `validate-noc-docs.py`.
+
+### Impact
+
+- `python scripts/noc.py validate` fails if release documentation or the PyPI publish workflow is accidentally removed.
+
 ## 2026-07-09 - Validate standard Codex skill path
 
 ### Reason
