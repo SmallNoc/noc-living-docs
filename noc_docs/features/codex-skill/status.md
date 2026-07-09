@@ -9,17 +9,20 @@ confidence: medium
 
 ## Current Behavior
 
-`skills/codex/project-living-docs/SKILL.md` 当前要求 Codex 在代码可能变化时运行 work plan，并优先使用 `--json` 获取机器可读路由。reference 文件保存详细 workflow、feature doc 模板、domain mode 和推荐提示。
+`.agents/skills/project-living-docs/SKILL.md` 是推荐给 Codex 扫描和复制的标准 skill 路径，`skills/codex/project-living-docs/SKILL.md` 继续保留以兼容已有用法。skill 要求 Codex 在代码可能变化时运行 work plan，并优先使用 `--json` 获取机器可读路由。reference 文件保存详细 workflow、feature doc 模板、domain mode 和推荐提示。
 
 ## Important Files
 
+- `.agents/skills/project-living-docs/SKILL.md`
+- `.agents/skills/project-living-docs/references/`
+- `.agents/skills/project-living-docs/evals/`
 - `skills/codex/project-living-docs/SKILL.md`
 - `skills/codex/project-living-docs/references/`
 - `skills/codex/project-living-docs/evals/`
 
 ## Data, API, or Configuration
 
-- skill frontmatter 的 `name` 和 `description` 被测试覆盖。
+- 标准路径和兼容路径的 skill frontmatter `name` 和 `description` 被测试覆盖。
 
 ## Known Issues
 

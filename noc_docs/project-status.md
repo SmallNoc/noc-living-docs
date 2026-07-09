@@ -30,6 +30,7 @@ NOC Living Docs 是一个 Python CLI 和文档协议，用固定的 `noc_docs/` 
 ## Important Entry Points
 
 - `scripts/noc.py`
+- `.agents/skills/project-living-docs/SKILL.md`
 - `templates/AGENTS.md`
 - `skills/codex/project-living-docs/SKILL.md`
 - `noc_docs/docs-map.md`

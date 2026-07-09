@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "noc-living-docs"
-version = "1.0.0"
+version = "1.0.1"
 description = "Small local CLI for keeping NOC living docs in sync with code changes."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -12,7 +12,7 @@ license = {text = "PolyForm Noncommercial License 1.0.0"}
 authors = [
   {name = "SmallNoc"}
 ]
-keywords = ["documentation", "living-docs", "cli", "git-hooks"]
+keywords = ["codex", "codex-skill", "agent-skills", "ai-coding", "agents-md", "living-docs", "developer-tools", "documentation", "cli", "git-hooks", "project-memory"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Environment :: Console",

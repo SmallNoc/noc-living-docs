@@ -58,6 +58,12 @@ def check_required_paths() -> None:
         "templates/noc_docs/project-status.md",
         "templates/noc_docs/docs-map.md",
         "templates/noc_docs/.living-docs/config.json",
+        ".agents/skills/project-living-docs/SKILL.md",
+        ".agents/skills/project-living-docs/references/workflow.md",
+        ".agents/skills/project-living-docs/references/feature-doc-template.md",
+        ".agents/skills/project-living-docs/references/domain-mode-guide.md",
+        ".agents/skills/project-living-docs/references/codex-prompts.md",
+        ".agents/skills/project-living-docs/evals/project-living-docs.prompts.csv",
         "skills/codex/project-living-docs/SKILL.md",
         "skills/codex/project-living-docs/references/workflow.md",
         "skills/codex/project-living-docs/references/feature-doc-template.md",
@@ -81,13 +87,17 @@ def check_config() -> None:
 
 
 def check_skill_frontmatter() -> None:
-    skill = (ROOT / "skills/codex/project-living-docs/SKILL.md").read_text(encoding="utf-8")
-    if not skill.startswith("---\n"):
-        fail("Codex skill must start with YAML frontmatter")
-    if "name: project-living-docs" not in skill:
-        fail("Codex skill name must be project-living-docs")
-    if "description: Use when" not in skill:
-        fail("Codex skill description must start with Use when")
+    for path in [
+        ".agents/skills/project-living-docs/SKILL.md",
+        "skills/codex/project-living-docs/SKILL.md",
+    ]:
+        skill = (ROOT / path).read_text(encoding="utf-8")
+        if not skill.startswith("---\n"):
+            fail(f"{path} must start with YAML frontmatter")
+        if "name: project-living-docs" not in skill:
+            fail(f"{path} name must be project-living-docs")
+        if not ("description: Use when" in skill or "description: Use for" in skill):
+            fail(f"{path} description must start with Use when or Use for")
 
 
 def check_skill_evals() -> None:

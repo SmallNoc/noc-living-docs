@@ -22,5 +22,6 @@ confidence: medium
 
 ## Sensitive Files
 
+- `.agents/skills/project-living-docs/SKILL.md`
 - `skills/codex/project-living-docs/SKILL.md`
 

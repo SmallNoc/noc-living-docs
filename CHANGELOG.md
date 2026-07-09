@@ -4,6 +4,10 @@
 
 ### Changed
 
+- Added the standard `.agents/skills/project-living-docs/` Codex skill path while keeping the legacy `skills/codex/project-living-docs/` path for compatibility.
+- Clarified README installation guidance to recommend `pipx install git+https://github.com/SmallNoc/noc-living-docs.git` until PyPI publishing is available.
+- Updated README positioning, Codex skill install instructions, GitHub topic suggestions, and skill trigger description.
+- Synchronized `pyproject.toml` package version with `VERSION`, `README.md`, and `CHANGELOG.md` at `1.0.1`.
 - Expanded README into a bilingual usage guide with aligned English and Chinese sections for install, update, daily use, commands, generated documents, file responsibilities, machine files, and domain mode.
 
 ## [1.0.1] - 2026-07-08

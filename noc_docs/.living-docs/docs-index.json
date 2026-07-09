@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-08T16:02:02.462500+00:00",
+  "generated_at": "2026-07-09T15:44:42.066134+00:00",
   "documents": {
     "noc_docs/development/documentation-policy.md": {
       "title": "Documentation Policy",
@@ -149,7 +149,7 @@
     },
     "noc_docs/features/codex-skill/change-record.md": {
       "title": "Change Record: codex-skill",
-      "summary": "Codex 使用结构化 work plan 比解析自由文本更稳定，能更容易定位需要读取和更新的 NOC 文档。 - Codex skill 的执行步骤改为优先运行 `work ... --json`。 - 明确 JSON 不可用时才 fallback 到文本输出。 - Codex 和 CLI 的 agent-first 路由方式保持一致。",
+      "summary": "Codex users need a standard `.agents/skills/project-living-docs/` directory they can copy into a project or global skill folder without guessing from the legacy repo layout. - Added `.agents/skills/project-living-docs/` with the same `SKILL.md`, references, and evals as the legacy `skills/codex/project-living-docs/` pa",
       "tags": [
         "change-record",
         "features"
@@ -212,7 +212,7 @@
     },
     "noc_docs/features/init-index-validate/change-record.md": {
       "title": "Change Record: init-index-validate",
-      "summary": "The NOC project itself should be the best example of how to structure living docs for agents and maintainers. - Initialized `AGENTS.md` and `noc_docs/` in the main repository. - Created five real feature doc folders and mapped core source paths.",
+      "summary": "The repository self-check still assumed the legacy skill path and a `Use when` description prefix, while the recommended Codex skill description now starts with `Use for` and the standard install path is `.agents/skills/project-living-docs/`.",
       "tags": [
         "change-record",
         "features"
@@ -268,7 +268,7 @@
     },
     "noc_docs/features/release-quality/change-record.md": {
       "title": "Change Record: release-quality",
-      "summary": "Structured work output and agent entry guidance are core usability behavior and should be regression-tested. - Added unittest coverage for `work --json`. - Added unittest coverage that agent entry and Codex skill prefer JSON work plans. - Future changes are less likely to remove the agent-first path accidentally.",
+      "summary": "The README pointed users at package install commands that may fail before PyPI publication, and `pyproject.toml` still declared `1.0.0` while other release files declared `1.0.1`. - Updated README English and Chinese install guidance to recommend `pipx install git+https://github.com/SmallNoc/noc-living-docs.git` until ",
       "tags": [
         "change-record",
         "features"

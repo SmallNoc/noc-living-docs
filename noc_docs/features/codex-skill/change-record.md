@@ -1,5 +1,21 @@
 # Change Record: codex-skill
 
+## 2026-07-09 - Add standard Codex skill path
+
+### Reason
+
+Codex users need a standard `.agents/skills/project-living-docs/` directory they can copy into a project or global skill folder without guessing from the legacy repo layout.
+
+### Changed
+
+- Added `.agents/skills/project-living-docs/` with the same `SKILL.md`, references, and evals as the legacy `skills/codex/project-living-docs/` path.
+- Updated the skill description to front-load AI-assisted code change and living docs synchronization trigger keywords.
+- Added regression coverage for both skill paths.
+
+### Impact
+
+- New Codex users can copy the standard skill path while existing users of `skills/codex/project-living-docs/` remain compatible.
+
 ## 2026-07-08 - Prefer machine-readable work plans
 
 ### Reason

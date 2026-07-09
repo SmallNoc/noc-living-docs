@@ -1,5 +1,20 @@
 # Change Record: init-index-validate
 
+## 2026-07-09 - Validate standard Codex skill path
+
+### Reason
+
+The repository self-check still assumed the legacy skill path and a `Use when` description prefix, while the recommended Codex skill description now starts with `Use for` and the standard install path is `.agents/skills/project-living-docs/`.
+
+### Changed
+
+- Added `.agents/skills/project-living-docs/` files to repository validation.
+- Updated skill frontmatter validation to accept descriptions starting with either `Use when` or `Use for`.
+
+### Impact
+
+- `python scripts/noc.py validate` remains compatible with the old path while enforcing that the new standard skill path is present.
+
 ## 2026-07-08 - Dogfood NOC in this repository
 
 ### Reason

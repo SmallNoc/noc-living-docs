@@ -1,0 +1,19 @@
+prompt,should_trigger,scenario
+"Initialize NOC Living Docs in this repository and preserve the existing AGENTS.md rules.",true,initialization
+"Use NOC Living Docs for this login change and keep the feature docs in sync.",true,code_change
+"We agreed that failed login should lock the account after five attempts. Implement it and update the docs.",true,new_requirement_code
+"Refactor the billing service without changing behavior and record the verification.",true,refactor
+"Add a new reporting export API and update requirements, status, and tests.",true,api_feature
+"Change the user table migration and make sure the schema docs and test record are updated.",true,schema_change
+"Tighten permission checks for admin users and check guardrails first.",true,security_change
+"Run the NOC check before committing these staged TypeScript changes.",true,check_command
+"Generate a work plan for src/auth/login.py before coding.",true,work_plan_path
+"Suggest feature mappings for this Java monorepo.",true,suggest_map
+"Audit noc_docs for stale feature documentation.",true,audit
+"Use NOC docs to answer what the billing feature currently does.",true,query_docs
+"Create a Python script that prints hello world.",false,generic_code
+"What is the capital of France?",false,general_question
+"Summarize this pasted article without touching the repo.",false,unrelated_summary
+"Rename a variable in a throwaway snippet, no project files involved.",false,non_project_snippet
+"Explain how HTTP caching works conceptually.",false,general_explanation
+"Draft a marketing tagline for our product.",false,copywriting

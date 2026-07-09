@@ -39,4 +39,9 @@ confidence: medium
 | 2026-07-08 | expand bilingual README usage guide | `python -m unittest tests.test_noc_cli tests.test_release_cli` | PASS | 54 tests passed. |
 | 2026-07-08 | expand bilingual README usage guide | `python scripts/noc.py validate` | PASS | NOC Living Docs validation passed. |
 | 2026-07-08 | expand bilingual README usage guide | `python scripts/release.py --check` | PASS | Release check passed for 1.0.1. |
+| 2026-07-09 | standardize skill install and version metadata | `python -m unittest tests.test_noc_cli tests.test_release_cli` | PASS | 54 tests passed after README, skill path, test, and version metadata updates. |
+| 2026-07-09 | standardize skill install and version metadata | `python scripts/noc.py validate` | PASS | NOC Living Docs validation passed after standard skill path and validation rule updates. |
+| 2026-07-09 | standardize skill install and version metadata | `python scripts/release.py --check` | PASS | Release check passed with `VERSION`, `CHANGELOG.md`, README, and `pyproject.toml` aligned at 1.0.1. |
+| 2026-07-09 | standardize skill install and version metadata | `python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py` | PASS | Compile check passed after validation script update. |
+| 2026-07-09 | standardize skill install and version metadata | `python scripts/noc.py check . --staged --warn-only` | PASS | No staged code changes requiring NOC docs check. |
 

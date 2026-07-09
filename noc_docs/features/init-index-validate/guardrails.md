@@ -24,5 +24,6 @@ confidence: medium
 
 - `scripts/init-noc-docs.py`
 - `scripts/index-noc-docs.py`
+- `scripts/validate-noc-docs.py`
 - `templates/noc_docs/`
 

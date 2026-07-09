@@ -1,5 +1,22 @@
 # Change Record: release-quality
 
+## 2026-07-09 - Standardize install guidance and version metadata
+
+### Reason
+
+The README pointed users at package install commands that may fail before PyPI publication, and `pyproject.toml` still declared `1.0.0` while other release files declared `1.0.1`.
+
+### Changed
+
+- Updated README English and Chinese install guidance to recommend `pipx install git+https://github.com/SmallNoc/noc-living-docs.git` until PyPI publishing is available.
+- Added project-level and global Codex skill copy instructions for `.agents/skills/project-living-docs/`.
+- Added GitHub topic suggestions and clearer first-sentence positioning.
+- Bumped `pyproject.toml` to `1.0.1` and expanded package keywords.
+
+### Impact
+
+- New users get a currently usable install command, Codex users can find the standard skill path, and release metadata is consistent.
+
 ## 2026-07-08 - Cover agent-first work plan behavior
 
 ### Reason

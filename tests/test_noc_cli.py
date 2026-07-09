@@ -70,25 +70,35 @@ class NocCliTests(unittest.TestCase):
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
 
         self.assertIn('name = "noc-living-docs"', pyproject)
+        self.assertIn('version = "1.0.1"', pyproject)
         self.assertIn('noc = "scripts.noc:main"', pyproject)
 
     def test_codex_skill_frontmatter_contains_name_and_description(self) -> None:
-        skill = (ROOT / "skills/codex/project-living-docs/SKILL.md").read_text(encoding="utf-8")
+        for skill_path in [
+            ROOT / "skills/codex/project-living-docs/SKILL.md",
+            ROOT / ".agents/skills/project-living-docs/SKILL.md",
+        ]:
+            with self.subTest(skill_path=skill_path):
+                skill = skill_path.read_text(encoding="utf-8")
 
-        self.assertTrue(skill.startswith("---\n"))
-        self.assertIn("name: project-living-docs", skill)
-        self.assertIn("description: Use when", skill)
+                self.assertTrue(skill.startswith("---\n"))
+                self.assertIn("name: project-living-docs", skill)
+                self.assertIn("description: Use for AI-assisted code changes", skill)
 
     def test_codex_skill_references_and_evals_exist(self) -> None:
-        skill_root = ROOT / "skills/codex/project-living-docs"
-        for path in [
-            "references/workflow.md",
-            "references/feature-doc-template.md",
-            "references/domain-mode-guide.md",
-            "references/codex-prompts.md",
-            "evals/project-living-docs.prompts.csv",
+        for skill_root in [
+            ROOT / "skills/codex/project-living-docs",
+            ROOT / ".agents/skills/project-living-docs",
         ]:
-            self.assertTrue((skill_root / path).exists(), path)
+            with self.subTest(skill_root=skill_root):
+                for path in [
+                    "references/workflow.md",
+                    "references/feature-doc-template.md",
+                    "references/domain-mode-guide.md",
+                    "references/codex-prompts.md",
+                    "evals/project-living-docs.prompts.csv",
+                ]:
+                    self.assertTrue((skill_root / path).exists(), path)
 
         evals = list(csv.DictReader((skill_root / "evals/project-living-docs.prompts.csv").read_text(encoding="utf-8").splitlines()))
         self.assertGreaterEqual(len(evals), 15)
@@ -101,6 +111,8 @@ class NocCliTests(unittest.TestCase):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
 
         self.assertIn("agent memory router", readme.lower())
+        self.assertIn("pipx install git+https://github.com/SmallNoc/noc-living-docs.git", readme)
+        self.assertIn(".agents/skills/project-living-docs", readme)
         self.assertIn("noc work <project> --path <code/path> --json", agents)
         self.assertNotIn("must update every feature document", agents.lower())
         self.assertIn("--json", skill)

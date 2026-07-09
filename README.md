@@ -5,7 +5,9 @@
 ![Codex Skill](https://img.shields.io/badge/Codex-Skill-blue)
 ![Living Docs](https://img.shields.io/badge/Living%20Docs-NOC-green)
 
-NOC is an **agent memory router** for codebases.
+A Codex skill and local CLI that keeps requirements, current behavior, guardrails, tests, and change records synchronized with code changes.
+
+NOC is a lightweight **agent memory router** for codebases.
 
 It helps AI coding agents find the smallest useful project context before they edit code, then leave behind the facts that future sessions need: current behavior, requirements, guardrails, tests, and important changes.
 
@@ -76,21 +78,21 @@ If NOC cannot resolve a path, it says so explicitly with `resolution_status: "un
 
 ## Install
 
-Recommended:
+Current recommended install from source:
+
+```bash
+pipx install git+https://github.com/SmallNoc/noc-living-docs.git
+noc --help
+```
+
+After the package is published to PyPI, use:
 
 ```bash
 pipx install noc-living-docs
 noc --help
 ```
 
-With pip:
-
-```bash
-python -m pip install noc-living-docs
-noc --help
-```
-
-From source:
+For local development without installing:
 
 ```bash
 git clone https://github.com/SmallNoc/noc-living-docs.git
@@ -359,11 +361,27 @@ NOC can coexist with all of these. It is the local routing layer that tells an a
 
 ## For Coding Agents
 
-Codex can use the bundled skill:
+Codex can use the bundled skill from the standard skill path:
 
 ```text
-skills/codex/project-living-docs
+.agents/skills/project-living-docs
 ```
+
+Project install:
+
+```bash
+mkdir -p /path/to/project/.agents/skills
+cp -R .agents/skills/project-living-docs /path/to/project/.agents/skills/
+```
+
+Global install:
+
+```bash
+mkdir -p ~/.agents/skills
+cp -R .agents/skills/project-living-docs ~/.agents/skills/
+```
+
+The legacy repo path `skills/codex/project-living-docs` is kept for compatibility, but `.agents/skills/project-living-docs` is the path new Codex users should copy.
 
 Generic agents can read the managed block from:
 
@@ -387,6 +405,24 @@ python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-d
 
 Current version: `1.0.1`.
 
+## GitHub Discovery
+
+Suggested GitHub topics:
+
+```text
+codex
+codex-skill
+agent-skills
+ai-coding
+agents-md
+living-docs
+developer-tools
+documentation
+cli
+git-hooks
+project-memory
+```
+
 More reading:
 
 - [Why NOC](docs/why-noc.md)
@@ -405,7 +441,9 @@ Code, scripts, templates, and skills are licensed under the PolyForm Noncommerci
 
 ## 中文
 
-NOC 是给代码仓库用的 **agent memory router**。
+NOC 是一个 Codex skill 和本地 CLI，用来让需求、当前行为、guardrails、测试和变更记录随代码改动保持同步。
+
+NOC 是给代码仓库用的轻量级 **agent memory router**。
 
 它帮助 AI 编程助手在改代码前找到最小但有用的项目上下文，并在改完后留下未来会话需要的事实：当前行为、需求、限制、测试和重要变更。
 
@@ -470,21 +508,21 @@ noc work . --path src/auth/login.py --json
 
 ## 安装
 
-推荐使用 `pipx`：
+当前推荐从源码安装：
+
+```bash
+pipx install git+https://github.com/SmallNoc/noc-living-docs.git
+noc --help
+```
+
+PyPI 发布后再使用：
 
 ```bash
 pipx install noc-living-docs
 noc --help
 ```
 
-也可以使用 `pip`：
-
-```bash
-python -m pip install noc-living-docs
-noc --help
-```
-
-源码方式：
+本地开发不安装时：
 
 ```bash
 git clone https://github.com/SmallNoc/noc-living-docs.git
@@ -753,11 +791,27 @@ NOC 可以和这些工具共存。它是本地路由层，告诉 agent 改代码
 
 ## 给 Coding Agents 使用
 
-Codex 可以使用仓库内置 skill：
+Codex 可以使用标准 skill 路径中的仓库内置 skill：
 
 ```text
-skills/codex/project-living-docs
+.agents/skills/project-living-docs
 ```
+
+项目内安装：
+
+```bash
+mkdir -p /path/to/project/.agents/skills
+cp -R .agents/skills/project-living-docs /path/to/project/.agents/skills/
+```
+
+全局安装：
+
+```bash
+mkdir -p ~/.agents/skills
+cp -R .agents/skills/project-living-docs ~/.agents/skills/
+```
+
+旧路径 `skills/codex/project-living-docs` 会保留以兼容已有用法；新 Codex 用户应复制 `.agents/skills/project-living-docs`。
 
 通用 agent 可以读取 managed block：
 
@@ -780,6 +834,24 @@ python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-d
 ```
 
 当前版本：`1.0.1`。
+
+## GitHub 发现性
+
+建议添加这些 GitHub topics：
+
+```text
+codex
+codex-skill
+agent-skills
+ai-coding
+agents-md
+living-docs
+developer-tools
+documentation
+cli
+git-hooks
+project-memory
+```
 
 更多阅读：
 
