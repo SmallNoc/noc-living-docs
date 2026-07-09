@@ -60,4 +60,9 @@ confidence: medium
 | 2026-07-10 | bump release target to 1.0.2 | `python -m pip install --force-reinstall dist/noc_living_docs-1.0.2-py3-none-any.whl; noc --help; noc init <temp>` | PASS | Installed 1.0.2 wheel exposes `noc` entry point and initializes `noc_docs/.living-docs/config.json`. |
 | 2026-07-10 | bump release target to 1.0.2 | `python scripts/noc.py validate` | PASS | NOC Living Docs validation passed. |
 | 2026-07-10 | bump release target to 1.0.2 | `python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py` | PASS | Compile check passed. |
+| 2026-07-10 | isolate release tests from tag env | `GITHUB_REF_TYPE=tag GITHUB_REF_NAME=v1.0.2 python -m pytest` | PASS | 57 tests passed with simulated GitHub tag environment. |
+| 2026-07-10 | isolate release tests from tag env | `GITHUB_REF_TYPE=tag GITHUB_REF_NAME=v1.0.2 python -m unittest tests.test_noc_cli tests.test_release_cli` | PASS | 57 tests passed with simulated GitHub tag environment. |
+| 2026-07-10 | isolate release tests from tag env | `GITHUB_REF_TYPE=tag GITHUB_REF_NAME=v1.0.2 python scripts/release.py --check` | PASS | Repository release check passed for 1.0.2 under tag environment. |
+| 2026-07-10 | isolate release tests from tag env | `python -m build` | PASS | Generated `noc_living_docs-1.0.2-py3-none-any.whl` and `noc_living_docs-1.0.2.tar.gz`. |
+| 2026-07-10 | isolate release tests from tag env | `python -m twine check dist/*` | PASS | 1.0.2 wheel and sdist passed metadata and README rendering checks. |
 

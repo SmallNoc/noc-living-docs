@@ -18,10 +18,14 @@ def run(
     check: bool = True,
     env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
+    child_env = {**os.environ, **(env or {})}
+    if env is None:
+        child_env.pop("GITHUB_REF_TYPE", None)
+        child_env.pop("GITHUB_REF_NAME", None)
     result = subprocess.run(
         [sys.executable, str(RELEASE), *args],
         cwd=cwd,
-        env={**os.environ, **(env or {})},
+        env=child_env,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

@@ -1,5 +1,20 @@
 # Change Record: release-quality
 
+## 2026-07-10 - Isolate release tests from GitHub tag environment
+
+### Reason
+
+The PyPI publish workflow runs tests on a tag event, so GitHub sets `GITHUB_REF_TYPE=tag` and `GITHUB_REF_NAME=v1.0.2`. Release helper tests create temporary projects with their own versions, such as `0.4.0`; inheriting the outer tag environment made those temp-project checks fail even when the repository release version was correct.
+
+### Changed
+
+- Updated the release test helper to remove GitHub tag environment variables by default.
+- Kept the explicit GitHub tag mismatch test opt-in by passing the tag environment only for that test.
+
+### Impact
+
+- The publish workflow can run the release helper test suite under `v1.0.2` tag events without false version mismatch failures.
+
 ## 2026-07-10 - Bump PyPI release target to 1.0.2
 
 ### Reason

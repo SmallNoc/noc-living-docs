@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-09T16:38:38.171160+00:00",
+  "generated_at": "2026-07-09T17:03:22.641558+00:00",
   "documents": {
     "noc_docs/development/documentation-policy.md": {
       "title": "Documentation Policy",
@@ -268,7 +268,7 @@
     },
     "noc_docs/features/release-quality/change-record.md": {
       "title": "Change Record: release-quality",
-      "summary": "The local `v1.0.1` tag already exists and points at an older release commit, so the PyPI publishing work needs a new tag instead of rewriting the existing tag. - Bumped `VERSION`, `pyproject.toml`, README current-version text, and release examples to `1.0.2`.",
+      "summary": "The PyPI publish workflow runs tests on a tag event, so GitHub sets `GITHUB_REF_TYPE=tag` and `GITHUB_REF_NAME=v1.0.2`. Release helper tests create temporary projects with their own versions, such as `0.4.0`; inheriting the outer tag environment made those temp-project checks fail even when the repository release versi",
       "tags": [
         "change-record",
         "features"
