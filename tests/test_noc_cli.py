@@ -44,6 +44,9 @@ def git(project: Path, args: list[str], check: bool = True) -> subprocess.Comple
     )
     if check and result.returncode != 0:
         raise AssertionError(f"git failed: {args}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}")
+    if args == ["init"]:
+        subprocess.run(["git", "-C", str(project), "config", "user.email", "test@example.com"], check=True)
+        subprocess.run(["git", "-C", str(project), "config", "user.name", "Test User"], check=True)
     return result
 
 

@@ -1,5 +1,20 @@
 # Change Record: release-quality
 
+## 2026-07-10 - Make staged-check tests independent of global Git identity
+
+### Reason
+
+The PyPI publish workflow runs tests on GitHub-hosted runners that do not have a global Git `user.name` or `user.email`. Several `noc check --staged` tests create temporary Git repositories and intentionally ignore the return code from their baseline commit. Without local Git identity, that baseline commit failed silently, leaving generated `noc_docs/` files staged and masking the code-only staged changes the tests were meant to verify.
+
+### Changed
+
+- Configured local test Git identity immediately after each temporary `git init` in `tests/test_noc_cli.py`.
+- Kept the product `noc check` file classification and trigger logic unchanged.
+
+### Impact
+
+- The staged-check tests now exercise the same code/doc mismatch behavior in CI and on developer machines, including code classification for Python, JavaScript, TypeScript, Tcl, SKILL, YAML, SQL, shell, Dockerfile, Java, Go, and migration-heavy projects.
+
 ## 2026-07-10 - Isolate release tests from GitHub tag environment
 
 ### Reason

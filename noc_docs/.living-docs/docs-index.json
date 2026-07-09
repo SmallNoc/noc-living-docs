@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-09T17:03:22.641558+00:00",
+  "generated_at": "2026-07-09T17:18:04.675911+00:00",
   "documents": {
     "noc_docs/development/documentation-policy.md": {
       "title": "Documentation Policy",
@@ -268,7 +268,7 @@
     },
     "noc_docs/features/release-quality/change-record.md": {
       "title": "Change Record: release-quality",
-      "summary": "The PyPI publish workflow runs tests on a tag event, so GitHub sets `GITHUB_REF_TYPE=tag` and `GITHUB_REF_NAME=v1.0.2`. Release helper tests create temporary projects with their own versions, such as `0.4.0`; inheriting the outer tag environment made those temp-project checks fail even when the repository release versi",
+      "summary": "The PyPI publish workflow runs tests on GitHub-hosted runners that do not have a global Git `user.name` or `user.email`. Several `noc check --staged` tests create temporary Git repositories and intentionally ignore the return code from their baseline commit. Without local Git identity, that baseline commit failed silen",
       "tags": [
         "change-record",
         "features"

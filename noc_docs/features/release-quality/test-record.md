@@ -65,4 +65,10 @@ confidence: medium
 | 2026-07-10 | isolate release tests from tag env | `GITHUB_REF_TYPE=tag GITHUB_REF_NAME=v1.0.2 python scripts/release.py --check` | PASS | Repository release check passed for 1.0.2 under tag environment. |
 | 2026-07-10 | isolate release tests from tag env | `python -m build` | PASS | Generated `noc_living_docs-1.0.2-py3-none-any.whl` and `noc_living_docs-1.0.2.tar.gz`. |
 | 2026-07-10 | isolate release tests from tag env | `python -m twine check dist/*` | PASS | 1.0.2 wheel and sdist passed metadata and README rendering checks. |
+| 2026-07-10 | make staged-check tests independent of global Git identity | `GIT_CONFIG_GLOBAL=<missing> GITHUB_REF_TYPE=tag GITHUB_REF_NAME=v1.0.2 python -m pytest` | PASS | 57 tests passed under the same missing-global-Git-identity and tag-event conditions as the failing publish workflow. |
+| 2026-07-10 | make staged-check tests independent of global Git identity | `GIT_CONFIG_GLOBAL=<missing> GITHUB_REF_TYPE=tag GITHUB_REF_NAME=v1.0.2 python -m unittest tests.test_noc_cli tests.test_release_cli` | PASS | 57 tests passed. |
+| 2026-07-10 | make staged-check tests independent of global Git identity | `GITHUB_REF_TYPE=tag GITHUB_REF_NAME=v1.0.2 python scripts/release.py --check` | PASS | Release check passed for 1.0.2. |
+| 2026-07-10 | make staged-check tests independent of global Git identity | `python scripts/noc.py validate` | PASS | NOC Living Docs validation passed. |
+| 2026-07-10 | make staged-check tests independent of global Git identity | `python -m build` | PASS | Generated `noc_living_docs-1.0.2-py3-none-any.whl` and `noc_living_docs-1.0.2.tar.gz`. |
+| 2026-07-10 | make staged-check tests independent of global Git identity | `python -m twine check dist/*` | PASS | 1.0.2 wheel and sdist passed metadata and README rendering checks. |
 
