@@ -83,7 +83,7 @@ class NocCliTests(unittest.TestCase):
 
         self.assertIn('tags:\n      - "v*"', workflow)
         self.assertIn("id-token: write", workflow)
-        self.assertIn("environment: pypi", workflow)
+        self.assertIn("environment:\n      name: pypi", workflow)
         self.assertIn("python -m build", workflow)
         self.assertIn("noc init /tmp/noc-publish-check", workflow)
         self.assertIn("pypa/gh-action-pypi-publish@release/v1", workflow)
