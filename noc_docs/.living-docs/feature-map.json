@@ -17,7 +17,7 @@
       "notes": "noc_docs/features/agent-protocol/notes.md",
       "freshness": {
         "last_doc_update": "2026-07-08T15:49:22.267334+00:00",
-        "last_indexed": "2026-07-09T16:29:53.923681+00:00"
+        "last_indexed": "2026-07-09T16:38:38.187163+00:00"
       },
       "completeness": {
         "required_docs": [
@@ -46,7 +46,7 @@
       "notes": "noc_docs/features/cli-core/notes.md",
       "freshness": {
         "last_doc_update": "2026-07-08T15:49:22.270335+00:00",
-        "last_indexed": "2026-07-09T16:29:53.924678+00:00"
+        "last_indexed": "2026-07-09T16:38:38.187163+00:00"
       },
       "completeness": {
         "required_docs": [
@@ -76,7 +76,7 @@
       "notes": "noc_docs/features/codex-skill/notes.md",
       "freshness": {
         "last_doc_update": "2026-07-09T15:40:38.270124+00:00",
-        "last_indexed": "2026-07-09T16:29:53.924678+00:00"
+        "last_indexed": "2026-07-09T16:38:38.187163+00:00"
       },
       "completeness": {
         "required_docs": [
@@ -107,7 +107,7 @@
       "notes": "noc_docs/features/init-index-validate/notes.md",
       "freshness": {
         "last_doc_update": "2026-07-09T16:29:16.371070+00:00",
-        "last_indexed": "2026-07-09T16:29:53.925678+00:00"
+        "last_indexed": "2026-07-09T16:38:38.188163+00:00"
       },
       "completeness": {
         "required_docs": [
@@ -142,8 +142,8 @@
       "change_record": "noc_docs/features/release-quality/change-record.md",
       "notes": "noc_docs/features/release-quality/notes.md",
       "freshness": {
-        "last_doc_update": "2026-07-09T16:29:16.369072+00:00",
-        "last_indexed": "2026-07-09T16:29:53.925678+00:00"
+        "last_doc_update": "2026-07-09T16:38:24.829430+00:00",
+        "last_indexed": "2026-07-09T16:38:38.188163+00:00"
       },
       "completeness": {
         "required_docs": [

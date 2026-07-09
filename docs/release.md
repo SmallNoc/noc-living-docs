@@ -52,7 +52,7 @@ Before tagging, confirm the release version is consistent in:
 - `CHANGELOG.md`
 - `README.md`
 
-The tag must match the version with a `v` prefix, for example `v1.0.1`.
+The tag must match the version with a `v` prefix, for example `v1.0.2`.
 
 ## PyPI Trusted Publishing
 
@@ -70,15 +70,15 @@ Set up the trusted publisher manually in PyPI:
    - Environment: `pypi`
    - Project name: `noc-living-docs`
 
-The workflow is `.github/workflows/publish.yml`. It runs when a tag like `v1.0.1` is pushed, builds the package, uploads `dist/` as a workflow artifact, and publishes to PyPI through OIDC.
+The workflow is `.github/workflows/publish.yml`. It runs when a tag like `v1.0.2` is pushed, builds the package, uploads `dist/` as a workflow artifact, and publishes to PyPI through OIDC.
 
 ## Release Flow
 
 After local checks pass and PyPI Trusted Publishing is configured:
 
 ```bash
-git tag v1.0.1
-git push origin v1.0.1
+git tag v1.0.2
+git push origin v1.0.2
 ```
 
 Watch the `Publish to PyPI` workflow. After it succeeds, verify:

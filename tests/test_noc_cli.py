@@ -70,7 +70,7 @@ class NocCliTests(unittest.TestCase):
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
 
         self.assertIn('name = "noc-living-docs"', pyproject)
-        self.assertIn('version = "1.0.1"', pyproject)
+        self.assertIn('version = "1.0.2"', pyproject)
         self.assertIn('license = "PolyForm-Noncommercial-1.0.0"', pyproject)
         self.assertIn('license-files = ["LICENSE"]', pyproject)
         self.assertIn('noc = "scripts.noc:main"', pyproject)

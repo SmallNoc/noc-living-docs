@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-09T16:29:53.909671+00:00",
+  "generated_at": "2026-07-09T16:38:38.171160+00:00",
   "documents": {
     "noc_docs/development/documentation-policy.md": {
       "title": "Documentation Policy",
@@ -268,7 +268,7 @@
     },
     "noc_docs/features/release-quality/change-record.md": {
       "title": "Change Record: release-quality",
-      "summary": "The project needs to publish a real `noc-living-docs` package to PyPI so users can install the CLI with `pipx install noc-living-docs` after release. - Updated `pyproject.toml` for modern license metadata, project URLs, explicit package discovery, and package data that includes hidden `.living-docs` template JSON files",
+      "summary": "The local `v1.0.1` tag already exists and points at an older release commit, so the PyPI publishing work needs a new tag instead of rewriting the existing tag. - Bumped `VERSION`, `pyproject.toml`, README current-version text, and release examples to `1.0.2`.",
       "tags": [
         "change-record",
         "features"

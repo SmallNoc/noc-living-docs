@@ -1,5 +1,20 @@
 # Change Record: release-quality
 
+## 2026-07-10 - Bump PyPI release target to 1.0.2
+
+### Reason
+
+The local `v1.0.1` tag already exists and points at an older release commit, so the PyPI publishing work needs a new tag instead of rewriting the existing tag.
+
+### Changed
+
+- Bumped `VERSION`, `pyproject.toml`, README current-version text, and release examples to `1.0.2`.
+- Moved unreleased changelog notes into a `1.0.2` release entry.
+
+### Impact
+
+- Release bookkeeping can create and push `v1.0.2` without rewriting the existing `v1.0.1` tag.
+
 ## 2026-07-10 - Add PyPI publishing readiness
 
 ### Reason

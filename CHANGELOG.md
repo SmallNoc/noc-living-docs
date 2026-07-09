@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [1.0.2] - 2026-07-10
+
 ### Changed
 
 - Added PyPI publishing readiness: modern package metadata, release documentation, Trusted Publishing GitHub Actions workflow, build artifact ignores, and wheel/package-data validation.
@@ -10,6 +12,7 @@
 - Updated README positioning, Codex skill install instructions, GitHub topic suggestions, and skill trigger description.
 - Synchronized `pyproject.toml` package version with `VERSION`, `README.md`, and `CHANGELOG.md` at `1.0.1`.
 - Expanded README into a bilingual usage guide with aligned English and Chinese sections for install, update, daily use, commands, generated documents, file responsibilities, machine files, and domain mode.
+
 
 ## [1.0.1] - 2026-07-08
 

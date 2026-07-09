@@ -52,4 +52,12 @@ confidence: medium
 | 2026-07-10 | add PyPI publishing readiness | `python scripts/release.py --check` | PASS | Release check passed for 1.0.1 and now verifies pyproject/README version consistency. |
 | 2026-07-10 | add PyPI publishing readiness | `python -m pip install --force-reinstall dist/noc_living_docs-1.0.1-py3-none-any.whl; noc --help; noc init <temp>` | PASS | Installed wheel exposes `noc` entry point and initializes `noc_docs/.living-docs/config.json`. |
 | 2026-07-10 | add PyPI publishing readiness | `PyYAML safe_load on .github/workflows/*.yml` | PASS | `publish.yml`, `validate.yml`, and `noc-check.yml` parsed successfully. |
+| 2026-07-10 | bump release target to 1.0.2 | `python scripts/release.py --check` | PASS | Release check passed for 1.0.2 after avoiding the existing `v1.0.1` tag. |
+| 2026-07-10 | bump release target to 1.0.2 | `python -m unittest tests.test_noc_cli tests.test_release_cli` | PASS | 57 tests passed. |
+| 2026-07-10 | bump release target to 1.0.2 | `pytest` | PASS | 57 tests passed. |
+| 2026-07-10 | bump release target to 1.0.2 | `python -m build` | PASS | Generated `noc_living_docs-1.0.2-py3-none-any.whl` and `noc_living_docs-1.0.2.tar.gz`. |
+| 2026-07-10 | bump release target to 1.0.2 | `python -m twine check dist/*` | PASS | 1.0.2 wheel and sdist passed metadata and README rendering checks. |
+| 2026-07-10 | bump release target to 1.0.2 | `python -m pip install --force-reinstall dist/noc_living_docs-1.0.2-py3-none-any.whl; noc --help; noc init <temp>` | PASS | Installed 1.0.2 wheel exposes `noc` entry point and initializes `noc_docs/.living-docs/config.json`. |
+| 2026-07-10 | bump release target to 1.0.2 | `python scripts/noc.py validate` | PASS | NOC Living Docs validation passed. |
+| 2026-07-10 | bump release target to 1.0.2 | `python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py` | PASS | Compile check passed. |
 
