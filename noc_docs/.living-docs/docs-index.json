@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-13T15:21:30.469580+00:00",
+  "generated_at": "2026-07-13T15:33:10.784557+00:00",
   "documents": {
     "noc_docs/development/documentation-policy.md": {
       "title": "Documentation Policy",
@@ -17,7 +17,7 @@
     },
     "noc_docs/development/testing.md": {
       "title": "Testing",
-      "summary": "- Unit tests: `python -m unittest tests.test_noc_cli tests.test_release_cli` - Protocol validation: `python scripts/noc.py validate` - Release check: `python scripts/release.py --check` - Compile check: `python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/va",
+      "summary": "- Unit tests: `python -m unittest tests.test_noc_cli tests.test_release_cli tests.test_setup_cli` - Protocol validation: `python scripts/noc.py validate` - Release check: `python scripts/release.py --check` - Compile check: `python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/",
       "tags": [
         "development"
       ]
@@ -268,7 +268,7 @@
     },
     "noc_docs/features/release-quality/change-record.md": {
       "title": "Change Record: release-quality",
-      "summary": "- Added isolated CODEX_HOME setup tests for install, check, repair, upgrade, collision protection, JSON, and cross-platform path composition. - Added a wheel archive assertion for the Skill manifest and runtime references. - Kept the release version and publishing workflow unchanged.",
+      "summary": "- Added `tests.test_setup_cli` to the pull-request validation and tag publishing unittest commands. - Updated the canonical testing command so local and remote release gates execute the same stage 1 setup coverage. - Added isolated CODEX_HOME setup tests for install, check, repair, upgrade, collision protection, JSON, ",
       "tags": [
         "change-record",
         "features"

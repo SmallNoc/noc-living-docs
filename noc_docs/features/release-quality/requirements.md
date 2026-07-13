@@ -21,7 +21,7 @@ confidence: medium
 
 ## Acceptance Criteria
 
-- AC-001: `python -m unittest tests.test_noc_cli tests.test_release_cli` 通过。
+- AC-001: `python -m unittest tests.test_noc_cli tests.test_release_cli tests.test_setup_cli` 通过。
 - AC-002: `python scripts/release.py --check` 通过。
 - AC-003: `python -m build` 生成 `.whl` 和 `.tar.gz`。
 - AC-004: `python -m twine check dist/*` 通过，README 可作为 PyPI long description 渲染。

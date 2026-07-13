@@ -25,7 +25,7 @@ jobs:
         run: python -m pip install --upgrade pip build
 
       - name: Run tests
-        run: python -m unittest tests.test_noc_cli tests.test_release_cli
+        run: python -m unittest tests.test_noc_cli tests.test_release_cli tests.test_setup_cli
 
       - name: Validate NOC docs
         run: python scripts/noc.py validate

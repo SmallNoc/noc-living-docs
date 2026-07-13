@@ -1,5 +1,10 @@
 # Change Record: release-quality
 
+## 2026-07-13 - Run setup coverage in remote release gates
+
+- Added `tests.test_setup_cli` to the pull-request validation and tag publishing unittest commands.
+- Updated the canonical testing command so local and remote release gates execute the same stage 1 setup coverage.
+
 ## 2026-07-13 - Verify the CLI-to-Skill installation bundle
 
 - Added isolated CODEX_HOME setup tests for install, check, repair, upgrade, collision protection, JSON, and cross-platform path composition.

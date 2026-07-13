@@ -11,6 +11,8 @@ confidence: medium
 
 测试通过 Python unittest 和 pytest 运行，覆盖 CLI help、setup/init/index/check/doctor/work/feature lifecycle、Codex Skill 安装保护、release 脚本、PyPI publish workflow 和打包元数据。wheel 现在同时包含项目模板和带版本清单的 `project-living-docs` Skill 运行文件。当前准备发布版本为 `1.1.0`，尚未发布到 PyPI。
 
+PR 验证和 tag 发布 workflow 均运行 `tests.test_setup_cli`，因此远程门禁会实际执行安装、只读检查、修复、碰撞保护和 wheel 隔离安装测试。
+
 ## Important Files
 
 - `tests/test_noc_cli.py`
