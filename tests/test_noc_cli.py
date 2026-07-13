@@ -57,6 +57,34 @@ class NocCliTests(unittest.TestCase):
         for command in ["setup", "init", "index", "validate", "hook", "check", "suggest-map", "work", "doctor", "feature"]:
             self.assertIn(command, result.stdout)
 
+    def test_cli_version_uses_formal_package_version(self) -> None:
+        result = run(["--version"])
+
+        self.assertEqual(result.stdout, "noc-living-docs 1.2.0\n")
+
+    def test_cli_help_prioritizes_setup_init_and_normal_codex_use(self) -> None:
+        result = run(["--help"])
+
+        self.assertIn("After initialization, use Codex normally.", result.stdout)
+        self.assertLess(result.stdout.index("setup"), result.stdout.index("init"))
+        self.assertLess(result.stdout.index("init"), result.stdout.index("index"))
+        self.assertIn("[Advanced] Build routing indexes.", result.stdout)
+        self.assertIn("--version", result.stdout)
+
+    def test_readme_first_screen_is_the_three_step_user_flow(self) -> None:
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        first_screen = readme.split("## Advanced usage", 1)[0]
+
+        self.assertIn("pipx install noc-living-docs", first_screen)
+        self.assertIn("noc setup", first_screen)
+        self.assertIn("cd my-project", first_screen)
+        self.assertIn("noc init .", first_screen)
+        self.assertIn("帮我给登录接口增加失败次数限制。", first_screen)
+        self.assertIn("You do not need to run `work`, `index`, `check`, `feature`, or `suggest-map`", first_screen)
+        self.assertIn("does not call a model or upload code", first_screen)
+        for internal_detail in ["noc work", '"schema_version"', "seven documents", "domain mode", "hook install"]:
+            self.assertNotIn(internal_detail, first_screen.lower())
+
     def test_each_required_subcommand_has_help(self) -> None:
         for command in ["setup", "init", "index", "validate", "hook", "check", "suggest-map", "work", "doctor", "feature"]:
             with self.subTest(command=command):
@@ -163,7 +191,7 @@ class NocCliTests(unittest.TestCase):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
 
         self.assertIn("agent memory router", readme.lower())
-        self.assertIn("pipx install git+https://github.com/SmallNoc/noc-living-docs.git", readme)
+        self.assertIn("pipx install noc-living-docs\nnoc setup", readme)
         self.assertIn(".agents/skills/project-living-docs", readme)
         self.assertIn("noc work <project> --path <code/path> --json", agents)
         self.assertNotIn("must update every feature document", agents.lower())

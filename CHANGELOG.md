@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## [1.2.0] - Unreleased
+## [1.2.0] - 2026-07-14
 
 ### Added
 
@@ -10,6 +10,7 @@
 - `noc init` now completes Skill readiness checks, project detection, initialization, indexing, and health validation in one operation.
 - Added semantic memory-impact classification for `none`, `project`, `guardrails`, and `verification`.
 - Added repeatable `noc check --memory-impact` declarations with stable JSON results for Skill automation.
+- Added `noc --version`, sourced from the same formal package version used by the wheel and Skill manifest.
 
 ### Changed
 
@@ -19,6 +20,9 @@
 - Kept existing protocol v1 projects and commands compatible without automatic migration or document deletion.
 - Stopped requiring project-memory updates for ordinary Bug fixes, formatting, local renames, behavior-preserving small refactors, and routine tests.
 - Removed the fixed NOC Living Docs final-response template; memory updates now use only an optional short summary.
+- Reworked the README entry experience around install, one-time initialization, and normal Codex use, with internal commands moved to advanced usage.
+- Prioritized `setup`, `init`, and the normal Codex workflow in CLI help while retaining all existing advanced commands.
+- Added an isolated wheel journey covering setup, simplified initialization, idempotency, semantic checks, and paths containing Chinese characters and spaces.
 
 ## [1.1.0] - 2026-07-13
 

@@ -27,6 +27,8 @@ confidence: medium
 - AC-004: `python -m twine check dist/*` 通过，README 可作为 PyPI long description 渲染。
 - AC-005: 从 wheel 安装后 `noc --help` 和 `noc init <target>` 可用。
 - AC-006: 从 wheel 安装后 `noc setup` 可以向隔离的 `CODEX_HOME` 安装同版本 Skill。
+- AC-007: README 首屏只呈现安装、一次初始化和正常使用 Codex 三步流程，内部命令移至高级用法。
+- AC-008: 仓库外隔离安装的 wheel 必须完成 version、setup、v2 init 幂等、语义 check 和中文空格路径验证。
 
 ## Non-Goals
 
