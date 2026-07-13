@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+## [1.2.1] - 2026-07-14
+
+### Changed
+
+- Aligned the bilingual README's default workflow, generated tree, and real `noc work --json` example with v2 simplified project memory while retaining v1 feature/domain capabilities as legacy compatibility.
+- Fixed the README CI badge to link to the existing Validate workflow.
+- Split the synchronized Codex Skill Definition of Done into non-conflicting v2 simplified and v1 legacy rules.
+- Removed obsolete Light, Deep, Audit, and Query mode guidance from current protocol entry points in favor of route-first, memory-impact-based behavior.
+- Updated agent compatibility claims to match the integrations and tests currently available.
+- Changed Validate CI to unittest discovery so all present and future test modules run automatically.
+- Added regression coverage for README workflow links and v2 structure, Skill synchronization and completion rules, CI discovery, and obsolete protocol terminology.
+
 ## [1.2.0] - 2026-07-14
 
 ### Added

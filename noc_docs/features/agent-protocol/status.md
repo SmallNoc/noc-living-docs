@@ -13,6 +13,8 @@ confidence: medium
 
 两套正式 Skill 现在根据实际 diff 声明 none/project/guardrails/verification；格式化、局部重命名、行为不变重构、恢复既有要求的 Bug 修复和普通测试均为 none。长期影响只更新对应 v2 文件，v1 继续读取旧结构但使用相同的语义阈值。
 
+现行 docs map、Skill workflow reference 和 token policy 已统一采用 route-first 规则：默认 v2 simplified 通过 `noc work --json` 路由三份项目记忆，再按 memory impact 判断是否更新；feature/domain 仅作为 legacy v1 compatibility。
+
 ## Important Files
 
 - `templates/AGENTS.md`

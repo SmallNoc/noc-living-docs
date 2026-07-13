@@ -1,6 +1,6 @@
 # NOC Living Docs
 
-![CI](https://github.com/SmallNoc/noc-living-docs/actions/workflows/ci.yml/badge.svg)
+[![Validate](https://github.com/SmallNoc/noc-living-docs/actions/workflows/validate.yml/badge.svg)](https://github.com/SmallNoc/noc-living-docs/actions/workflows/validate.yml)
 ![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/License-PolyForm%20Noncommercial%201.0.0-yellow.svg)
 ![Codex Skill](https://img.shields.io/badge/Codex-Skill-blue)
 ![Living Docs](https://img.shields.io/badge/Living%20Docs-NOC-green)
@@ -23,6 +23,8 @@ cd my-project
 noc init .
 ```
 
+`noc init .` creates the default v2 simplified project memory. It does not create feature or domain documents.
+
 ### 3. Use Codex normally
 
 ```text
@@ -32,7 +34,7 @@ noc init .
 - You do not need to run `work`, `index`, `check`, `feature`, or `suggest-map` yourself.
 - The Codex Skill automatically reads the smallest useful project memory.
 - It updates memory only when a change creates a durable fact that future Codex sessions must know.
-- Ordinary Bug fixes and small refactors do not create documentation work.
+- Ordinary bug fixes and small refactors do not create documentation work.
 - NOC does not call a model or upload code; all project memory stays in your project.
 
 中文说明在下方：[中文](#中文)。
@@ -45,64 +47,90 @@ The commands and protocol details below are optional. The Codex Skill runs the r
 
 ## Why NOC
 
-AI coding agents are fast, but project memory is fragile.
+AI coding agents are fast, but project memory is fragile. Requirements disappear with chat sessions, guardrails are forgotten, and verification knowledge is easily buried. NOC is a local agent memory router: it tells an agent which small set of durable project facts to read before changing code.
 
-Common failure modes:
-
-- Requirements stay in chat and disappear with the session.
-- Current behavior is buried in code, old PRs, or someone's memory.
-- Guardrails get forgotten when a new agent starts fresh.
-- Test commands and gaps are not recorded.
-- Agents read too much, miss the important file, or confidently infer the wrong thing.
-
-NOC gives each feature a stable documentation home and gives agents one deterministic first step:
+For a default v2 simplified project, the deterministic first step is:
 
 ```bash
-noc work . --path src/auth/login.py --json
+noc work . --path src/app.py --json
 ```
-
-That command answers: what feature is this, how confident is the mapping, which docs should I read, and what should I update after the code changes?
 
 ## What It Looks Like
 
-Given a path like `scripts/noc.py`, NOC can return a work plan like this:
+The following is the actual JSON shape returned for that path in a newly initialized v2 project:
 
 ```json
 {
   "schema_version": "1.0",
-  "resolution_status": "resolved",
-  "paths": ["scripts/noc.py"],
+  "protocol_version": 2,
+  "layout": "simplified",
+  "resolution_status": "project_memory",
+  "intent": null,
+  "paths": [
+    "src/app.py"
+  ],
   "features": [
     {
-      "id": "cli-core",
-      "matched_by": "path",
-      "matched_pattern": "scripts/noc.py",
-      "confidence": "high",
+      "id": "project",
       "read_before_code": [
-        "noc_docs/features/cli-core/agent-guide.md",
-        "noc_docs/features/cli-core/status.md",
-        "noc_docs/features/cli-core/guardrails.md",
-        "noc_docs/features/cli-core/test-record.md"
+        "noc_docs/project.md",
+        "noc_docs/guardrails.md",
+        "noc_docs/verification.md"
       ],
+      "before_coding": [],
       "update_after_code": [
         {
-          "doc": "noc_docs/features/cli-core/status.md",
-          "reason": "when actual behavior changes"
-        },
-        {
-          "doc": "noc_docs/features/cli-core/test-record.md",
-          "reason": "with verification commands and results"
+          "doc": "project memory",
+          "reason": "only when future sessions need a new fact"
         }
       ]
     }
   ],
-  "next_actions": []
+  "next_actions": [],
+  "finish_commands": []
 }
 ```
 
-If NOC cannot resolve a path, it says so explicitly with `resolution_status: "unresolved"` and suggests the next command, such as `noc suggest-map` or `noc feature create`.
+## Generated Documents
 
-## Alternative installation
+Default `noc init .` creates the v2 simplified structure:
+
+```text
+<project>/
+  AGENTS.md
+  noc_docs/
+    project.md
+    guardrails.md
+    verification.md
+    .living-docs/
+      config.json
+      routing.json
+      manifest.json
+```
+
+The three Markdown files have distinct responsibilities:
+
+| File | Purpose |
+|---|---|
+| `noc_docs/project.md` | Durable goals, phase, capabilities, boundaries, and architecture facts. |
+| `noc_docs/guardrails.md` | Durable constraints involving security, compatibility, permissions, data loss, APIs, migration, or deployment. |
+| `noc_docs/verification.md` | Standard test, build, release, and acceptance commands or gates. |
+
+The `.living-docs` JSON files store protocol configuration, routing, and the generated file manifest. Agents use them through `noc work --json` rather than parsing them by hand.
+The v2 routing file is `noc_docs/.living-docs/routing.json`.
+
+## Default v2 workflow
+
+Before changing code, run `noc work` and read the returned files. After changing code, classify whether the diff creates a durable project, guardrail, or verification fact. Update only the matching memory file; routine fixes and tests do not require a memory update. Then run the relevant checks:
+
+```bash
+noc doctor .
+noc check . --staged --memory-impact none
+```
+
+Use `--memory-impact project`, `guardrails`, or `verification` when the diff creates that kind of durable fact. The Codex Skill handles this during normal use.
+
+## Installation and updates
 
 With `pip`:
 
@@ -111,7 +139,7 @@ python -m pip install noc-living-docs
 noc setup
 ```
 
-The package installs the `noc` CLI. `noc setup`, available since 1.1.0, installs the bundled, matching-version `project-living-docs` Skill into Codex. Run both once per machine.
+The package installs the `noc` CLI. `noc setup`, available since 1.1.0, installs the bundled, matching-version `project-living-docs` Skill into Codex. Run both once per machine. Upgrade with `pipx upgrade noc-living-docs` or `python -m pip install --upgrade noc-living-docs`, then run `noc setup` again.
 
 For local development without installing:
 
@@ -121,330 +149,60 @@ cd noc-living-docs
 python scripts/noc.py --help
 ```
 
-## Update
-
-If installed with `pipx`:
-
-```bash
-pipx upgrade noc-living-docs
-```
-
-If installed with `pip`:
-
-```bash
-python -m pip install --upgrade noc-living-docs
-```
-
-If running from source:
-
-```bash
-git pull
-python scripts/noc.py --help
-```
-
-After updating an existing NOC-enabled project, refresh indexes:
-
-```bash
-noc index /path/to/project
-noc doctor /path/to/project
-```
-
-## Advanced CLI workflow
-
-Add NOC to a project:
-
-```bash
-noc init /path/to/project
-noc doctor /path/to/project
-```
-
-Create docs for a real feature and map code to it:
-
-```bash
-noc feature create /path/to/project user-login --path src/auth/
-```
-
-Before changing code, route the agent:
-
-```bash
-noc work /path/to/project --path src/auth/login.py --json
-```
-
-Or route from Git state:
-
-```bash
-noc work /path/to/project --staged --json
-noc work /path/to/project --changed --json
-```
-
-After changing code, update only the facts that changed, then verify:
-
-```bash
-noc index /path/to/project
-noc check /path/to/project --staged
-```
-
-## Advanced daily use
-
-Use this loop for normal feature work:
-
-1. Run `noc work <project> --path <code/path> --json`.
-2. Read only the docs listed in `read_before_code`.
-3. Change code.
-4. Update only the docs whose facts changed.
-5. Run `noc index <project>`.
-6. Run `noc check <project> --staged`.
-
-Use this loop when changes are already in Git:
-
-```bash
-noc work . --changed --json
-noc work . --staged --json
-```
-
-Use this loop when NOC cannot resolve a path:
-
-```bash
-noc suggest-map . --interactive
-noc feature create . <feature> --path <code/path>
-noc index .
-```
-
-## Advanced agent workflow
-
-Before code:
-
-1. Run `noc work <project> --path <code/path> --json`, or use `--staged` / `--changed`.
-2. Read only the docs listed in the work plan.
-3. Stop and ask if a requested change conflicts with `guardrails.md`.
-4. Put confirmed new intent in `requirements.md`; put uncertainty in `notes.md`.
-
-After code:
-
-1. Update `status.md` when actual behavior changed.
-2. Update `test-record.md` with commands, results, and gaps.
-3. Update `change-record.md` for important changes worth remembering.
-4. Update `requirements.md` only when intended behavior changed.
-5. Run `noc index` and `noc check --staged`.
-
-The point is not to update every file every time. The point is to keep the few facts future agents will need.
-
-## Advanced command reference
+## Command reference
 
 | Command | What it does |
 |---|---|
 | `noc setup` | Installs or checks the matching Codex Skill. |
-| `noc init <project>` | Adds `noc_docs/` and an agent entry block. |
+| `noc init <project>` | Creates default v2 simplified project memory and an agent entry block. |
 | `noc doctor <project>` | Checks setup, JSON, Git, mode, indexes, and hook state. |
-| `noc work <project>` | Routes a feature, path, or Git diff to the docs an agent should read and update. Use `--json` for automation. |
-| `noc check <project>` | Warns or fails when code changed without matching NOC docs. |
-| `noc index <project>` | Refreshes generated `.living-docs` routing files. |
-| `noc suggest-map <project>` | Suggests code-path to feature mappings. |
-| `noc feature create <project> <feature>` | Creates a feature doc folder from the template. |
-| `noc feature adopt <project> <source> <feature>` | Turns a placeholder feature folder into a real one. |
-| `noc feature rename <project> <old> <new>` | Renames a feature folder and its mapping. |
-| `noc hook install <project>` | Installs the pre-commit reminder. |
-| `noc hook status <project>` | Shows whether the pre-commit reminder is installed. |
-| `noc hook uninstall <project>` | Removes the NOC managed hook block. |
+| `noc work <project> --path <path> --json` | Routes a path to the memory an agent should read. |
+| `noc check <project>` | Verifies memory impact against changed files. |
+| `noc index <project>` | Refreshes generated routing files. |
 | `noc validate --target <project>` | Validates a target project. |
 | `noc validate` | Validates this repository. |
 
 Use `noc <command> --help` for arguments.
 
-## Generated Documents
+## Legacy v1 / Advanced compatibility
 
-Default `small` mode creates:
+The v1 feature/domain protocol remains supported for existing projects and explicit compatibility use. It is not the default and is never created by plain `noc init .`.
 
-```text
-<project>/
-  AGENTS.md
-  noc_docs/
-    docs-map.md
-    project-status.md
-    development/
-      documentation-policy.md
-      git-workflow.md
-      testing.md
-    features/
-      index.md
-      _feature/
-        agent-guide.md
-        requirements.md
-        status.md
-        guardrails.md
-        test-record.md
-        change-record.md
-        notes.md
-    .living-docs/
-      config.json
-      docs-index.json
-      feature-map.json
-      manifest.json
-```
+- `noc init . --mode small` explicitly creates the v1 small feature layout.
+- `noc init . --mode domain` explicitly creates the v1 domain layout.
+- Existing v1 projects are not implicitly migrated by a later default init.
+- `noc feature create`, `noc feature adopt`, `noc feature rename`, `noc suggest-map`, and `feature-map.json` are v1 advanced compatibility capabilities.
 
-`AGENTS.md` can be replaced by `CLAUDE.md` or `GEMINI.md`:
-
-```bash
-noc init /path/to/project --agent-file CLAUDE.md
-noc init /path/to/project --agent-file GEMINI.md
-```
-
-`_feature/` is a template placeholder. Real feature docs are created with:
-
-```bash
-noc feature create /path/to/project user-login --path src/auth/
-```
-
-That creates:
-
-```text
-noc_docs/features/user-login/
-  agent-guide.md
-  requirements.md
-  status.md
-  guardrails.md
-  test-record.md
-  change-record.md
-  notes.md
-```
-
-## Document Responsibilities
-
-| File | Purpose |
-|---|---|
-| `docs-map.md` | Tells humans and agents where to start. |
-| `project-status.md` | Summarizes the project, stack, capabilities, and known risks. |
-| `development/documentation-policy.md` | Explains how docs should be maintained. |
-| `development/git-workflow.md` | Records Git and commit expectations. |
-| `development/testing.md` | Records expected verification commands. |
-| `features/index.md` | Lists feature documentation folders. |
-| `agent-guide.md` | Quick entry point for a feature. |
-| `requirements.md` | Intended behavior, business rules, and acceptance criteria. |
-| `status.md` | Current behavior as implemented. |
-| `guardrails.md` | Constraints that must not be broken. |
-| `test-record.md` | Test strategy, commands, results, and gaps. |
-| `change-record.md` | Important changes and why they happened. |
-| `notes.md` | Temporary notes, open questions, and uncertain findings. |
-
-## Machine Files
-
-The `.living-docs/` directory is generated and maintained by `noc index`.
-
-| File | Purpose |
-|---|---|
-| `config.json` | Project mode and check strictness configuration. |
-| `feature-map.json` | Maps code paths to feature docs and stores trust signals. |
-| `docs-index.json` | Lists known documentation files and metadata. |
-| `manifest.json` | Records generated file inventory for validation. |
-
-Agents should read `feature-map.json` through `noc work --json` rather than parsing it by hand.
-
-## Domain Mode
-
-Bigger projects can use domain mode:
-
-```bash
-noc init /path/to/project --mode domain
-```
-
-Domain mode creates:
-
-```text
-noc_docs/
-  domains/
-    index.md
-    _domain/
-      index.md
-      guardrails.md
-      features/
-        _feature/
-          agent-guide.md
-          requirements.md
-          status.md
-          guardrails.md
-          test-record.md
-          change-record.md
-          notes.md
-```
-
-Use domain mode for monorepos, multi-service systems, or teams with domain-level guardrails.
-
-## How It Compares
-
-| Tool | Good for | NOC's role |
-|---|---|---|
-| README | Project overview and setup | Points agents to feature-level memory before a change. |
-| Wiki or docs site | Long-form guides and broad knowledge | Keeps change-critical memory next to the code workflow. |
-| ADRs | Architectural decisions | Records feature behavior, guardrails, tests, and change facts. |
-| Issue tracker | Planning, ownership, and discussion | Preserves what became true after implementation. |
-| Generated API docs | Reference generated from code | Captures intent, constraints, and verification that code alone does not show. |
-
-NOC can coexist with all of these. It is the local routing layer that tells an agent where to look before it edits code.
+The v1 small layout keeps feature folders with `agent-guide.md`, `requirements.md`, `status.md`, `guardrails.md`, `test-record.md`, `change-record.md`, and `notes.md`. Domain mode nests the same feature model under domain-level indexes and guardrails. These documents and commands are intentionally retained, but they do not apply to v2 simplified projects.
 
 ## For Coding Agents
 
-`noc setup` installs the bundled `project-living-docs` Skill into Codex's global Skill directory and keeps its version aligned with the CLI:
+`noc setup` installs the bundled `project-living-docs` Skill into Codex's global Skill directory and keeps its version aligned with the CLI. The repository paths `.agents/skills/project-living-docs` and `skills/codex/project-living-docs` remain available for source development and compatibility.
 
-```bash
-noc setup
-```
-
-The repository paths `.agents/skills/project-living-docs` and `skills/codex/project-living-docs` remain available for source development and compatibility.
-
-Generic agents can read the managed block from:
+Generic agents can read the managed block created by:
 
 ```bash
 noc init /path/to/project --agent-file AGENTS.md
 ```
 
-See [Agent Compatibility](docs/agent-compatibility.md) for details.
+See [Agent Compatibility](docs/agent-compatibility.md) for the evidence-backed support matrix.
 
 ## Developing This Repo
 
 ```bash
+python -m py_compile scripts/__init__.py scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py
+python -m unittest discover -s tests
 python scripts/noc.py validate
 python scripts/release.py --check
-python -m unittest tests.test_noc_cli tests.test_release_cli
 ```
 
-```bash
-python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py
-```
+Current version: `1.2.1`.
 
-Current version: `1.2.0`.
-
-## GitHub Discovery
-
-Suggested GitHub topics:
-
-```text
-codex
-codex-skill
-agent-skills
-ai-coding
-agents-md
-living-docs
-developer-tools
-documentation
-cli
-git-hooks
-project-memory
-```
-
-More reading:
-
-- [Why NOC](docs/why-noc.md)
-- [Agent Compatibility](docs/agent-compatibility.md)
-- [Comparisons](docs/comparisons.md)
-- [Release](docs/release.md)
-- [v1 Readiness](docs/v1-readiness.md)
-- [Migration Reports](docs/migration-reports/)
+More reading: [Why NOC](docs/why-noc.md), [Agent Compatibility](docs/agent-compatibility.md), [Comparisons](docs/comparisons.md), and [Release](docs/release.md).
 
 ## License
 
-This repo is source-available and non-commercial by default.
-
-Code, scripts, templates, and skills are licensed under the PolyForm Noncommercial License 1.0.0. For commercial use, get written permission first.
+This repo is source-available and non-commercial by default. Code, scripts, templates, and skills use the PolyForm Noncommercial License 1.0.0. Commercial use requires written permission.
 
 ---
 
@@ -468,6 +226,8 @@ NOC 是 Codex 的本地项目记忆 Skill，CLI 负责安装和一次性项目�
    noc init .
    ```
 
+   `noc init .` 默认创建 v2 simplified 项目记忆，不会创建 feature 或 domain 文档。
+
 3. 此后正常向 Codex 提出开发需求。无需手动运行 `work`、`index`、`check`、`feature` 或 `suggest-map`。
 
 Codex Skill 会自动读取最小项目记忆，并且只在产生未来会话必须知道的新事实时更新记录。普通 Bug 修复和小型重构不会带来文档负担。NOC 不调用模型、不上传代码，所有记录都保存在项目本地。
@@ -476,409 +236,115 @@ Codex Skill 会自动读取最小项目记忆，并且只在产生未来会话�
 
 以下命令和协议细节均为可选内容；正常开发时由 Codex Skill 自动调用相关命令。
 
-NOC 是给代码仓库用的轻量级 **agent memory router**。
-
-它帮助 AI 编程助手在改代码前找到最小但有用的项目上下文，并在改完后留下未来会话需要的事实：当前行为、需求、限制、测试和重要变更。
-
-NOC 保持本地、小而硬。它不调用模型、不运行服务端、不替代 issue tracker，也不试图变成 Wiki。
-
 ## 为什么需要 NOC
 
-AI agent 写代码很快，但项目记忆很容易丢：
+AI agent 写代码很快，但需求、限制和验证方式很容易随会话丢失。NOC 是本地 agent memory router，负责在改代码前把 agent 指向最小但足够的持久项目记忆。
 
-- 需求留在聊天里，换会话就消失。
-- 当前行为藏在代码、旧 PR 或某个人的记忆里。
-- guardrails 被新会话忘掉。
-- 测试命令和测试缺口没有沉淀。
-- agent 读太多、读错文件，或者自信地猜错。
-
-NOC 给每个功能一个稳定的文档位置，也给 agent 一个确定的第一步：
+默认 v2 simplified 项目的确定性入口是：
 
 ```bash
-noc work . --path src/auth/login.py --json
+noc work . --path src/app.py --json
 ```
-
-这个命令会回答：这是什么 feature、映射置信度如何、应该先读哪些文档、改完后可能要更新什么。
 
 ## 效果示例
 
-给定 `scripts/noc.py` 这样的路径，NOC 可以返回这样的 work plan：
+新建 v2 项目对该路径返回的真实 JSON 结构如下：
 
 ```json
 {
   "schema_version": "1.0",
-  "resolution_status": "resolved",
-  "paths": ["scripts/noc.py"],
+  "protocol_version": 2,
+  "layout": "simplified",
+  "resolution_status": "project_memory",
+  "intent": null,
+  "paths": [
+    "src/app.py"
+  ],
   "features": [
     {
-      "id": "cli-core",
-      "matched_by": "path",
-      "matched_pattern": "scripts/noc.py",
-      "confidence": "high",
+      "id": "project",
       "read_before_code": [
-        "noc_docs/features/cli-core/agent-guide.md",
-        "noc_docs/features/cli-core/status.md",
-        "noc_docs/features/cli-core/guardrails.md",
-        "noc_docs/features/cli-core/test-record.md"
+        "noc_docs/project.md",
+        "noc_docs/guardrails.md",
+        "noc_docs/verification.md"
       ],
+      "before_coding": [],
       "update_after_code": [
         {
-          "doc": "noc_docs/features/cli-core/status.md",
-          "reason": "when actual behavior changes"
-        },
-        {
-          "doc": "noc_docs/features/cli-core/test-record.md",
-          "reason": "with verification commands and results"
+          "doc": "project memory",
+          "reason": "only when future sessions need a new fact"
         }
       ]
     }
   ],
-  "next_actions": []
+  "next_actions": [],
+  "finish_commands": []
 }
 ```
 
-如果 NOC 无法解析路径，它会明确返回 `resolution_status: "unresolved"`，并建议下一步命令，例如 `noc suggest-map` 或 `noc feature create`。
+## 生成的文件
 
-## 其他安装方式
-
-也可以使用 `pip`：
-
-```bash
-python -m pip install noc-living-docs
-noc setup
-```
-
-安装包提供 `noc` CLI；从 1.1.0 开始，`noc setup` 会把同版本的 `project-living-docs` Skill 安装到 Codex。每台机器只需执行一次。
-
-本地开发不安装时：
-
-```bash
-git clone https://github.com/SmallNoc/noc-living-docs.git
-cd noc-living-docs
-python scripts/noc.py --help
-```
-
-## 更新
-
-如果使用 `pipx` 安装：
-
-```bash
-pipx upgrade noc-living-docs
-```
-
-如果使用 `pip` 安装：
-
-```bash
-python -m pip install --upgrade noc-living-docs
-```
-
-如果使用源码：
-
-```bash
-git pull
-python scripts/noc.py --help
-```
-
-已有项目升级后，刷新索引：
-
-```bash
-noc index /path/to/project
-noc doctor /path/to/project
-```
-
-## 高级 CLI 工作流
-
-给项目接入 NOC：
-
-```bash
-noc init /path/to/project
-noc doctor /path/to/project
-```
-
-创建真实 feature 并映射代码路径：
-
-```bash
-noc feature create /path/to/project user-login --path src/auth/
-```
-
-改代码前，先路由 agent：
-
-```bash
-noc work /path/to/project --path src/auth/login.py --json
-```
-
-或者从 Git 状态路由：
-
-```bash
-noc work /path/to/project --staged --json
-noc work /path/to/project --changed --json
-```
-
-改完代码后，只更新真的变化了的事实，然后验证：
-
-```bash
-noc index /path/to/project
-noc check /path/to/project --staged
-```
-
-## 高级日常使用
-
-普通功能开发使用这个循环：
-
-1. 运行 `noc work <project> --path <code/path> --json`。
-2. 只读 `read_before_code` 列出的文档。
-3. 修改代码。
-4. 只更新事实发生变化的文档。
-5. 运行 `noc index <project>`。
-6. 运行 `noc check <project> --staged`。
-
-如果代码已经改了，可以从 Git 状态生成 work plan：
-
-```bash
-noc work . --changed --json
-noc work . --staged --json
-```
-
-如果 NOC 无法解析路径：
-
-```bash
-noc suggest-map . --interactive
-noc feature create . <feature> --path <code/path>
-noc index .
-```
-
-## 高级 Agent 工作流
-
-改代码前：
-
-1. 运行 `noc work <project> --path <code/path> --json`，或者用 `--staged` / `--changed`。
-2. 只读 work plan 里列出的文档。
-3. 如果请求和 `guardrails.md` 冲突，停下来问用户。
-4. 已确认的新意图写进 `requirements.md`；不确定的问题写进 `notes.md`。
-
-改代码后：
-
-1. 当前行为变了，更新 `status.md`。
-2. 写入测试命令、结果和缺口到 `test-record.md`。
-3. 重要变更写进 `change-record.md`。
-4. 只有目标行为变了，才更新 `requirements.md`。
-5. 运行 `noc index` 和 `noc check --staged`。
-
-重点不是每次更新所有文件，而是保留未来 agent 真正需要的少数事实。
-
-## 高级命令参考
-
-| 命令 | 作用 |
-|---|---|
-| `noc setup` | 安装或检查与 CLI 同版本的 Codex Skill。 |
-| `noc init <project>` | 添加 `noc_docs/` 和 agent 入口区块。 |
-| `noc doctor <project>` | 检查环境、JSON、Git、模式、索引和 hook 状态。 |
-| `noc work <project>` | 根据 feature、路径或 Git diff 路由到 agent 应该读和更新的文档。自动化场景使用 `--json`。 |
-| `noc check <project>` | 检查代码变更是否缺少对应 NOC 文档更新。 |
-| `noc index <project>` | 刷新 `.living-docs` 里的路由文件。 |
-| `noc suggest-map <project>` | 建议代码路径到 feature 的映射。 |
-| `noc feature create <project> <feature>` | 从模板创建 feature 文档目录。 |
-| `noc feature adopt <project> <source> <feature>` | 把占位 feature 目录转成真实 feature。 |
-| `noc feature rename <project> <old> <new>` | 重命名 feature 目录和映射。 |
-| `noc hook install <project>` | 安装 pre-commit 提醒。 |
-| `noc hook status <project>` | 查看 pre-commit 提醒是否安装。 |
-| `noc hook uninstall <project>` | 移除 NOC managed hook 区块。 |
-| `noc validate --target <project>` | 校验目标项目。 |
-| `noc validate` | 校验本仓库。 |
-
-参数细节可运行 `noc <command> --help`。
-
-## 生成的文档
-
-默认 `small` 模式会生成：
+默认 `noc init .` 会创建 v2 simplified 结构：
 
 ```text
 <project>/
   AGENTS.md
   noc_docs/
-    docs-map.md
-    project-status.md
-    development/
-      documentation-policy.md
-      git-workflow.md
-      testing.md
-    features/
-      index.md
-      _feature/
-        agent-guide.md
-        requirements.md
-        status.md
-        guardrails.md
-        test-record.md
-        change-record.md
-        notes.md
+    project.md
+    guardrails.md
+    verification.md
     .living-docs/
       config.json
-      docs-index.json
-      feature-map.json
+      routing.json
       manifest.json
 ```
 
-`AGENTS.md` 可以替换成 `CLAUDE.md` 或 `GEMINI.md`：
+`project.md` 保存目标、阶段、主要能力、边界和架构事实；`guardrails.md` 保存安全、兼容性、权限、数据丢失、API、迁移或部署限制；`verification.md` 保存标准测试、构建、发布和验收命令。`.living-docs` 下的 JSON 保存协议配置、路由和清单，agent 应通过 `noc work --json` 使用它们。
+v2 路由文件的完整路径是 `noc_docs/.living-docs/routing.json`。
+
+## 默认 v2 工作流
+
+改代码前运行 `noc work` 并读取返回的文件。改完后判断 diff 是否产生持久的 project、guardrails 或 verification 事实，只更新对应文件；普通修复和普通测试无需更新项目记忆。最后执行对应检查：
 
 ```bash
-noc init /path/to/project --agent-file CLAUDE.md
-noc init /path/to/project --agent-file GEMINI.md
+noc doctor .
+noc check . --staged --memory-impact none
 ```
 
-`_feature/` 是模板占位目录。真实 feature 文档用下面的命令创建：
+如果产生对应的持久事实，使用 `--memory-impact project`、`guardrails` 或 `verification`。正常使用 Codex 时由 Skill 自动处理。
 
-```bash
-noc feature create /path/to/project user-login --path src/auth/
-```
+## 安装、更新和命令
 
-会生成：
+也可以使用 `python -m pip install noc-living-docs` 安装，再运行 `noc setup`。使用 pipx 时通过 `pipx upgrade noc-living-docs` 更新；使用 pip 时通过 `python -m pip install --upgrade noc-living-docs` 更新，随后再次运行 `noc setup`。
 
-```text
-noc_docs/features/user-login/
-  agent-guide.md
-  requirements.md
-  status.md
-  guardrails.md
-  test-record.md
-  change-record.md
-  notes.md
-```
+主要命令包括 `noc setup`、`noc init`、`noc doctor`、`noc work --json`、`noc check`、`noc index` 和 `noc validate`。参数细节运行 `noc <command> --help`。
 
-## 文档职责
+## Legacy v1 / 高级兼容
 
-| 文件 | 作用 |
-|---|---|
-| `docs-map.md` | 告诉人和 agent 从哪里开始读。 |
-| `project-status.md` | 总结项目、技术栈、当前能力和已知风险。 |
-| `development/documentation-policy.md` | 说明文档维护规则。 |
-| `development/git-workflow.md` | 记录 Git 和提交期望。 |
-| `development/testing.md` | 记录验证命令和测试要求。 |
-| `features/index.md` | 列出 feature 文档目录。 |
-| `agent-guide.md` | 某个 feature 的快速入口。 |
-| `requirements.md` | 目标行为、业务规则和验收标准。 |
-| `status.md` | 当前代码实际行为。 |
-| `guardrails.md` | 不能破坏的限制。 |
-| `test-record.md` | 测试策略、命令、结果和缺口。 |
-| `change-record.md` | 重要变更及原因。 |
-| `notes.md` | 临时笔记、开放问题和不确定发现。 |
+v1 feature/domain 协议继续支持已有项目和显式兼容场景，但不再是默认模式：
 
-## 机器文件
+- `noc init . --mode small` 显式创建 v1 small feature 布局。
+- `noc init . --mode domain` 显式创建 v1 domain 布局。
+- 已有 v1 项目不会被后续默认 init 隐式迁移。
+- `noc feature create`、`noc feature adopt`、`noc feature rename`、`noc suggest-map` 和 `feature-map.json` 都属于 v1 高级兼容能力。
 
-`.living-docs/` 目录由 `noc index` 生成和维护。
-
-| 文件 | 作用 |
-|---|---|
-| `config.json` | 项目模式和 check 严格度配置。 |
-| `feature-map.json` | 把代码路径映射到 feature 文档，并保存 trust signals。 |
-| `docs-index.json` | 列出已知文档和元数据。 |
-| `manifest.json` | 记录生成文件清单，供校验使用。 |
-
-agent 应该通过 `noc work --json` 使用 `feature-map.json`，而不是手写解析它。
-
-## Domain 模式
-
-大项目可以使用 domain 模式：
-
-```bash
-noc init /path/to/project --mode domain
-```
-
-domain 模式生成：
-
-```text
-noc_docs/
-  domains/
-    index.md
-    _domain/
-      index.md
-      guardrails.md
-      features/
-        _feature/
-          agent-guide.md
-          requirements.md
-          status.md
-          guardrails.md
-          test-record.md
-          change-record.md
-          notes.md
-```
-
-monorepo、多服务系统，或者有领域级 guardrails 的团队适合使用 domain 模式。
-
-## 和其他工具的关系
-
-| 工具 | 适合做什么 | NOC 的角色 |
-|---|---|---|
-| README | 项目概览和启动方式 | 在改动前把 agent 指向 feature 级项目记忆。 |
-| Wiki 或文档站 | 长文指南和广泛知识 | 把和代码改动强相关的记忆放在代码工作流旁边。 |
-| ADR | 架构决策 | 记录 feature 行为、限制、测试和变更事实。 |
-| Issue tracker | 计划、负责人和讨论 | 保存实现后真正变成事实的内容。 |
-| 自动生成 API 文档 | 从代码生成 reference | 捕获代码本身看不出来的意图、限制和验证。 |
-
-NOC 可以和这些工具共存。它是本地路由层，告诉 agent 改代码前应该看哪里。
+v1 small 模式继续使用 feature 目录及 `agent-guide.md`、`requirements.md`、`status.md`、`guardrails.md`、`test-record.md`、`change-record.md`、`notes.md`；domain 模式在 domain 索引和 guardrails 下嵌套相同的 feature 模型。这些能力不会删除，但不适用于 v2 simplified 项目。
 
 ## 给 Coding Agents 使用
 
-`noc setup` 会把内置的 `project-living-docs` Skill 安装到 Codex 的全局 Skill 目录，并保持 Skill 与 CLI 版本一致：
-
-```bash
-noc setup
-```
-
-仓库中的 `.agents/skills/project-living-docs` 和 `skills/codex/project-living-docs` 继续用于源码开发和兼容旧用法。
-
-通用 agent 可以读取 managed block：
-
-```bash
-noc init /path/to/project --agent-file AGENTS.md
-```
-
-细节见 [Agent Compatibility](docs/agent-compatibility.md)。
+`noc setup` 会安装与 CLI 同版本的 Codex Skill。仓库中的 `.agents/skills/project-living-docs` 和 `skills/codex/project-living-docs` 用于源码开发和兼容。通用 agent 可读取 `noc init /path/to/project --agent-file AGENTS.md` 创建的 managed block。支持范围见 [Agent Compatibility](docs/agent-compatibility.md)。
 
 ## 开发本仓库
 
 ```bash
+python -m py_compile scripts/__init__.py scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py
+python -m unittest discover -s tests
 python scripts/noc.py validate
 python scripts/release.py --check
-python -m unittest tests.test_noc_cli tests.test_release_cli
 ```
 
-```bash
-python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py
-```
-
-当前版本：`1.2.0`。
-
-## GitHub 发现性
-
-建议添加这些 GitHub topics：
-
-```text
-codex
-codex-skill
-agent-skills
-ai-coding
-agents-md
-living-docs
-developer-tools
-documentation
-cli
-git-hooks
-project-memory
-```
-
-更多阅读：
-
-- [Why NOC](docs/why-noc.md)
-- [Agent Compatibility](docs/agent-compatibility.md)
-- [Comparisons](docs/comparisons.md)
-- [Release](docs/release.md)
-- [v1 Readiness](docs/v1-readiness.md)
-- [Migration Reports](docs/migration-reports/)
+当前版本：`1.2.1`。
 
 ## 许可证
 
-本仓库源码公开，默认用于非商业场景。
-
-代码、脚本、模板和 skills 使用 PolyForm Noncommercial License 1.0.0。商业使用需要书面许可。
+本仓库源码公开，默认用于非商业场景。代码、脚本、模板和 skills 使用 PolyForm Noncommercial License 1.0.0，商业使用需要书面许可。

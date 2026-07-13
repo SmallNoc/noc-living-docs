@@ -6,22 +6,15 @@ NOC Living Docs is a protocol plus CLI. Agent-specific files are entry points in
 
 | Agent surface | Entry point | Status | Notes |
 |---|---|---|---|
-| Codex | `skills/codex/project-living-docs/SKILL.md` | Primary | Full Light / Deep / Audit / Query workflow is documented in the skill. |
-| Generic agents | `AGENTS.md` managed block | Supported | Canonical project-level managed block. Used by `init --agent-file AGENTS.md`. |
-| Claude Code | `CLAUDE.md` template | Basic | Points to the canonical `AGENTS.md` protocol. Needs real Claude Code dogfood before v1. |
-| Gemini CLI | `GEMINI.md` template | Basic | Points to the canonical `AGENTS.md` protocol. Needs real Gemini CLI dogfood before v1. |
+| Codex | Installed `project-living-docs` Skill | Formally supported | `noc setup` installs the bundled Skill version that matches the CLI. Setup and isolated installation behavior are covered by repository tests. |
+| Generic agents | `AGENTS.md` managed block | Basic protocol support | `noc init` adds the canonical managed block while preserving user-authored content outside it. |
+| Claude Code | `CLAUDE.md` template | Template-level basic compatibility | The template points to the shared protocol. The repository does not claim complete Claude Code runtime validation. |
+| Gemini CLI | `GEMINI.md` template | Template-level basic compatibility | The template points to the shared protocol. The repository does not claim complete Gemini CLI runtime validation. |
 
 ## Compatibility Rules
 
 - `templates/AGENTS.md` is the canonical managed block for project entry files.
 - `templates/CLAUDE.md` and `templates/GEMINI.md` must remain consistent with the canonical protocol.
 - Agent entry files must preserve user-authored rules outside the NOC managed block.
-- Agent integrations should call the CLI for deterministic work: `init`, `work --json`, `index`, `validate`, `check`, `hook`, and `suggest-map`.
-
-## v1 Requirement
-
-Before v1, run at least one dogfood pass for each target surface that claims more than basic support:
-
-- Codex skill execution on a real code change.
-- Generic `AGENTS.md` flow on a project with existing rules.
-- Claude Code or Gemini CLI flow if they are advertised as supported beyond template-level compatibility.
+- Codex uses `noc work --json` for deterministic routing and applies the v2 simplified or v1 legacy rules selected by project configuration.
+- Template availability alone is not evidence of full runtime support; compatibility claims must stay at the level demonstrated by implementation and tests.

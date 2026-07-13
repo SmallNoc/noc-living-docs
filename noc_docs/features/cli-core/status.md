@@ -11,7 +11,7 @@ confidence: medium
 
 Bare `noc init` now establishes simplified v2 project memory after verifying the installed Skill. Existing v1 layouts and explicit `--mode` invocations retain the legacy command and document behavior. `work` routes v2 to the three project-level files, while `check` treats v2 documentation updates as semantic rather than mandatory.
 
-`noc --version` 输出 `noc-living-docs 1.2.0`，版本来自既有单一版本来源。顶层帮助优先列出 `setup`、`init` 和 `--version`，并将其他保留命令标记为 Advanced。
+`noc --version` 输出 `noc-living-docs 1.2.1`，版本来自既有单一版本来源。顶层帮助优先列出 `setup`、`init` 和 `--version`，并将其他保留命令标记为 Advanced。
 
 `noc check` 现在接受可重复的 `--memory-impact` 和可选 `--json`。声明 `none` 时无需更新项目记忆；project、guardrails、verification 分别校验 v2 的三个既有文件。JSON 只输出稳定的四字段，默认未传新参数的 v1/v2 check 行为保持兼容。
 

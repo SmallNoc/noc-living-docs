@@ -60,16 +60,27 @@ Stop and ask the user before editing code when:
 
 ## Definition Of Done
 
-A task using this skill is done only when:
+A task using this skill is done only when the rules for the detected protocol are satisfied.
 
-- affected docs were identified through the v2 routing data or v1 feature map
-- required docs were read or missing docs were called out
+### v2 simplified projects
+
+- affected memory was identified through v2 routing data
+- `project.md`, `guardrails.md`, and `verification.md` were read as routed, or missing files were called out
+- the actual diff was classified by memory impact
+- only the memory files selected by that impact were updated; `none` caused no memory update
+- code changes and project memory agree
+- available checks were run, or skipped with a reason
+
+### v1 legacy projects
+
+- the affected feature or domain was identified through the feature map
+- required feature/domain docs were read, or missing docs were called out
 - code changes and docs changes agree
 - `requirements.md` changed only for intended behavior changes
-- `status.md` reflects current behavior after code changes
+- `status.md` reflects current behavior after behavior changes
 - `test-record.md` records verification or explains why verification was not run
 - `change-record.md` records important implementation changes, not routine churn
-- indexes/checks were run when available, or skipped with reason
+- indexes/checks were run when available, or skipped with a reason
 
 Use a normal final response focused on development and test results. Do not output a fixed NOC template. Only when memory changed, append one short sentence such as `Project memory updated: project.md`.
 

@@ -19,17 +19,6 @@ Classify the actual diff, not the size of the task or the amount of work perform
 
 Formatting, comments, local renames, behavior-preserving small refactors, fixes that restore an existing requirement, existing test runs, and ordinary tests use `none`. Multiple durable categories may be declared by repeating `--memory-impact`. Never store temporary execution logs, chat history, ordinary results, or uncertain claims as long-term facts.
 
-## Modes
-
-| Mode | Use When | Read Scope |
-|---|---|---|
-| Light | narrow bug fix or small implementation | entry file, `docs-map.md`, feature map, affected `agent-guide.md`, `guardrails.md` |
-| Deep | new feature, behavior change, refactor, API/data/security/deployment change | Light docs plus `requirements.md`, `status.md`, `test-record.md`, `change-record.md` |
-| Audit | initialization, migration, consistency review | full relevant `noc_docs/` tree |
-| Query | answering a docs question only | route through index, then read smallest relevant docs |
-
-Escalate Light to Deep when code may change behavior, requirements, tests, security, public API, schema, persistence, permissions, billing, deployment, or cross-feature contracts.
-
 ## Read Fallbacks
 
 For simplified v2 projects, read `project.md`, `guardrails.md`, and `verification.md` as the minimum fallback. Do not create feature or area documents merely because routing is broad.
@@ -40,7 +29,7 @@ For each affected feature:
 2. Read feature `guardrails.md` if present.
 3. If feature guardrails are missing in domain mode, read `noc_docs/domains/<domain>/guardrails.md`.
 4. If feature docs are missing or no feature maps to the changed path, read `noc_docs/docs-map.md`, `noc_docs/project-status.md`, and the closest domain or feature index.
-5. If `feature-map.json` has `completeness.complete=false`, missing docs, or stale-looking entries, say so and use Deep or Audit mode.
+5. If `feature-map.json` has `completeness.complete=false`, missing docs, or stale-looking entries, report the limitation and read only the additional relevant v1 documents needed for the task.
 
 Do not invent requirements to fill missing docs. Record the gap in `status.md`, `notes.md`, or the final response.
 

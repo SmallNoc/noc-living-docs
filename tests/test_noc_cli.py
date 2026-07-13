@@ -60,7 +60,7 @@ class NocCliTests(unittest.TestCase):
     def test_cli_version_uses_formal_package_version(self) -> None:
         result = run(["--version"])
 
-        self.assertEqual(result.stdout, "noc-living-docs 1.2.0\n")
+        self.assertEqual(result.stdout, "noc-living-docs 1.2.1\n")
 
     def test_cli_help_prioritizes_setup_init_and_normal_codex_use(self) -> None:
         result = run(["--help"])
@@ -85,6 +85,22 @@ class NocCliTests(unittest.TestCase):
         for internal_detail in ["noc work", '"schema_version"', "seven documents", "domain mode", "hook install"]:
             self.assertNotIn(internal_detail, first_screen.lower())
 
+    def test_readme_documents_default_v2_and_links_existing_workflow(self) -> None:
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+
+        self.assertNotIn("ci.yml", readme)
+        self.assertIn("actions/workflows/validate.yml", readme)
+        self.assertTrue((ROOT / ".github/workflows/validate.yml").is_file())
+        for path in [
+            "noc_docs/project.md",
+            "noc_docs/guardrails.md",
+            "noc_docs/verification.md",
+            "noc_docs/.living-docs/routing.json",
+        ]:
+            self.assertIn(path, readme)
+        self.assertIn("default v2 simplified", readme.lower())
+        self.assertIn("默认 v2 simplified", readme.lower())
+
     def test_each_required_subcommand_has_help(self) -> None:
         for command in ["setup", "init", "index", "validate", "hook", "check", "suggest-map", "work", "doctor", "feature"]:
             with self.subTest(command=command):
@@ -101,7 +117,7 @@ class NocCliTests(unittest.TestCase):
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
 
         self.assertIn('name = "noc-living-docs"', pyproject)
-        self.assertIn('version = "1.2.0"', pyproject)
+        self.assertIn('version = "1.2.1"', pyproject)
         self.assertIn('license = "PolyForm-Noncommercial-1.0.0"', pyproject)
         self.assertIn('license-files = ["LICENSE"]', pyproject)
         self.assertIn('noc = "scripts.noc:main"', pyproject)
@@ -184,6 +200,43 @@ class NocCliTests(unittest.TestCase):
             self.assertEqual(impacts["new_security_constraint"], "guardrails")
             self.assertEqual(impacts["verification_command_change"], "verification")
             self.assertEqual(impacts["multiple_memory_impacts"], "project+guardrails")
+
+    def test_skill_definition_of_done_separates_v2_from_v1_documents(self) -> None:
+        skill = (ROOT / ".agents/skills/project-living-docs/SKILL.md").read_text(encoding="utf-8")
+        definition_of_done = skill.split("## Definition Of Done", 1)[1].split("## References", 1)[0]
+        v2_section = definition_of_done.split("### v2 simplified projects", 1)[1].split(
+            "### v1 legacy projects", 1
+        )[0]
+
+        for legacy_doc in ["requirements.md", "status.md", "test-record.md", "change-record.md", "notes.md"]:
+            self.assertNotIn(legacy_doc, v2_section)
+        for v2_doc in ["project.md", "guardrails.md", "verification.md"]:
+            self.assertIn(v2_doc, v2_section)
+
+    def test_current_protocol_docs_do_not_use_obsolete_workflow_modes(self) -> None:
+        current_protocol_files = [
+            ROOT / "noc_docs/docs-map.md",
+            ROOT / "templates/noc_docs/docs-map.md",
+            ROOT / "examples/small-project/noc_docs/docs-map.md",
+            ROOT / "examples/domain-project/noc_docs/docs-map.md",
+            ROOT / "protocol/TOKEN_POLICY.md",
+            ROOT / ".agents/skills/project-living-docs/references/workflow.md",
+            ROOT / "skills/codex/project-living-docs/references/workflow.md",
+        ]
+        obsolete_phrases = ["Light Mode", "Deep Mode", "Audit Mode", "Query Mode", "Light to Deep"]
+
+        for path in current_protocol_files:
+            with self.subTest(path=path):
+                text = path.read_text(encoding="utf-8")
+                for phrase in obsolete_phrases:
+                    self.assertNotIn(phrase, text)
+
+    def test_validate_workflow_uses_unittest_discovery(self) -> None:
+        workflow = (ROOT / ".github/workflows/validate.yml").read_text(encoding="utf-8")
+
+        self.assertIn("python -m unittest discover -s tests", workflow)
+        self.assertNotIn("python -m unittest tests.", workflow)
+        self.assertTrue((ROOT / "tests/test_simplified_memory.py").is_file())
 
     def test_agent_entry_and_codex_skill_prefer_work_json(self) -> None:
         agents = (ROOT / "templates/AGENTS.md").read_text(encoding="utf-8")
