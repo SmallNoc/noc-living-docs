@@ -1,5 +1,11 @@
 # Change Record: agent-protocol
 
+## 2026-07-14 - Classify semantic memory impact
+
+- Added the future-session correctness question as the durable-memory threshold.
+- Defined none/project/guardrails/verification routing and prohibited temporary execution history from long-term memory.
+- Added impact eval cases and replaced fixed NOC reporting with one optional short memory-update sentence.
+
 ## 2026-07-14 - Support simplified project memory
 
 - Added a concise v2 managed block while retaining the legacy template for v1 projects.

@@ -1,5 +1,11 @@
 # Change Record: cli-core
 
+## 2026-07-14 - Add declarative semantic memory checks
+
+- Added repeatable `--memory-impact` categories and machine-readable check output.
+- Made `none` pass without documentation changes and durable impacts require only their corresponding project memory.
+- Kept semantic judgment in the Skill; the CLI only verifies the declared impact against the Git diff.
+
 ## 2026-07-14 - Route simplified project memory
 
 - Added protocol/layout fields to work-plan JSON without removing v1 fields.

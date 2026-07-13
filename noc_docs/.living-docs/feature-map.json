@@ -16,8 +16,8 @@
       "change_record": "noc_docs/features/agent-protocol/change-record.md",
       "notes": "noc_docs/features/agent-protocol/notes.md",
       "freshness": {
-        "last_doc_update": "2026-07-13T16:30:26.679360+00:00",
-        "last_indexed": "2026-07-13T16:54:25.913567+00:00"
+        "last_doc_update": "2026-07-13T17:11:09.641528+00:00",
+        "last_indexed": "2026-07-13T17:26:05.791049+00:00"
       },
       "completeness": {
         "required_docs": [
@@ -45,8 +45,8 @@
       "change_record": "noc_docs/features/cli-core/change-record.md",
       "notes": "noc_docs/features/cli-core/notes.md",
       "freshness": {
-        "last_doc_update": "2026-07-13T16:30:44.340916+00:00",
-        "last_indexed": "2026-07-13T16:54:25.913567+00:00"
+        "last_doc_update": "2026-07-13T17:11:09.641528+00:00",
+        "last_indexed": "2026-07-13T17:26:05.792051+00:00"
       },
       "completeness": {
         "required_docs": [
@@ -76,7 +76,7 @@
       "notes": "noc_docs/features/codex-skill/notes.md",
       "freshness": {
         "last_doc_update": "2026-07-13T15:42:57.151018+00:00",
-        "last_indexed": "2026-07-13T16:54:25.913567+00:00"
+        "last_indexed": "2026-07-13T17:26:05.792051+00:00"
       },
       "completeness": {
         "required_docs": [
@@ -106,8 +106,8 @@
       "change_record": "noc_docs/features/init-index-validate/change-record.md",
       "notes": "noc_docs/features/init-index-validate/notes.md",
       "freshness": {
-        "last_doc_update": "2026-07-13T16:30:26.678359+00:00",
-        "last_indexed": "2026-07-13T16:54:25.914565+00:00"
+        "last_doc_update": "2026-07-13T16:57:39.842924+00:00",
+        "last_indexed": "2026-07-13T17:26:05.793049+00:00"
       },
       "completeness": {
         "required_docs": [
@@ -142,8 +142,8 @@
       "change_record": "noc_docs/features/release-quality/change-record.md",
       "notes": "noc_docs/features/release-quality/notes.md",
       "freshness": {
-        "last_doc_update": "2026-07-13T16:54:15.713236+00:00",
-        "last_indexed": "2026-07-13T16:54:25.914565+00:00"
+        "last_doc_update": "2026-07-13T17:25:56.595154+00:00",
+        "last_indexed": "2026-07-13T17:26:05.793049+00:00"
       },
       "completeness": {
         "required_docs": [

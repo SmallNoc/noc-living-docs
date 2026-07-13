@@ -6,6 +6,19 @@ Read `noc_docs/.living-docs/config.json`. When `protocol_version` is `2` and `la
 
 For v2, update memory only for durable changes to requirements, behavior, constraints, API, data structures, verification, or project phase. Ordinary bug fixes, formatting, and small refactors do not require documentation changes.
 
+## Semantic Memory Impact
+
+Classify the actual diff, not the size of the task or the amount of work performed:
+
+| Impact | Durable change | v2 update |
+|---|---|---|
+| `none` | No new fact future Codex sessions require | No project memory file |
+| `project` | Goal, phase, major capability, technical boundary, or architecture fact | `project.md` |
+| `guardrails` | Security, permission, data-loss, compatibility, public API, migration, or deployment constraint | `guardrails.md` |
+| `verification` | Standard test/build/release/acceptance command or durable gate | `verification.md` |
+
+Formatting, comments, local renames, behavior-preserving small refactors, fixes that restore an existing requirement, existing test runs, and ordinary tests use `none`. Multiple durable categories may be declared by repeating `--memory-impact`. Never store temporary execution logs, chat history, ordinary results, or uncertain claims as long-term facts.
+
 ## Modes
 
 | Mode | Use When | Read Scope |
@@ -43,13 +56,10 @@ Before editing code:
 
 After editing code:
 
-1. Update `status.md` when actual behavior changes.
-2. Update `requirements.md` only when intended behavior changes.
-3. Append `change-record.md` for important changes.
-4. Append `test-record.md` with verification commands and results.
-5. Update `guardrails.md` only when constraints, compatibility rules, or risks changed.
-6. Run `index` after docs, features, domains, or mappings changed.
-7. Run `check --staged --warn-only` before commit when Git is available.
+1. Classify the diff using the semantic threshold above.
+2. For v2, update only the corresponding project memory files; `none` changes no NOC docs.
+3. For v1, preserve the existing document layout but avoid routine churn and update only durable facts.
+4. Run `noc check <project> --staged --memory-impact <impact>`, repeating the impact option when needed.
 
 ## Conflict Handling
 

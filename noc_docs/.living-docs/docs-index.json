@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-13T16:54:25.899565+00:00",
+  "generated_at": "2026-07-13T17:26:05.778049+00:00",
   "documents": {
     "noc_docs/development/documentation-policy.md": {
       "title": "Documentation Policy",
@@ -37,7 +37,7 @@
     },
     "noc_docs/features/agent-protocol/change-record.md": {
       "title": "Change Record: agent-protocol",
-      "summary": "- Added a concise v2 managed block while retaining the legacy template for v1 projects. - Updated both packaged Skill copies to route v2 through project-level memory and avoid routine documentation churn. - Removed the mandatory fixed final-response template from the Skill.",
+      "summary": "- Added the future-session correctness question as the durable-memory threshold. - Defined none/project/guardrails/verification routing and prohibited temporary execution history from long-term memory. - Added impact eval cases and replaced fixed NOC reporting with one optional short memory-update sentence.",
       "tags": [
         "change-record",
         "features"
@@ -93,7 +93,7 @@
     },
     "noc_docs/features/cli-core/change-record.md": {
       "title": "Change Record: cli-core",
-      "summary": "- Added protocol/layout fields to work-plan JSON without removing v1 fields. - Added v2 project-level fallback context and non-mandatory documentation checks. - Kept all v1 commands and explicit legacy initialization modes available. - Added `noc setup`, `--check`, `--repair`, and `--json`.",
+      "summary": "- Added repeatable `--memory-impact` categories and machine-readable check output. - Made `none` pass without documentation changes and durable impacts require only their corresponding project memory. - Kept semantic judgment in the Skill; the CLI only verifies the declared impact against the Git diff.",
       "tags": [
         "change-record",
         "features"
@@ -268,7 +268,7 @@
     },
     "noc_docs/features/release-quality/change-record.md": {
       "title": "Change Record: release-quality",
-      "summary": "- Aligned VERSION, package metadata, README version markers, CHANGELOG, and the bundled Skill manifest at 1.2.0 Unreleased. - Updated the publish workflow to run the complete test discovery and install the Skill before its simplified-init smoke test.",
+      "summary": "- Extended the existing 1.2.0 Unreleased changelog entry with semantic memory-impact classification, `check --memory-impact`, no-churn Bug-fix behavior, and simplified final responses. - Kept VERSION, package metadata, tagging, and publishing state unchanged.",
       "tags": [
         "change-record",
         "features"

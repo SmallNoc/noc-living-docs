@@ -21,6 +21,7 @@ confidence: medium
 
 | Date | Change | Command / Method | Result | Notes |
 |---|---|---|---|---|
+| 2026-07-14 | record stage 3 in 1.2.0 Unreleased | `python scripts/release.py --check`; `git diff --check` | PASS | Release metadata remains aligned at 1.2.0 without tagging or publishing. |
 | 2026-07-14 | prepare 1.2.0 simplified-memory development release | `python -m unittest discover -s tests` | PASS | 87 tests passed. |
 | 2026-07-14 | prepare 1.2.0 simplified-memory development release | `python -m pytest -q` | PASS | 87 passed，31 subtests passed。 |
 | 2026-07-14 | prepare 1.2.0 simplified-memory development release | `python scripts/noc.py validate`; `python scripts/release.py --check`; `git diff --check` | PASS | Repository validation and release metadata passed for 1.2.0 Unreleased. |
