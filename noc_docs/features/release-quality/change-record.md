@@ -1,5 +1,10 @@
 # Change Record: release-quality
 
+## 2026-07-14 - Record semantic memory updates in 1.2.0
+
+- Extended the existing 1.2.0 Unreleased changelog entry with semantic memory-impact classification, `check --memory-impact`, no-churn Bug-fix behavior, and simplified final responses.
+- Kept VERSION, package metadata, tagging, and publishing state unchanged.
+
 ## 2026-07-14 - Prepare the 1.2.0 development release
 
 - Aligned VERSION, package metadata, README version markers, CHANGELOG, and the bundled Skill manifest at 1.2.0 Unreleased.
