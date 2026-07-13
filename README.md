@@ -78,19 +78,28 @@ If NOC cannot resolve a path, it says so explicitly with `resolution_status: "un
 
 ## Install
 
-Current recommended install from source:
+PyPI 1.0.2 does not include `noc setup`; `noc setup` is available starting with 1.1.0. Until 1.1.0 is published to PyPI, install the current source branch for testing:
 
 ```bash
 pipx install git+https://github.com/SmallNoc/noc-living-docs.git
-noc --help
+noc setup
 ```
 
-After the package is published to PyPI, use:
+After 1.1.0 is published to PyPI, use:
 
 ```bash
 pipx install noc-living-docs
-noc --help
+noc setup
 ```
+
+With `pip`:
+
+```bash
+python -m pip install noc-living-docs
+noc setup
+```
+
+The package installs the `noc` CLI. `noc setup` installs the bundled, matching-version `project-living-docs` Skill into Codex. Run both once per machine.
 
 For local development without installing:
 
@@ -212,6 +221,7 @@ The point is not to update every file every time. The point is to keep the few f
 
 | Command | What it does |
 |---|---|
+| `noc setup` | Installs or checks the matching Codex Skill. |
 | `noc init <project>` | Adds `noc_docs/` and an agent entry block. |
 | `noc doctor <project>` | Checks setup, JSON, Git, mode, indexes, and hook state. |
 | `noc work <project>` | Routes a feature, path, or Git diff to the docs an agent should read and update. Use `--json` for automation. |
@@ -361,27 +371,13 @@ NOC can coexist with all of these. It is the local routing layer that tells an a
 
 ## For Coding Agents
 
-Codex can use the bundled skill from the standard skill path:
-
-```text
-.agents/skills/project-living-docs
-```
-
-Project install:
+`noc setup` installs the bundled `project-living-docs` Skill into Codex's global Skill directory and keeps its version aligned with the CLI:
 
 ```bash
-mkdir -p /path/to/project/.agents/skills
-cp -R .agents/skills/project-living-docs /path/to/project/.agents/skills/
+noc setup
 ```
 
-Global install:
-
-```bash
-mkdir -p ~/.agents/skills
-cp -R .agents/skills/project-living-docs ~/.agents/skills/
-```
-
-The legacy repo path `skills/codex/project-living-docs` is kept for compatibility, but `.agents/skills/project-living-docs` is the path new Codex users should copy.
+The repository paths `.agents/skills/project-living-docs` and `skills/codex/project-living-docs` remain available for source development and compatibility.
 
 Generic agents can read the managed block from:
 
@@ -403,7 +399,7 @@ python -m unittest tests.test_noc_cli tests.test_release_cli
 python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py
 ```
 
-Current version: `1.0.2`.
+Current version: `1.1.0`.
 
 ## GitHub Discovery
 
@@ -509,19 +505,28 @@ noc work . --path src/auth/login.py --json
 
 ## 安装
 
-当前推荐从源码安装：
+PyPI 1.0.2 不包含 `noc setup`；`noc setup` 从 1.1.0 开始提供。在 1.1.0 发布到 PyPI 前，请安装当前源码分支进行测试：
 
 ```bash
 pipx install git+https://github.com/SmallNoc/noc-living-docs.git
-noc --help
+noc setup
 ```
 
-PyPI 发布后再使用：
+1.1.0 发布到 PyPI 后再使用：
 
 ```bash
 pipx install noc-living-docs
-noc --help
+noc setup
 ```
+
+也可以使用 `pip`：
+
+```bash
+python -m pip install noc-living-docs
+noc setup
+```
+
+安装包提供 `noc` CLI；`noc setup` 会把同版本的 `project-living-docs` Skill 安装到 Codex。每台机器只需执行一次。
 
 本地开发不安装时：
 
@@ -643,6 +648,7 @@ noc index .
 
 | 命令 | 作用 |
 |---|---|
+| `noc setup` | 安装或检查与 CLI 同版本的 Codex Skill。 |
 | `noc init <project>` | 添加 `noc_docs/` 和 agent 入口区块。 |
 | `noc doctor <project>` | 检查环境、JSON、Git、模式、索引和 hook 状态。 |
 | `noc work <project>` | 根据 feature、路径或 Git diff 路由到 agent 应该读和更新的文档。自动化场景使用 `--json`。 |
@@ -792,27 +798,13 @@ NOC 可以和这些工具共存。它是本地路由层，告诉 agent 改代码
 
 ## 给 Coding Agents 使用
 
-Codex 可以使用标准 skill 路径中的仓库内置 skill：
-
-```text
-.agents/skills/project-living-docs
-```
-
-项目内安装：
+`noc setup` 会把内置的 `project-living-docs` Skill 安装到 Codex 的全局 Skill 目录，并保持 Skill 与 CLI 版本一致：
 
 ```bash
-mkdir -p /path/to/project/.agents/skills
-cp -R .agents/skills/project-living-docs /path/to/project/.agents/skills/
+noc setup
 ```
 
-全局安装：
-
-```bash
-mkdir -p ~/.agents/skills
-cp -R .agents/skills/project-living-docs ~/.agents/skills/
-```
-
-旧路径 `skills/codex/project-living-docs` 会保留以兼容已有用法；新 Codex 用户应复制 `.agents/skills/project-living-docs`。
+仓库中的 `.agents/skills/project-living-docs` 和 `skills/codex/project-living-docs` 继续用于源码开发和兼容旧用法。
 
 通用 agent 可以读取 managed block：
 
@@ -834,7 +826,7 @@ python -m unittest tests.test_noc_cli tests.test_release_cli
 python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py
 ```
 
-当前版本：`1.0.2`。
+当前版本：`1.1.0`。
 
 ## GitHub 发现性
 

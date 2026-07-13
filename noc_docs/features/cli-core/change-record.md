@@ -1,5 +1,12 @@
 # Change Record: cli-core
 
+## 2026-07-13 - Add the Codex Skill setup lifecycle
+
+- Added `noc setup`, `--check`, `--repair`, and `--json`.
+- Setup installs missing or outdated NOC-managed Skills idempotently and refuses to overwrite user-managed collisions.
+- Added explicit CLI/Skill version matching and actionable next-step output.
+- Release review strengthened managed identity validation, stable JSON error codes, interrupted-write recovery, and reserved-path collision handling.
+
 ## 2026-07-08 - Add machine-readable work plans
 
 ### Reason

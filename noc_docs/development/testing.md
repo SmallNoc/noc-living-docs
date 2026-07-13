@@ -2,7 +2,7 @@
 
 ## Project Test Commands
 
-- Unit tests: `python -m unittest tests.test_noc_cli tests.test_release_cli`
+- Unit tests: `python -m unittest tests.test_noc_cli tests.test_release_cli tests.test_setup_cli`
 - Protocol validation: `python scripts/noc.py validate`
 - Release check: `python scripts/release.py --check`
 - Compile check: `python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py`

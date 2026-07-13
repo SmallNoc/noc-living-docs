@@ -5,6 +5,7 @@ import sys
 import tempfile
 import unittest
 import os
+import json
 from pathlib import Path
 
 
@@ -81,6 +82,24 @@ class ReleaseCliTests(unittest.TestCase):
             self.assertEqual(result.returncode, 1)
             self.assertIn("current tag v0.5.0 does not match VERSION 0.4.0", result.stderr)
 
+    def test_check_allows_version_preparation_on_previous_release_tag(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            git(project, ["init"])
+            git(project, ["config", "user.email", "test@example.com"])
+            git(project, ["config", "user.name", "Test User"])
+            (project / "VERSION").write_text("0.4.0\n", encoding="utf-8")
+            (project / "CHANGELOG.md").write_text("# Changelog\n\n## [0.4.0] - 2026-07-04\n", encoding="utf-8")
+            git(project, ["add", "."])
+            git(project, ["commit", "-m", "release"])
+            git(project, ["tag", "v0.4.0"])
+            (project / "VERSION").write_text("0.5.0\n", encoding="utf-8")
+            (project / "CHANGELOG.md").write_text("# Changelog\n\n## [0.5.0] - 2026-07-13\n", encoding="utf-8")
+
+            result = run(["--check"], cwd=project)
+
+            self.assertIn("Release check passed for 0.5.0", result.stdout)
+
     def test_check_rejects_todo_placeholders_in_current_changelog_entry(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp)
@@ -118,6 +137,23 @@ class ReleaseCliTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 1)
             self.assertIn("README.md is missing current version 0.4.0", result.stderr)
+
+    def test_check_rejects_skill_manifest_version_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            (project / "VERSION").write_text("0.4.0\n", encoding="utf-8")
+            (project / "CHANGELOG.md").write_text("# Changelog\n\n## [0.4.0] - 2026-07-04\n", encoding="utf-8")
+            manifest = project / ".agents" / "skills" / "project-living-docs" / "noc-skill.json"
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text(
+                json.dumps({"name": "project-living-docs", "version": "0.4.1"}),
+                encoding="utf-8",
+            )
+
+            result = run(["--check"], cwd=project, check=False)
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("Skill manifest version 0.4.1 does not match VERSION 0.4.0", result.stderr)
 
     def test_check_rejects_github_ref_tag_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

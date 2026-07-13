@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## [1.1.0] - 2026-07-13
+
+### Added
+
+- Added `noc setup`, `noc setup --check`, `noc setup --repair`, and `noc setup --json` as the Codex Skill installation and diagnostics entry points.
+- Included the complete `project-living-docs` Skill and its runtime references in the wheel.
+
+### Changed
+
+- Added automatic same-version Skill installation and CLI/Skill version validation, with support for custom `CODEX_HOME` and Codex's default home directory.
+- Protected user-maintained Skills with the same name; only NOC-managed installations may be upgraded or repaired.
+- Made managed Skill replacement atomic, with rollback on failure and cleanup of files removed by newer versions.
+- Stabilized setup JSON fields, error codes, exit codes, and actionable next-step output.
+- Updated the installed Skill and user-facing templates to invoke `noc` instead of depending on the source-only `python scripts/noc.py` path.
+- Released these installation improvements as a backward-compatible minor release; existing CLI commands and the v1.0.2 document protocol remain supported.
+
 ## [1.0.2] - 2026-07-10
 
 ### Changed

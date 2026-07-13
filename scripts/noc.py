@@ -5,17 +5,23 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
+import importlib.metadata
 import json
 import os
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_DIR = ROOT / "scripts"
 TEMPLATES = ROOT / "templates/noc_docs"
+SKILL_NAME = "project-living-docs"
+SKILL_MANIFEST = "noc-skill.json"
+SKILL_MANAGER = "noc-living-docs"
+SKILL_MANAGER_ID = "b7cf6fd1-0f93-4b97-9b39-eec3aebcbd70"
 START = "# noc-living-docs:start"
 END = "# noc-living-docs:end"
 PROJECT_MARKERS = {
@@ -47,6 +53,231 @@ FEATURE_TITLE_PREFIXES = {
     "change-record.md": "# Change Record: ",
     "notes.md": "# Notes: ",
 }
+
+
+def cli_version() -> str:
+    source_version = ROOT / "VERSION"
+    if source_version.is_file():
+        return source_version.read_text(encoding="utf-8").strip()
+    try:
+        return importlib.metadata.version("noc-living-docs")
+    except importlib.metadata.PackageNotFoundError:
+        raise RuntimeError("Cannot determine noc-living-docs version")
+
+
+def default_codex_home(home: Path) -> Path:
+    return home / ".codex"
+
+
+def codex_home() -> Path:
+    configured = os.environ.get("CODEX_HOME")
+    return Path(configured).expanduser().resolve() if configured else default_codex_home(Path.home()).resolve()
+
+
+def bundled_skill_root() -> Path:
+    source_root = ROOT / ".agents/skills" / SKILL_NAME
+    if source_root.is_dir():
+        return source_root
+    return ROOT / "noc_assets/project_living_docs"
+
+
+def read_json(path: Path) -> dict | None:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return value if isinstance(value, dict) else None
+
+
+def valid_managed_manifest(manifest: dict | None) -> bool:
+    if manifest is None:
+        return False
+    required_files = manifest.get("required_files")
+    if not isinstance(required_files, list) or not required_files:
+        return False
+    if not all(
+        isinstance(relative, str)
+        and relative
+        and not Path(relative).is_absolute()
+        and ".." not in Path(relative).parts
+        for relative in required_files
+    ):
+        return False
+    return (
+        manifest.get("schema_version") == "1.0"
+        and manifest.get("name") == SKILL_NAME
+        and manifest.get("managed_by") == SKILL_MANAGER
+        and manifest.get("manager_id") == SKILL_MANAGER_ID
+        and isinstance(manifest.get("version"), str)
+        and {"SKILL.md", SKILL_MANIFEST}.issubset(required_files)
+    )
+
+
+def is_managed_skill_dir(path: Path) -> bool:
+    return path.is_dir() and not path.is_symlink() and valid_managed_manifest(read_json(path / SKILL_MANIFEST))
+
+
+def skill_files_match(source: Path, target: Path, manifest: dict) -> bool:
+    for relative in manifest.get("required_files", []):
+        source_file = source / relative
+        target_file = target / relative
+        if not source_file.is_file() or not target_file.is_file():
+            return False
+        if source_file.read_bytes() != target_file.read_bytes():
+            return False
+    return True
+
+
+def setup_state(home: Path) -> dict:
+    source = bundled_skill_root()
+    bundled = read_json(source / SKILL_MANIFEST)
+    version = cli_version()
+    target = home / "skills" / SKILL_NAME
+    state = {
+        "schema_version": "1.0",
+        "codex_home": str(home),
+        "skill_path": str(target),
+        "cli_version": version,
+        "skill_version": None,
+        "status": "error",
+        "action": "none",
+        "next_action": "noc setup",
+        "error_code": "SETUP_ERROR",
+    }
+    if not valid_managed_manifest(bundled):
+        state.update(status="bundle_invalid", next_action="Reinstall noc-living-docs", error_code="BUNDLED_SKILL_INVALID")
+        return state
+    if bundled.get("version") != version:
+        state.update(
+            status="bundle_version_mismatch",
+            skill_version=bundled.get("version"),
+            next_action="Install a noc-living-docs package with matching CLI and Skill versions",
+            error_code="BUNDLED_VERSION_MISMATCH",
+        )
+        return state
+    if not target.exists():
+        state.update(status="missing", next_action="noc setup", error_code="SKILL_NOT_INSTALLED")
+        return state
+    if target.is_symlink() or not target.is_dir():
+        state.update(status="unmanaged", next_action=f"Choose a different Skill name or remove {target} yourself", error_code="SKILL_NOT_MANAGED")
+        return state
+    installed = read_json(target / SKILL_MANIFEST)
+    if not valid_managed_manifest(installed):
+        state.update(status="unmanaged", next_action=f"Keep or move your custom Skill at {target}", error_code="SKILL_NOT_MANAGED")
+        return state
+    state["skill_version"] = installed.get("version")
+    if installed.get("version") != version:
+        state.update(status="outdated", next_action="noc setup", error_code="VERSION_MISMATCH")
+    elif not skill_files_match(source, target, bundled):
+        state.update(status="damaged", next_action="noc setup --repair", error_code="SKILL_DAMAGED")
+    else:
+        state.update(status="ready", next_action="noc init .", error_code=None)
+    return state
+
+
+class SetupInstallError(Exception):
+    pass
+
+
+def install_managed_skill(home: Path) -> None:
+    source = bundled_skill_root()
+    target = home / "skills" / SKILL_NAME
+    skills_dir = target.parent
+    skills_dir.mkdir(parents=True, exist_ok=True)
+    backup = skills_dir / f".{SKILL_NAME}.backup"
+    if backup.exists():
+        if not is_managed_skill_dir(backup):
+            raise SetupInstallError(f"Reserved backup path is not NOC-managed: {backup}")
+        if not target.exists():
+            backup.rename(target)
+        elif is_managed_skill_dir(target):
+            shutil.rmtree(backup)
+        else:
+            raise SetupInstallError(f"Cannot reconcile setup backup with unmanaged target: {target}")
+
+    temporary_root = Path(tempfile.mkdtemp(prefix=f".{SKILL_NAME}.", dir=skills_dir))
+    temporary = temporary_root / SKILL_NAME
+    try:
+        shutil.copytree(source, temporary, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "__init__.py"))
+        if target.exists():
+            target.rename(backup)
+        try:
+            temporary.rename(target)
+        except Exception:
+            if backup.exists() and not target.exists():
+                backup.rename(target)
+            raise
+    finally:
+        if temporary_root.exists():
+            shutil.rmtree(temporary_root)
+    if backup.exists() and is_managed_skill_dir(backup):
+        shutil.rmtree(backup)
+
+
+def print_setup_result(state: dict, as_json: bool) -> None:
+    if as_json:
+        print(json.dumps(state, indent=2, ensure_ascii=False))
+        return
+    status = state["status"]
+    if status == "ready":
+        if state["action"] == "installed":
+            print(f"Installed NOC Codex Skill {state['skill_version']} at {state['skill_path']}.")
+        elif state["action"] == "upgraded":
+            print(f"Upgraded NOC Codex Skill to {state['skill_version']} at {state['skill_path']}.")
+        elif state["action"] == "repaired":
+            print(f"Repaired NOC Codex Skill {state['skill_version']} at {state['skill_path']}.")
+        else:
+            print(f"NOC Codex Skill already up to date and matches CLI version {state['cli_version']}.")
+        print("NOC is ready for Codex.")
+        print(f"Next: {state['next_action']}")
+    elif status == "missing":
+        print("Codex integration is not installed.")
+        print("Next: noc setup")
+    elif status == "damaged":
+        print("The NOC-managed Codex Skill is incomplete or modified.")
+        print("Next: noc setup --repair")
+    elif status == "outdated":
+        print(f"Codex Skill version {state['skill_version']} does not match CLI version {state['cli_version']}.")
+        print("Next: noc setup")
+    elif status == "unmanaged":
+        print(f"A user-maintained Skill already exists at {state['skill_path']}; NOC will not overwrite it.")
+        print(f"Next: {state['next_action']}")
+    elif status == "install_error":
+        print("NOC could not safely update the Codex Skill installation.")
+        print(f"Next: {state['next_action']}")
+    else:
+        print("The bundled Codex Skill does not match this CLI installation.")
+        print(f"Next: {state['next_action']}")
+
+
+def command_setup(args: argparse.Namespace) -> int:
+    home = codex_home()
+    state = setup_state(home)
+    if not args.check:
+        action = None
+        if state["status"] == "missing":
+            action = "installed"
+        elif state["status"] == "outdated":
+            action = "upgraded"
+        elif state["status"] == "damaged" and args.repair:
+            action = "repaired"
+        if action:
+            try:
+                install_managed_skill(home)
+            except (OSError, SetupInstallError) as error:
+                state.update(
+                    status="install_error",
+                    action="none",
+                    next_action=str(error),
+                    error_code="INSTALL_PATH_CONFLICT" if isinstance(error, SetupInstallError) else "SETUP_IO_ERROR",
+                )
+            else:
+                state = setup_state(home)
+                state["action"] = action
+    print_setup_result(state, args.json)
+    if state["status"] == "ready":
+        return 0
+    return 2 if state["status"] == "unmanaged" else 1
 
 
 def run_script(name: str, args: list[str]) -> int:
@@ -1309,6 +1540,13 @@ CODE_FILENAMES = {
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="NOC Living Docs CLI.")
     sub = parser.add_subparsers(dest="command", required=True)
+
+    setup = sub.add_parser("setup", help="Install or check the bundled Codex Skill.")
+    setup_mode = setup.add_mutually_exclusive_group()
+    setup_mode.add_argument("--check", action="store_true", help="Check setup without changing files.")
+    setup_mode.add_argument("--repair", action="store_true", help="Repair a damaged NOC-managed Skill.")
+    setup.add_argument("--json", action="store_true", help="Print a machine-readable setup result.")
+    setup.set_defaults(func=command_setup)
 
     init = sub.add_parser("init", help="Initialize NOC Living Docs in a project.")
     init.add_argument("target", nargs="?", default=".")

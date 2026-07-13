@@ -54,11 +54,11 @@ class NocCliTests(unittest.TestCase):
     def test_cli_help_lists_required_subcommands(self) -> None:
         result = run(["--help"])
 
-        for command in ["init", "index", "validate", "hook", "check", "suggest-map", "work", "doctor", "feature"]:
+        for command in ["setup", "init", "index", "validate", "hook", "check", "suggest-map", "work", "doctor", "feature"]:
             self.assertIn(command, result.stdout)
 
     def test_each_required_subcommand_has_help(self) -> None:
-        for command in ["init", "index", "validate", "hook", "check", "suggest-map", "work", "doctor", "feature"]:
+        for command in ["setup", "init", "index", "validate", "hook", "check", "suggest-map", "work", "doctor", "feature"]:
             with self.subTest(command=command):
                 result = run([command, "--help"])
                 self.assertIn("usage:", result.stdout)
@@ -73,11 +73,13 @@ class NocCliTests(unittest.TestCase):
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
 
         self.assertIn('name = "noc-living-docs"', pyproject)
-        self.assertIn('version = "1.0.2"', pyproject)
+        self.assertIn('version = "1.1.0"', pyproject)
         self.assertIn('license = "PolyForm-Noncommercial-1.0.0"', pyproject)
         self.assertIn('license-files = ["LICENSE"]', pyproject)
         self.assertIn('noc = "scripts.noc:main"', pyproject)
-        self.assertIn('include = ["scripts", "templates*"]', pyproject)
+        self.assertIn('packages = ["scripts", "templates", "noc_assets.project_living_docs"]', pyproject)
+        self.assertIn('"noc_assets.project_living_docs" = ".agents/skills/project-living-docs"', pyproject)
+        self.assertIn('"noc_assets.project_living_docs" = ["*.md", "*.json", "references/*.md", "evals/*.csv"]', pyproject)
         self.assertIn('"noc_docs/.living-docs/*.json"', pyproject)
 
     def test_pypi_publish_workflow_uses_trusted_publishing(self) -> None:

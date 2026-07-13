@@ -1,5 +1,18 @@
 # Change Record: release-quality
 
+## 2026-07-13 - Run setup coverage in remote release gates
+
+- Added `tests.test_setup_cli` to the pull-request validation and tag publishing unittest commands.
+- Installed the `build` test dependency in PR validation so the wheel isolation test runs instead of failing before package construction.
+- Updated the canonical testing command so local and remote release gates execute the same stage 1 setup coverage.
+
+## 2026-07-13 - Verify the CLI-to-Skill installation bundle
+
+- Added isolated CODEX_HOME setup tests for install, check, repair, upgrade, collision protection, JSON, and cross-platform path composition.
+- Added a wheel archive assertion for the Skill manifest and runtime references.
+- Kept the release version and publishing workflow unchanged.
+- Release review added repository-external wheel execution, Unicode/space path coverage, JSON error-contract checks, managed-identity forgery protection, and interrupted-copy cleanup tests.
+
 ## 2026-07-10 - Make staged-check tests independent of global Git identity
 
 ### Reason
@@ -142,3 +155,17 @@ The README still under-explained update flow, command coverage, generated docume
 
 - New users can understand how to install, update, initialize, use, and maintain NOC without jumping into deeper docs first.
 
+## 2026-07-13 - Prepare 1.1.0 installation release
+
+### Reason
+
+The completed stage 1 installation closure adds the user-visible `noc setup` command family and therefore requires a backward-compatible minor release.
+
+### Changed
+
+- Bumped the formal release sources to `1.1.0` and documented the setup installation closure in `CHANGELOG.md` and README.
+- Extended the release check to require the bundled Skill manifest version to match `VERSION`.
+
+### Impact
+
+- Release preparation now catches CLI/package/Skill version drift before packaging, while leaving the v1.0.2 document protocol and existing commands unchanged.

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import subprocess
@@ -80,6 +81,19 @@ def check_readme_version(root: Path, version: str) -> None:
         fail(f"README.md is missing current version {version}")
 
 
+def check_skill_manifest_version(root: Path, version: str) -> None:
+    path = root / ".agents" / "skills" / "project-living-docs" / "noc-skill.json"
+    if not path.exists():
+        return
+    try:
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        fail(f"Skill manifest is not valid JSON: {exc}")
+    manifest_version = manifest.get("version")
+    if manifest_version != version:
+        fail(f"Skill manifest version {manifest_version} does not match VERSION {version}")
+
+
 def current_exact_tag(root: Path) -> str | None:
     result = subprocess.run(
         ["git", "-C", str(root), "describe", "--tags", "--exact-match"],
@@ -92,6 +106,15 @@ def current_exact_tag(root: Path) -> str | None:
     return result.stdout.strip()
 
 
+def version_has_worktree_changes(root: Path) -> bool:
+    result = subprocess.run(
+        ["git", "-C", str(root), "diff", "--quiet", "--", "VERSION"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    return result.returncode == 1
+
+
 def command_check(root: Path) -> None:
     version = read_version(root)
     entry = changelog_entry(root, version)
@@ -101,8 +124,9 @@ def command_check(root: Path) -> None:
         fail(f"CHANGELOG.md entry for {version} still contains TODO")
     check_pyproject_version(root, version)
     check_readme_version(root, version)
+    check_skill_manifest_version(root, version)
     tag = current_exact_tag(root)
-    if tag and tag != f"v{version}":
+    if tag and not version_has_worktree_changes(root) and tag != f"v{version}":
         fail(f"current tag {tag} does not match VERSION {version}")
     github_ref_type = os.environ.get("GITHUB_REF_TYPE")
     github_ref_name = os.environ.get("GITHUB_REF_NAME")

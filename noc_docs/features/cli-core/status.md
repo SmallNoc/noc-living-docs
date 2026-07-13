@@ -9,7 +9,7 @@ confidence: medium
 
 ## Current Behavior
 
-`scripts/noc.py` 提供统一子命令入口。`work` 可以根据 `--feature`、`--path`、`--changed` 或 `--staged` 输出改代码前要读的文档、编码前要记录的需求或问题、改完后要更新的文档，以及收尾检查命令。`--json` 输出带 `schema_version`、`resolution_status`、匹配原因、置信度和 `next_actions` 的结构化 work plan；默认文本输出仍保持向后兼容。
+`scripts/noc.py` 提供统一子命令入口。`setup` 将 wheel 内置的同版本 `project-living-docs` Skill 安装到 `$CODEX_HOME/skills`，支持只读检查、受管修复和 JSON 输出。受管身份同时校验 schema、Skill 名称、管理方和稳定 manager id；目录替换使用完整临时副本、备份回滚和冲突保护。`work` 的原有文本和 JSON 行为保持兼容。
 
 ## Important Files
 
@@ -22,6 +22,7 @@ confidence: medium
 - `noc_docs/.living-docs/feature-map.json` 负责把代码路径映射到 feature。
 - `work --json` 输出 work plan JSON，不写文件。
 - `resolution_status` 当前取值为 `resolved`、`unresolved` 或 `missing_feature`。
+- `CODEX_HOME` 可覆盖 Codex 根目录；未设置时使用 `~/.codex`。
 
 ## Known Issues
 

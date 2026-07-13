@@ -1,5 +1,10 @@
 # Change Record: agent-protocol
 
+## 2026-07-13 - Standardize installed CLI usage
+
+- Verified the canonical AGENTS template already uses `noc` commands.
+- Kept the managed block and v1 documentation workflow unchanged while aligning installed-user guidance with `noc setup`.
+
 ## 2026-07-08 - Prefer JSON work plans in agent entry
 
 ### Reason
