@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-09T17:18:04.675911+00:00",
+  "generated_at": "2026-07-13T15:21:30.469580+00:00",
   "documents": {
     "noc_docs/development/documentation-policy.md": {
       "title": "Documentation Policy",
@@ -37,7 +37,7 @@
     },
     "noc_docs/features/agent-protocol/change-record.md": {
       "title": "Change Record: agent-protocol",
-      "summary": "Agents need a deterministic first step before reading broader project context. - `templates/AGENTS.md` and generated `AGENTS.md` now instruct agents to run `noc work <project> --path <code/path> --json` when the CLI is available. - Agents can route through NOC with less free-text interpretation.",
+      "summary": "- Verified the canonical AGENTS template already uses `noc` commands. - Kept the managed block and v1 documentation workflow unchanged while aligning installed-user guidance with `noc setup`. Agents need a deterministic first step before reading broader project context.",
       "tags": [
         "change-record",
         "features"
@@ -93,7 +93,7 @@
     },
     "noc_docs/features/cli-core/change-record.md": {
       "title": "Change Record: cli-core",
-      "summary": "Codex 和其他 agent 需要稳定读取“该读哪些文档、该更新哪些文档、最后跑哪些命令”，自由文本不适合作为自动化接口。 - `noc work` 增加 `--json`。 - 抽出 work plan 构建逻辑，让文本输出和 JSON 输出共用同一份数据。 - 增加 unittest 覆盖 JSON 输出和旧文本输出兼容性。 - agent 可以直接解析 work plan。 - 人类默认使用方式不变。 NOC 的核心目标是作为 agent memory router，而不是让 agent 自己猜路径、解析自由文本或在低置信度场景继续误判。",
+      "summary": "- Added `noc setup`, `--check`, `--repair`, and `--json`. - Setup installs missing or outdated NOC-managed Skills idempotently and refuses to overwrite user-managed collisions. - Added explicit CLI/Skill version matching and actionable next-step output.",
       "tags": [
         "change-record",
         "features"
@@ -149,7 +149,7 @@
     },
     "noc_docs/features/codex-skill/change-record.md": {
       "title": "Change Record: codex-skill",
-      "summary": "Codex users need a standard `.agents/skills/project-living-docs/` directory they can copy into a project or global skill folder without guessing from the legacy repo layout. - Added `.agents/skills/project-living-docs/` with the same `SKILL.md`, references, and evals as the legacy `skills/codex/project-living-docs/` pa",
+      "summary": "- Added the NOC-managed Skill version manifest. - Packaged the standard Skill and runtime references into the wheel. - Replaced repository-local `python scripts/noc.py` calls with installed `noc` commands in both maintained Skill paths. - Added full runtime-content parity testing for the standard and compatibility Skil",
       "tags": [
         "change-record",
         "features"
@@ -268,7 +268,7 @@
     },
     "noc_docs/features/release-quality/change-record.md": {
       "title": "Change Record: release-quality",
-      "summary": "The PyPI publish workflow runs tests on GitHub-hosted runners that do not have a global Git `user.name` or `user.email`. Several `noc check --staged` tests create temporary Git repositories and intentionally ignore the return code from their baseline commit. Without local Git identity, that baseline commit failed silen",
+      "summary": "- Added isolated CODEX_HOME setup tests for install, check, repair, upgrade, collision protection, JSON, and cross-platform path composition. - Added a wheel archive assertion for the Skill manifest and runtime references. - Kept the release version and publishing workflow unchanged.",
       "tags": [
         "change-record",
         "features"

@@ -1,5 +1,12 @@
 # Change Record: codex-skill
 
+## 2026-07-13 - Bundle and install the Skill with the CLI
+
+- Added the NOC-managed Skill version manifest.
+- Packaged the standard Skill and runtime references into the wheel.
+- Replaced repository-local `python scripts/noc.py` calls with installed `noc` commands in both maintained Skill paths.
+- Added full runtime-content parity testing for the standard and compatibility Skill trees.
+
 ## 2026-07-09 - Add standard Codex skill path
 
 ### Reason

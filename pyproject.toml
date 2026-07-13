@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "noc-living-docs"
-version = "1.0.2"
+version = "1.1.0"
 description = "Small local CLI for keeping NOC living docs in sync with code changes."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -34,11 +34,11 @@ noc = "scripts.noc:main"
 
 [tool.setuptools]
 include-package-data = false
+packages = ["scripts", "templates", "noc_assets.project_living_docs"]
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["scripts", "templates*"]
-namespaces = true
+[tool.setuptools.package-dir]
+"noc_assets.project_living_docs" = ".agents/skills/project-living-docs"
 
 [tool.setuptools.package-data]
 templates = ["*.md", "noc_docs/**/*.md", "noc_docs/**/*.json", "noc_docs/.living-docs/*.json"]
+"noc_assets.project_living_docs" = ["*.md", "*.json", "references/*.md", "evals/*.csv"]

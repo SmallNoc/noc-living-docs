@@ -28,7 +28,7 @@ Do not invent requirements to fill missing docs. Record the gap in `status.md`, 
 Before editing code:
 
 1. Identify feature/domain from request, paths, and `feature-map.json`.
-2. Run `python scripts/noc.py work <project> --path <code/path> --json --intent "<intent>"` when scripts are available. Use `--feature <feature>` when the feature name is clearer than the path.
+2. Run `noc work <project> --path <code/path> --json --intent "<intent>"`. Use `--feature <feature>` when the feature name is clearer than the path.
 3. Read docs from the work plan.
 4. Put confirmed requirement changes in `requirements.md`.
 5. Put uncertain discussion in `notes.md`.
@@ -53,11 +53,11 @@ After editing code:
 ## CLI Commands
 
 ```bash
-python scripts/noc.py init /path/to/project
-python scripts/noc.py work /path/to/project --path <code/path> --json --intent "<intent>"
-python scripts/noc.py work /path/to/project --feature <feature> --json
-python scripts/noc.py suggest-map /path/to/project
-python scripts/noc.py index /path/to/project
-python scripts/noc.py check /path/to/project --staged --warn-only
-python scripts/noc.py validate --target /path/to/project
+noc init /path/to/project
+noc work /path/to/project --path <code/path> --json --intent "<intent>"
+noc work /path/to/project --feature <feature> --json
+noc suggest-map /path/to/project
+noc index /path/to/project
+noc check /path/to/project --staged --warn-only
+noc validate --target /path/to/project
 ```

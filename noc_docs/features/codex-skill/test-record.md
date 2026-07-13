@@ -22,5 +22,6 @@ confidence: medium
 | Date | Change | Command / Method | Result | Notes |
 |---|---|---|---|---|
 | 2026-07-08 | prefer `work --json` in Codex skill | `python -m unittest tests.test_noc_cli.NocCliTests.test_agent_entry_and_codex_skill_prefer_work_json` | PASS | 验证 skill 包含 `--json` 和 machine-readable 指引。 |
+| 2026-07-13 | bundle installed-command Skill | `python -m unittest tests.test_setup_cli` | PASS | 21 tests passed; formal Skill/runtime references use `noc`, both Skill trees match, and wheel contains the managed Skill manifest and references. |
 | 2026-07-09 | standard Codex skill path | `python -m unittest tests.test_noc_cli.NocCliTests.test_codex_skill_frontmatter_contains_name_and_description tests.test_noc_cli.NocCliTests.test_codex_skill_references_and_evals_exist tests.test_noc_cli.NocCliTests.test_agent_entry_and_codex_skill_prefer_work_json` | PASS | 验证 `.agents/skills/project-living-docs` 和兼容路径都包含 skill frontmatter、references、evals，并保留 JSON work plan 指引。 |
 

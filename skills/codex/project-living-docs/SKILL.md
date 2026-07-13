@@ -25,7 +25,7 @@ Do not use it for general questions that do not involve project memory, code beh
 2. Run a work plan when code may change:
 
 ```bash
-python scripts/noc.py work /path/to/project --path <code/path> --json --intent "<agreed requirement>"
+noc work /path/to/project --path <code/path> --json --intent "<agreed requirement>"
 ```
 
 Use `--feature <feature>` when feature names are clearer than paths. Prefer `--json` for machine-readable routing; fall back to the text output only when the installed CLI does not support JSON.
@@ -34,8 +34,8 @@ Use `--feature <feature>` when feature names are clearer than paths. Prefer `--j
 4. Write confirmed new/changed intent to `requirements.md`; put uncertain discussion in `notes.md`.
 5. Change code.
 6. Update `status.md`, `test-record.md`, `change-record.md`, and `guardrails.md` only when behavior, verification, important changes, or constraints changed.
-7. Run `python scripts/noc.py index <project>` after docs, feature, or mapping changes.
-8. Run `python scripts/noc.py check <project> --staged --warn-only` before commit when Git is available.
+7. Run `noc index <project>` after docs, feature, or mapping changes.
+8. Run `noc check <project> --staged --warn-only` before commit when Git is available.
 
 For detailed workflow rules, read `references/workflow.md`.
 
