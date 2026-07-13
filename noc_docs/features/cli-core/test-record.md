@@ -21,6 +21,8 @@ CLI 行为通过 `tests/test_noc_cli.py` 的 subprocess 测试验证，重点覆
 
 | Date | Change | Command / Method | Result | Notes |
 |---|---|---|---|---|
+| 2026-07-14 | v2 work/check routing and v1 command regression | `python -m unittest discover -s tests` | PASS | 87 tests；v2 返回最小项目记忆，普通代码修改不强制文档变化，v1 work/index/check/feature 保持通过。 |
+| 2026-07-14 | full pytest regression | `python -m pytest -q` | PASS | 87 passed，31 subtests passed。 |
 | 2026-07-08 | add `work --json` | `python -m unittest tests.test_noc_cli.NocCliTests.test_work_json_outputs_machine_readable_plan` | PASS | 验证 JSON work plan 可解析且包含关键字段。 |
 | 2026-07-08 | preserve text work output | `python -m unittest tests.test_noc_cli.NocCliTests.test_work_outputs_docs_plan_for_named_feature tests.test_noc_cli.NocCliTests.test_work_resolves_feature_from_path_mapping tests.test_noc_cli.NocCliTests.test_work_does_not_modify_files` | PASS | 验证旧文本输出和只读行为仍可用。 |
 | 2026-07-08 | stable JSON contract | `python -m unittest tests.test_noc_cli.NocCliTests.test_work_json_includes_stable_contract_fields` | PASS | 验证 schema、resolution status 和 path match metadata。 |

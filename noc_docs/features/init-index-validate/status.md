@@ -9,7 +9,7 @@ confidence: medium
 
 ## Current Behavior
 
-`init-noc-docs.py` 负责复制模板和合并 agent managed block；`index-noc-docs.py` 生成 manifest、docs-index 和 feature-map；`validate-noc-docs.py` 校验本仓库或目标项目的协议结构。仓库自检同时要求标准 `.agents/skills/project-living-docs/`、兼容 `skills/codex/project-living-docs/`、release 文档和 PyPI publish workflow 存在，并允许 skill description 使用 `Use when` 或 `Use for` 开头。
+`noc init` 对未指定 `--mode` 的新项目生成 protocol v2 简化结构：三个项目级 Markdown 和记忆配置、路由、清单；它从 README、项目标志、源码和测试目录提取可确认事实，并保留已有 AGENTS 内容。显式 small/domain/auto 和已有 features/domains 项目仍走 v1 流程。`index`、`validate` 和 `doctor` 可识别两种协议，本仓库自身保持 v1。
 
 ## Important Files
 
@@ -23,6 +23,7 @@ confidence: medium
 
 - `noc_docs/.living-docs/config.json`
 - `noc_docs/.living-docs/feature-map.json`
+- v2: `config.json`、`routing.json`、`manifest.json`
 
 ## Known Issues
 

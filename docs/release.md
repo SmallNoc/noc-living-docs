@@ -39,6 +39,7 @@ Also verify the built wheel installs and exposes the CLI:
 ```bash
 python -m pip install --force-reinstall dist/noc_living_docs-<version>-py3-none-any.whl
 noc --help
+noc setup
 noc init /tmp/noc-publish-check
 test -f /tmp/noc-publish-check/noc_docs/.living-docs/config.json
 ```

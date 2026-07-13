@@ -153,6 +153,19 @@ def check_project(target: Path) -> None:
     if config.get("documentation_root") != "noc_docs":
         fail("target config documentation_root must be noc_docs")
 
+    if config.get("protocol_version") == 2:
+        if config.get("layout") != "simplified":
+            fail("protocol version 2 target layout must be simplified")
+        for relative in ["project.md", "guardrails.md", "verification.md", ".living-docs/routing.json", ".living-docs/manifest.json"]:
+            if not (noc_docs / relative).is_file():
+                fail(f"simplified target missing noc_docs/{relative}")
+        for name in ["routing.json", "manifest.json"]:
+            data = json.loads((noc_docs / ".living-docs" / name).read_text(encoding="utf-8"))
+            if data.get("protocol_version") != 2 or data.get("layout") != "simplified":
+                fail(f"simplified target {name} must declare protocol_version 2 and simplified layout")
+        validate_agent_file(target)
+        return
+
     has_features = (noc_docs / "features").exists()
     has_domains = (noc_docs / "domains").exists()
     mode = config.get("mode")
@@ -163,6 +176,10 @@ def check_project(target: Path) -> None:
     if has_features and has_domains:
         fail("target must not initialize both noc_docs/features and noc_docs/domains")
 
+    validate_agent_file(target)
+
+
+def validate_agent_file(target: Path) -> None:
     agent_files = [target / name for name in ["AGENTS.md", "CLAUDE.md", "GEMINI.md"]]
     existing_agent_files = [path for path in agent_files if path.exists()]
     if not existing_agent_files:

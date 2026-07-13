@@ -1,0 +1,186 @@
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+CLI = ROOT / "scripts/noc.py"
+
+
+def run(args: list[str], *, env: dict[str, str] | None = None, check: bool = True) -> subprocess.CompletedProcess[str]:
+    result = subprocess.run(
+        [sys.executable, str(CLI), *args],
+        cwd=ROOT,
+        env={**os.environ, **(env or {})},
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if check and result.returncode != 0:
+        raise AssertionError(f"command failed: {args}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}")
+    return result
+
+
+class SimplifiedProjectMemoryTests(unittest.TestCase):
+    def ready_home(self, root: Path) -> dict[str, str]:
+        env = {"CODEX_HOME": str(root / "Codex Home 中文")}
+        run(["setup", "--json"], env=env)
+        return env
+
+    def test_default_init_creates_only_v2_minimal_structure(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            project = root / "项目 with spaces"
+            project.mkdir()
+            env = self.ready_home(root)
+
+            result = run(["init", str(project)], env=env)
+
+            self.assertEqual(result.stdout, "Project memory is ready. Continue using Codex normally.\n")
+            files = {
+                path.relative_to(project).as_posix()
+                for path in project.rglob("*")
+                if path.is_file()
+            }
+            self.assertEqual(
+                files,
+                {
+                    "AGENTS.md",
+                    "noc_docs/project.md",
+                    "noc_docs/guardrails.md",
+                    "noc_docs/verification.md",
+                    "noc_docs/.living-docs/config.json",
+                    "noc_docs/.living-docs/routing.json",
+                    "noc_docs/.living-docs/manifest.json",
+                },
+            )
+            config = json.loads((project / "noc_docs/.living-docs/config.json").read_text(encoding="utf-8"))
+            self.assertEqual(config["protocol_version"], 2)
+            self.assertEqual(config["layout"], "simplified")
+            self.assertFalse((project / "noc_docs/features").exists())
+            self.assertFalse((project / "noc_docs/domains").exists())
+
+    def test_init_detects_project_files_without_inventing_business_facts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            env = self.ready_home(root)
+            cases = [
+                ("python", "pyproject.toml", "src/app.py", "tests/test_app.py"),
+                ("node", "package.json", "src/index.js", "test/index.test.js"),
+                ("java", "pom.xml", "src/main/java/App.java", "src/test/java/AppTest.java"),
+            ]
+            for name, marker, source, test in cases:
+                with self.subTest(name=name):
+                    project = root / name
+                    (project / source).parent.mkdir(parents=True)
+                    (project / source).write_text("\n", encoding="utf-8")
+                    (project / test).parent.mkdir(parents=True)
+                    (project / test).write_text("\n", encoding="utf-8")
+                    (project / marker).write_text("{}\n" if marker == "package.json" else "\n", encoding="utf-8")
+                    (project / "README.md").write_text(f"# {name.title()} Demo\n", encoding="utf-8")
+
+                    run(["init", str(project)], env=env)
+                    text = (project / "noc_docs/project.md").read_text(encoding="utf-8")
+                    self.assertIn(marker, text)
+                    self.assertIn("待确认", text)
+                    self.assertNotIn("billing", text.lower())
+
+    def test_init_preserves_readme_and_user_agents_content_and_is_idempotent(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            project = root / "project"
+            project.mkdir()
+            env = self.ready_home(root)
+            readme = "# User README\n\nKeep me.\n"
+            agents = "# User Rules\n\n- Keep this rule.\n"
+            (project / "README.md").write_text(readme, encoding="utf-8")
+            (project / "AGENTS.md").write_text(agents, encoding="utf-8")
+
+            run(["init", str(project)], env=env)
+            first = (project / "AGENTS.md").read_text(encoding="utf-8")
+            run(["init", str(project)], env=env)
+
+            self.assertEqual((project / "README.md").read_text(encoding="utf-8"), readme)
+            self.assertEqual((project / "AGENTS.md").read_text(encoding="utf-8"), first)
+            self.assertIn("- Keep this rule.", first)
+            self.assertEqual(first.count("<!-- noc-living-docs:start -->"), 1)
+
+    def test_missing_skill_only_points_to_setup_and_creates_nothing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            project = root / "project"
+            env = {"CODEX_HOME": str(root / "empty-codex-home")}
+
+            result = run(["init", str(project)], env=env, check=False)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(result.stdout, "noc setup\n")
+            self.assertFalse(project.exists())
+
+    def test_v2_validate_doctor_index_work_and_check(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            project = root / "project"
+            project.mkdir()
+            env = self.ready_home(root)
+            run(["init", str(project)], env=env)
+            subprocess.run(["git", "-C", str(project), "init"], check=True, stdout=subprocess.PIPE)
+
+            run(["validate", "--target", str(project)], env=env)
+            run(["index", str(project)], env=env)
+            doctor = run(["doctor", str(project)], env=env)
+            work = json.loads(run(["work", str(project), "--path", "src/app.py", "--json"], env=env).stdout)
+
+            self.assertIn("protocol_version", work)
+            self.assertEqual(work["protocol_version"], 2)
+            self.assertEqual(work["layout"], "simplified")
+            self.assertEqual(
+                work["features"][0]["read_before_code"],
+                ["noc_docs/project.md", "noc_docs/guardrails.md", "noc_docs/verification.md"],
+            )
+            self.assertIn("simplified", doctor.stdout)
+
+            subprocess.run(["git", "-C", str(project), "add", "."], check=True)
+            subprocess.run(["git", "-C", str(project), "-c", "user.name=Test", "-c", "user.email=t@example.com", "commit", "-m", "init"], check=True, stdout=subprocess.PIPE)
+            (project / "app.py").write_text("print('fix')\n", encoding="utf-8")
+            check_result = run(["check", str(project)], env=env)
+            self.assertNotIn("WARNING: code changed but no noc_docs files changed", check_result.stdout)
+
+    def test_existing_v1_project_is_not_migrated_by_default_init(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            project = root / "legacy"
+            env = self.ready_home(root)
+            run(["init", str(project), "--mode", "small"], env=env)
+            legacy = project / "noc_docs/features/_feature/requirements.md"
+            before = legacy.read_text(encoding="utf-8")
+
+            run(["init", str(project)], env=env)
+
+            config = json.loads((project / "noc_docs/.living-docs/config.json").read_text(encoding="utf-8"))
+            self.assertEqual(config.get("protocol_version", 1), 1)
+            self.assertTrue(legacy.exists())
+            self.assertEqual(legacy.read_text(encoding="utf-8"), before)
+            self.assertFalse((project / "noc_docs/project.md").exists())
+
+    def test_explicit_v1_init_remains_available_without_installed_skill(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            project = root / "legacy"
+            env = {"CODEX_HOME": str(root / "empty-codex-home")}
+
+            run(["init", str(project), "--mode", "small"], env=env)
+
+            self.assertTrue((project / "noc_docs/features/_feature/requirements.md").is_file())
+            config = json.loads((project / "noc_docs/.living-docs/config.json").read_text(encoding="utf-8"))
+            self.assertEqual(config.get("protocol_version", 1), 1)
+
+
+if __name__ == "__main__":
+    unittest.main()

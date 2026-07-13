@@ -1,5 +1,11 @@
 # Change Record: cli-core
 
+## 2026-07-14 - Route simplified project memory
+
+- Added protocol/layout fields to work-plan JSON without removing v1 fields.
+- Added v2 project-level fallback context and non-mandatory documentation checks.
+- Kept all v1 commands and explicit legacy initialization modes available.
+
 ## 2026-07-13 - Add the Codex Skill setup lifecycle
 
 - Added `noc setup`, `--check`, `--repair`, and `--json`.

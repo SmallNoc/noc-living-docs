@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+## [1.2.0] - Unreleased
+
+### Added
+
+- New projects now default to simplified protocol v2 project memory.
+- `noc init` now completes Skill readiness checks, project detection, initialization, indexing, and health validation in one operation.
+
+### Changed
+
+- Reduced the default new-project structure to `project.md`, `guardrails.md`, `verification.md`, and the machine-managed config, routing, and manifest files.
+- Added minimum protocol v2 support to `validate`, `doctor`, `index`, `work`, and `check`.
+- Simplified the generated AGENTS managed block so normal users do not need to learn advanced NOC commands.
+- Kept existing protocol v1 projects and commands compatible without automatic migration or document deletion.
+
 ## [1.1.0] - 2026-07-13
 
 ### Added

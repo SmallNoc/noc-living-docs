@@ -1,5 +1,11 @@
 # Workflow
 
+## Protocol Detection
+
+Read `noc_docs/.living-docs/config.json`. When `protocol_version` is `2` and `layout` is `simplified`, use `routing.json` and the three project-level memory files returned by `noc work`. Otherwise retain the v1 feature/domain workflow below. Never migrate a v1 project implicitly.
+
+For v2, update memory only for durable changes to requirements, behavior, constraints, API, data structures, verification, or project phase. Ordinary bug fixes, formatting, and small refactors do not require documentation changes.
+
 ## Modes
 
 | Mode | Use When | Read Scope |
@@ -12,6 +18,8 @@
 Escalate Light to Deep when code may change behavior, requirements, tests, security, public API, schema, persistence, permissions, billing, deployment, or cross-feature contracts.
 
 ## Read Fallbacks
+
+For simplified v2 projects, read `project.md`, `guardrails.md`, and `verification.md` as the minimum fallback. Do not create feature or area documents merely because routing is broad.
 
 For each affected feature:
 

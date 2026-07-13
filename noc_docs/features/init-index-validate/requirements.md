@@ -18,8 +18,10 @@ confidence: medium
 
 ## Acceptance Criteria
 
-- AC-001: `noc init` 能生成 small/domain 模板并运行索引。
+- AC-001: 新项目执行不带 `--mode` 的 `noc init` 时生成 protocol v2 简化项目记忆并内部完成索引和健康检查。
 - AC-002: `noc validate --target <project>` 能校验目标项目结构。
+- AC-003: 显式 small/domain/auto 布局和已有 v1 项目继续使用 protocol v1，不自动迁移或删除七文档。
+- AC-004: v2 初始化保留已有 README 和 AGENTS managed block 外内容，不编造无法从仓库确认的业务事实。
 
 ## Non-Goals
 

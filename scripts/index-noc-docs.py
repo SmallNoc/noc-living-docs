@@ -77,6 +77,32 @@ def detect_mode(noc_docs: Path) -> str:
     return "small"
 
 
+def load_config(noc_docs: Path) -> dict:
+    path = noc_docs / ".living-docs/config.json"
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
+def index_simplified(target: Path, noc_docs: Path) -> None:
+    index_dir = noc_docs / ".living-docs"
+    routing_path = index_dir / "routing.json"
+    manifest_path = index_dir / "manifest.json"
+    routing = json.loads(routing_path.read_text(encoding="utf-8"))
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    files = {}
+    for relative in manifest.get("managed_files", []):
+        path = target / relative
+        if path.is_file() and path != manifest_path:
+            files[relative] = {"sha256": sha256(path), "bytes": path.stat().st_size}
+    manifest.update(protocol_version=2, layout="simplified", files=files)
+    routing.update(protocol_version=2, layout="simplified")
+    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    routing_path.write_text(json.dumps(routing, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
 def load_existing_feature_map(noc_docs: Path) -> dict:
     path = noc_docs / ".living-docs/feature-map.json"
     if not path.exists():
@@ -171,6 +197,12 @@ def main() -> None:
     noc_docs = target / DOC_ROOT
     if not noc_docs.exists():
         raise SystemExit(f"ERROR: {noc_docs} does not exist")
+
+    config = load_config(noc_docs)
+    if config.get("protocol_version") == 2 and config.get("layout") == "simplified":
+        index_simplified(target, noc_docs)
+        print("Indexed simplified project memory.")
+        return
 
     index_dir = noc_docs / ".living-docs"
     index_dir.mkdir(parents=True, exist_ok=True)
