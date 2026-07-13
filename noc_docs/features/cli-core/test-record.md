@@ -15,12 +15,13 @@ CLI 行为通过 `tests/test_noc_cli.py` 的 subprocess 测试验证，重点覆
 
 - TC-001: `python -m unittest tests.test_noc_cli`
 - TC-002: `python scripts/noc.py work . --path scripts/noc.py --json`
-- TC-003: 完整发布前运行 `python -m unittest tests.test_noc_cli tests.test_release_cli`
+- TC-003: 完整发布前运行 `python -m unittest discover -s tests`
 
 ## Latest Runs
 
 | Date | Change | Command / Method | Result | Notes |
 |---|---|---|---|---|
+| 2026-07-14 | prepare v1.2.1 version output | `python -m unittest discover -s tests` | PASS | 99 tests passed，包含 `noc --version` 输出 1.2.1 的回归断言。 |
 | 2026-07-14 | final CLI entry experience | `python -m unittest discover -s tests`; `python -m pytest -q` | PASS | 95 tests passed；pytest 另含 31 subtests，覆盖 `noc --version`、帮助排序及全部既有命令回归。 |
 | 2026-07-14 | Skill semantic eval | `python -m unittest tests.test_noc_cli.NocCliTests.test_skill_defines_semantic_memory_impact_without_fixed_final_template -v` | PASS | 语义影响规则保留，固定最终回答模板未恢复。 |
 | 2026-07-14 | semantic memory impact check | `python -m unittest discover -s tests` | PASS | 92 tests；覆盖 none、缺失对应记忆、多影响、范围外 churn、稳定 JSON 和 v1/v2 回归。 |

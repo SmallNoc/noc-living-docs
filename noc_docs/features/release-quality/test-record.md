@@ -13,7 +13,7 @@ confidence: medium
 
 ## Required Checks
 
-- TC-001: `python -m unittest tests.test_noc_cli tests.test_release_cli`
+- TC-001: `python -m unittest discover -s tests`
 - TC-002: `python scripts/noc.py validate`
 - TC-003: `python scripts/release.py --check`
 
@@ -21,6 +21,9 @@ confidence: medium
 
 | Date | Change | Command / Method | Result | Notes |
 |---|---|---|---|---|
+| 2026-07-14 | prepare v1.2.1 release metadata | `python -m py_compile scripts/__init__.py scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py`; `python -m unittest discover -s tests`; `python scripts/noc.py validate`; `python scripts/release.py --check`; `python scripts/noc.py check . --warn-only`; `git diff --check` | PASS | 99 tests passed；release check confirmed 1.2.1；未提交、打 tag 或发布。 |
+| 2026-07-14 | final obsolete-workflow consistency check | `python -m unittest discover -s tests`; `python scripts/noc.py validate`; `python scripts/release.py --check`; `python scripts/noc.py check . --warn-only`; `git diff --check` | PASS | 99 tests passed；现行协议旧模式回归、仓库验证、release metadata、NOC coverage 和 diff 校验全部通过。 |
+| 2026-07-14 | v1.2.1 documentation, Skill, and CI consistency repair | `python -m py_compile scripts/__init__.py scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py`; `python -m unittest discover -s tests`; `python scripts/noc.py validate`; `python scripts/release.py --check`; isolated temporary `CODEX_HOME` setup/init/doctor/work smoke | PASS | 98 tests passed；v2 simplified tree and work JSON matched runtime output；doctor completed with only the optional hook warning；temporary files were removed. |
 | 2026-07-14 | 1.2.0 zero-learning release preparation | `python -m unittest discover -s tests`; `python -m pytest -q`; `python scripts/noc.py validate`; `python scripts/release.py --check`; `git diff --check` | PASS | 95 tests passed，31 subtests passed；协议、版本和 diff 校验通过。 |
 | 2026-07-14 | isolated 1.2.0 wheel user journey | Build and install wheel outside the repository, then run version/setup/check/init twice/semantic checks with a Chinese and space-containing path | PASS | wheel CLI reported 1.2.0；v2 最小结构、幂等初始化、none 与 project impact 均通过。 |
 | 2026-07-14 | record stage 3 in 1.2.0 Unreleased | `python scripts/release.py --check`; `git diff --check` | PASS | Release metadata remains aligned at 1.2.0 without tagging or publishing. |

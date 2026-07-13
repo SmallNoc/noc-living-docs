@@ -1,6 +1,18 @@
 # Docs Map
 
-## Routing Table
+## Current Protocol
+
+New projects use v2 simplified by default. Run `noc work <project> --path <code/path> --json` and read the routed project memory:
+
+- `noc_docs/project.md`
+- `noc_docs/guardrails.md`
+- `noc_docs/verification.md`
+
+After a change, classify the actual diff by memory impact: `none`, `project`, `guardrails`, or `verification`. Update only the corresponding long-term memory file; `none` requires no memory update.
+
+The feature/domain layout below is retained only for legacy v1 compatibility. Existing v1 projects are not migrated implicitly.
+
+## Legacy v1 Routing Table
 
 | Situation | Read |
 |---|---|
@@ -12,7 +24,5 @@
 | Git commit | `noc_docs/development/git-workflow.md` |
 | Documentation uncertainty | `noc_docs/development/documentation-policy.md` |
 
-## Notes
-
-默认使用 Light Mode。只有在复杂改造、跨模块变更、初始化或审计时才进入 Deep Mode 或 Audit Mode。
+Use the v1 table only after `noc work --json` reports a v1 feature/domain project.
 

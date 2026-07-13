@@ -1,5 +1,11 @@
 # Change Record: release-quality
 
+## 2026-07-14 - Prepare v1.2.1 release metadata
+
+- Used the tested release CLI patch bump to create the 1.2.1 changelog entry and update `VERSION`.
+- Aligned package metadata, bilingual README markers, the canonical Skill manifest, current-version assertions, and current living-doc status at 1.2.1.
+- Kept tagging, publishing, commits, and PR creation out of this preparation stage.
+
 ## 2026-07-14 - Record semantic memory updates in 1.2.0
 
 - Extended the existing 1.2.0 Unreleased changelog entry with semantic memory-impact classification, `check --memory-impact`, no-churn Bug-fix behavior, and simplified final responses.
@@ -192,3 +198,16 @@ The completed stage 1 installation closure adds the user-visible `noc setup` com
 ### Impact
 
 - A new user can reach working project memory without learning NOC's internal command vocabulary.
+
+## 2026-07-14 - Align v1.2.0 documentation, Skill, and CI
+
+### Changed
+
+- Corrected the README workflow badge and made the primary English and Chinese guidance match default v2 simplified initialization.
+- Split the synchronized Skill Definition of Done into v2 simplified and v1 legacy rules.
+- Switched Validate CI to unittest discovery and added consistency regression tests.
+- Narrowed agent compatibility claims to behavior supported by implementation and tests.
+
+### Impact
+
+- The v1.2.1 patch can restore documentation and release-gate consistency without adding features or changing version metadata.

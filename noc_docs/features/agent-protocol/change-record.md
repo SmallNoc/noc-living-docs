@@ -1,5 +1,11 @@
 # Change Record: agent-protocol
 
+## 2026-07-14 - Remove obsolete workflow modes
+
+- Replaced the old mode-based reading policy in current docs maps, Skill workflow references, templates, examples, and token policy.
+- Standardized current guidance on default v2 simplified routing, three project memory files, and semantic memory impact.
+- Kept v1 feature/domain routing only as explicit legacy compatibility.
+
 ## 2026-07-14 - Classify semantic memory impact
 
 - Added the future-session correctness question as the durable-memory threshold.

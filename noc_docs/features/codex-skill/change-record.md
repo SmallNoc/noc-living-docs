@@ -1,5 +1,11 @@
 # Change Record: codex-skill
 
+## 2026-07-14 - Separate v2 and v1 completion rules
+
+- Split Definition of Done into v2 simplified and v1 legacy sections in both maintained Skill trees.
+- Kept the runtime content synchronized and added a regression assertion that v2 does not require v1 document types.
+- Removed obsolete workflow-mode guidance from both synchronized runtime references.
+
 ## 2026-07-13 - Bundle and install the Skill with the CLI
 
 - Added the NOC-managed Skill version manifest.

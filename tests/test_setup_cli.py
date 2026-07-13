@@ -382,7 +382,7 @@ class SetupCliTests(unittest.TestCase):
                 stderr=subprocess.PIPE,
                 text=True,
             )
-            self.assertEqual("noc-living-docs 1.2.0\n", version.stdout)
+            self.assertEqual("noc-living-docs 1.2.1\n", version.stdout)
 
             installed = subprocess.run(
                 [str(venv_noc), "setup", "--json"],

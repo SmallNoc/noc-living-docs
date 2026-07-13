@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-13T17:45:43.111677+00:00",
+  "generated_at": "2026-07-13T18:32:15.192634+00:00",
   "documents": {
     "noc_docs/development/documentation-policy.md": {
       "title": "Documentation Policy",
@@ -17,14 +17,14 @@
     },
     "noc_docs/development/testing.md": {
       "title": "Testing",
-      "summary": "- Unit tests: `python -m unittest tests.test_noc_cli tests.test_release_cli tests.test_setup_cli` - Protocol validation: `python scripts/noc.py validate` - Release check: `python scripts/release.py --check` - Compile check: `python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/",
+      "summary": "- Unit tests: `python -m unittest discover -s tests` - Protocol validation: `python scripts/noc.py validate` - Release check: `python scripts/release.py --check` - Compile check: `python -m py_compile scripts/__init__.py scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/valida",
       "tags": [
         "development"
       ]
     },
     "noc_docs/docs-map.md": {
       "title": "Docs Map",
-      "summary": "| Situation | Read | |---|---| | Any code change | `AGENTS.md`, `noc_docs/project-status.md` | | Feature change | affected feature `agent-guide.md`, `guardrails.md` | | Requirement change | affected feature `requirements.md` | | Behavior change | affected feature `status.md` |",
+      "summary": "New projects use v2 simplified by default. Run `noc work <project> --path <code/path> --json` and read the routed project memory: - `noc_docs/project.md` - `noc_docs/guardrails.md` - `noc_docs/verification.md` After a change, classify the actual diff by memory impact: `none`, `project`, `guardrails`, or `verification`.",
       "tags": []
     },
     "noc_docs/features/agent-protocol/agent-guide.md": {
@@ -37,7 +37,7 @@
     },
     "noc_docs/features/agent-protocol/change-record.md": {
       "title": "Change Record: agent-protocol",
-      "summary": "- Added the future-session correctness question as the durable-memory threshold. - Defined none/project/guardrails/verification routing and prohibited temporary execution history from long-term memory. - Added impact eval cases and replaced fixed NOC reporting with one optional short memory-update sentence.",
+      "summary": "- Replaced the old mode-based reading policy in current docs maps, Skill workflow references, templates, examples, and token policy. - Standardized current guidance on default v2 simplified routing, three project memory files, and semantic memory impact.",
       "tags": [
         "change-record",
         "features"
@@ -149,7 +149,7 @@
     },
     "noc_docs/features/codex-skill/change-record.md": {
       "title": "Change Record: codex-skill",
-      "summary": "- Added the NOC-managed Skill version manifest. - Packaged the standard Skill and runtime references into the wheel. - Replaced repository-local `python scripts/noc.py` calls with installed `noc` commands in both maintained Skill paths. - Added full runtime-content parity testing for the standard and compatibility Skil",
+      "summary": "- Split Definition of Done into v2 simplified and v1 legacy sections in both maintained Skill trees. - Kept the runtime content synchronized and added a regression assertion that v2 does not require v1 document types. - Removed obsolete workflow-mode guidance from both synchronized runtime references.",
       "tags": [
         "change-record",
         "features"
@@ -268,7 +268,7 @@
     },
     "noc_docs/features/release-quality/change-record.md": {
       "title": "Change Record: release-quality",
-      "summary": "- Extended the existing 1.2.0 Unreleased changelog entry with semantic memory-impact classification, `check --memory-impact`, no-churn Bug-fix behavior, and simplified final responses. - Kept VERSION, package metadata, tagging, and publishing state unchanged.",
+      "summary": "- Used the tested release CLI patch bump to create the 1.2.1 changelog entry and update `VERSION`. - Aligned package metadata, bilingual README markers, the canonical Skill manifest, current-version assertions, and current living-doc status at 1.2.1.",
       "tags": [
         "change-record",
         "features"

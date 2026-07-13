@@ -1,48 +1,34 @@
 # Token Policy
 
-NOC Living Docs is designed for routing, not full-context loading.
+NOC Living Docs is designed for deterministic routing, not full-context loading.
 
-## Modes
+## Route First
 
-### Light Mode
+Run `noc work <project> --path <code/path> --json` before changing code and read only the files returned by the work plan.
 
-Default for normal development.
+New projects use v2 simplified by default. Their long-term project memory is limited to:
 
-Read:
+- `noc_docs/project.md`
+- `noc_docs/guardrails.md`
+- `noc_docs/verification.md`
 
-- project agent entry file
-- `noc_docs/docs-map.md`
-- `.living-docs/feature-map.json` when available
-- affected `agent-guide.md`
-- affected `guardrails.md`
+Do not create feature, domain, requirements, status, test-record, change-record, or notes documents for v2 projects.
 
-Read other feature docs only when needed.
+## Memory Impact
 
-### Deep Mode
+After changing code, classify the actual diff rather than the task size:
 
-Use for new features, complex refactors, migrations, API changes, security-sensitive changes, or cross-feature changes.
+- `none`: no durable fact for a future session; update no long-term memory.
+- `project`: update `project.md` only.
+- `guardrails`: update `guardrails.md` only.
+- `verification`: update `verification.md` only.
 
-Also read:
+Multiple durable impacts may apply. Ordinary formatting, local renames, behavior-preserving refactors, fixes that restore existing requirements, existing test runs, and ordinary tests use `none`.
 
-- `requirements.md`
-- `status.md`
-- `test-record.md`
-- `change-record.md`
-- relevant domain docs
+## Legacy v1 Compatibility
 
-### Audit Mode
+Existing v1 feature/domain projects remain supported and are never migrated implicitly. When `noc work --json` reports a v1 project, follow the returned feature/domain routing and read only the relevant legacy documents.
 
-Use only when the user asks for initialization, documentation audit, migration, or full consistency review.
+## Routing Data
 
-Audit Mode may scan the full `noc_docs/` tree.
-
-### Query Mode
-
-Use when answering questions about a feature, constraint, test, or requirement.
-
-Route through `.living-docs/docs-index.json` or `docs-map.md`, then read the smallest relevant document set.
-
-## Cache Principle
-
-Use `.living-docs/` files as routing indexes and summaries. Do not treat them as the source of truth when they conflict with actual docs or code.
-
+Use `.living-docs/` files as routing indexes and generated metadata. Do not treat them as the source of truth when they conflict with actual documentation or code.
