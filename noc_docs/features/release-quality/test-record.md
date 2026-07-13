@@ -21,6 +21,8 @@ confidence: medium
 
 | Date | Change | Command / Method | Result | Notes |
 |---|---|---|---|---|
+| 2026-07-14 | 1.2.0 zero-learning release preparation | `python -m unittest discover -s tests`; `python -m pytest -q`; `python scripts/noc.py validate`; `python scripts/release.py --check`; `git diff --check` | PASS | 95 tests passed，31 subtests passed；协议、版本和 diff 校验通过。 |
+| 2026-07-14 | isolated 1.2.0 wheel user journey | Build and install wheel outside the repository, then run version/setup/check/init twice/semantic checks with a Chinese and space-containing path | PASS | wheel CLI reported 1.2.0；v2 最小结构、幂等初始化、none 与 project impact 均通过。 |
 | 2026-07-14 | record stage 3 in 1.2.0 Unreleased | `python scripts/release.py --check`; `git diff --check` | PASS | Release metadata remains aligned at 1.2.0 without tagging or publishing. |
 | 2026-07-14 | prepare 1.2.0 simplified-memory development release | `python -m unittest discover -s tests` | PASS | 87 tests passed. |
 | 2026-07-14 | prepare 1.2.0 simplified-memory development release | `python -m pytest -q` | PASS | 87 passed，31 subtests passed。 |

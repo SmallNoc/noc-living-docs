@@ -180,3 +180,15 @@ The completed stage 1 installation closure adds the user-visible `noc setup` com
 ### Impact
 
 - Release preparation now catches CLI/package/Skill version drift before packaging, while leaving the v1.0.2 document protocol and existing commands unchanged.
+
+## 2026-07-14 - Finalize the 1.2.0 entry experience
+
+### Changed
+
+- Replaced the README first screen with install, one-time initialization, and normal Codex use.
+- Moved legacy and maintenance command guidance under Advanced usage without removing it.
+- Extended the isolated wheel test through simplified initialization and semantic memory checks.
+
+### Impact
+
+- A new user can reach working project memory without learning NOC's internal command vocabulary.

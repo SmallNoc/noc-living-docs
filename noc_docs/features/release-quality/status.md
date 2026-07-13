@@ -13,6 +13,8 @@ confidence: medium
 
 PR 验证运行完整 tests discovery；tag 发布 workflow 在 wheel 安装后先执行 `noc setup`，再验证 simplified init，因此远程门禁覆盖 Skill 安装与新项目初始化闭环。
 
+README 首屏现以安装、项目初始化一次、正常使用 Codex 三步作为唯一入门流程；命令表、v1 七文档结构和路由协议保留在 Advanced usage。wheel 隔离测试覆盖完整新用户旅程及语义记忆检查。
+
 ## Important Files
 
 - `tests/test_noc_cli.py`

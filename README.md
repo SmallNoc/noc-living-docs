@@ -5,17 +5,43 @@
 ![Codex Skill](https://img.shields.io/badge/Codex-Skill-blue)
 ![Living Docs](https://img.shields.io/badge/Living%20Docs-NOC-green)
 
-A Codex skill and local CLI that keeps requirements, current behavior, guardrails, tests, and change records synchronized with code changes.
+A local project-memory Skill for Codex, with a CLI that handles setup and one-time project initialization.
 
-NOC is a lightweight **agent memory router** for codebases.
+## Start in three steps
 
-It helps AI coding agents find the smallest useful project context before they edit code, then leave behind the facts that future sessions need: current behavior, requirements, guardrails, tests, and important changes.
+### 1. Install
 
-NOC is intentionally local and small. It does not call a model, run a server, replace your issue tracker, or try to become a wiki.
+```bash
+pipx install noc-living-docs
+noc setup
+```
+
+### 2. Initialize a project once
+
+```bash
+cd my-project
+noc init .
+```
+
+### 3. Use Codex normally
+
+```text
+帮我给登录接口增加失败次数限制。
+```
+
+- You do not need to run `work`, `index`, `check`, `feature`, or `suggest-map` yourself.
+- The Codex Skill automatically reads the smallest useful project memory.
+- It updates memory only when a change creates a durable fact that future Codex sessions must know.
+- Ordinary Bug fixes and small refactors do not create documentation work.
+- NOC does not call a model or upload code; all project memory stays in your project.
 
 中文说明在下方：[中文](#中文)。
 
 **License note:** you can read and use this for learning, research, and personal non-commercial work. Commercial use needs written permission.
+
+## Advanced usage
+
+The commands and protocol details below are optional. The Codex Skill runs the relevant commands automatically during normal development.
 
 ## Why NOC
 
@@ -76,21 +102,7 @@ Given a path like `scripts/noc.py`, NOC can return a work plan like this:
 
 If NOC cannot resolve a path, it says so explicitly with `resolution_status: "unresolved"` and suggests the next command, such as `noc suggest-map` or `noc feature create`.
 
-## Install
-
-PyPI 1.0.2 does not include `noc setup`; `noc setup` is available starting with 1.1.0. Until 1.1.0 is published to PyPI, install the current source branch for testing:
-
-```bash
-pipx install git+https://github.com/SmallNoc/noc-living-docs.git
-noc setup
-```
-
-After 1.1.0 is published to PyPI, use:
-
-```bash
-pipx install noc-living-docs
-noc setup
-```
+## Alternative installation
 
 With `pip`:
 
@@ -99,7 +111,7 @@ python -m pip install noc-living-docs
 noc setup
 ```
 
-The package installs the `noc` CLI. `noc setup` installs the bundled, matching-version `project-living-docs` Skill into Codex. Run both once per machine.
+The package installs the `noc` CLI. `noc setup`, available since 1.1.0, installs the bundled, matching-version `project-living-docs` Skill into Codex. Run both once per machine.
 
 For local development without installing:
 
@@ -137,7 +149,7 @@ noc index /path/to/project
 noc doctor /path/to/project
 ```
 
-## Quick Start
+## Advanced CLI workflow
 
 Add NOC to a project:
 
@@ -172,7 +184,7 @@ noc index /path/to/project
 noc check /path/to/project --staged
 ```
 
-## Daily Use
+## Advanced daily use
 
 Use this loop for normal feature work:
 
@@ -198,7 +210,7 @@ noc feature create . <feature> --path <code/path>
 noc index .
 ```
 
-## Agent Workflow
+## Advanced agent workflow
 
 Before code:
 
@@ -217,7 +229,7 @@ After code:
 
 The point is not to update every file every time. The point is to keep the few facts future agents will need.
 
-## Commands
+## Advanced command reference
 
 | Command | What it does |
 |---|---|
@@ -438,7 +450,31 @@ Code, scripts, templates, and skills are licensed under the PolyForm Noncommerci
 
 ## 中文
 
-NOC 是一个 Codex skill 和本地 CLI，用来让需求、当前行为、guardrails、测试和变更记录随代码改动保持同步。
+NOC 是 Codex 的本地项目记忆 Skill，CLI 负责安装和一次性项目初始化。
+
+### 三步开始使用
+
+1. 安装：
+
+   ```bash
+   pipx install noc-living-docs
+   noc setup
+   ```
+
+2. 每个项目初始化一次：
+
+   ```bash
+   cd my-project
+   noc init .
+   ```
+
+3. 此后正常向 Codex 提出开发需求。无需手动运行 `work`、`index`、`check`、`feature` 或 `suggest-map`。
+
+Codex Skill 会自动读取最小项目记忆，并且只在产生未来会话必须知道的新事实时更新记录。普通 Bug 修复和小型重构不会带来文档负担。NOC 不调用模型、不上传代码，所有记录都保存在项目本地。
+
+## 高级用法
+
+以下命令和协议细节均为可选内容；正常开发时由 Codex Skill 自动调用相关命令。
 
 NOC 是给代码仓库用的轻量级 **agent memory router**。
 
@@ -503,21 +539,7 @@ noc work . --path src/auth/login.py --json
 
 如果 NOC 无法解析路径，它会明确返回 `resolution_status: "unresolved"`，并建议下一步命令，例如 `noc suggest-map` 或 `noc feature create`。
 
-## 安装
-
-PyPI 1.0.2 不包含 `noc setup`；`noc setup` 从 1.1.0 开始提供。在 1.1.0 发布到 PyPI 前，请安装当前源码分支进行测试：
-
-```bash
-pipx install git+https://github.com/SmallNoc/noc-living-docs.git
-noc setup
-```
-
-1.1.0 发布到 PyPI 后再使用：
-
-```bash
-pipx install noc-living-docs
-noc setup
-```
+## 其他安装方式
 
 也可以使用 `pip`：
 
@@ -526,7 +548,7 @@ python -m pip install noc-living-docs
 noc setup
 ```
 
-安装包提供 `noc` CLI；`noc setup` 会把同版本的 `project-living-docs` Skill 安装到 Codex。每台机器只需执行一次。
+安装包提供 `noc` CLI；从 1.1.0 开始，`noc setup` 会把同版本的 `project-living-docs` Skill 安装到 Codex。每台机器只需执行一次。
 
 本地开发不安装时：
 
@@ -564,7 +586,7 @@ noc index /path/to/project
 noc doctor /path/to/project
 ```
 
-## 快速开始
+## 高级 CLI 工作流
 
 给项目接入 NOC：
 
@@ -599,7 +621,7 @@ noc index /path/to/project
 noc check /path/to/project --staged
 ```
 
-## 日常使用
+## 高级日常使用
 
 普通功能开发使用这个循环：
 
@@ -625,7 +647,7 @@ noc feature create . <feature> --path <code/path>
 noc index .
 ```
 
-## Agent 工作流
+## 高级 Agent 工作流
 
 改代码前：
 
@@ -644,7 +666,7 @@ noc index .
 
 重点不是每次更新所有文件，而是保留未来 agent 真正需要的少数事实。
 
-## 命令
+## 高级命令参考
 
 | 命令 | 作用 |
 |---|---|

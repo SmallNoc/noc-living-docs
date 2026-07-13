@@ -318,7 +318,7 @@ class SetupCliTests(unittest.TestCase):
         self.assertIn("pipx install noc-living-docs\nnoc setup", readme)
         self.assertIn("python -m pip install noc-living-docs\nnoc setup", readme)
         self.assertIn("`noc setup` installs the bundled", readme)
-        self.assertIn("`noc setup` is available starting with 1.1.0", readme)
+        self.assertIn("`noc setup`, available since 1.1.0", readme)
 
     def test_standard_and_legacy_skill_runtime_content_stays_in_sync(self) -> None:
         standard = ROOT / ".agents/skills/project-living-docs"
@@ -373,6 +373,17 @@ class SetupCliTests(unittest.TestCase):
             env = {**os.environ, "CODEX_HOME": str(codex_home)}
             env.pop("PYTHONPATH", None)
 
+            version = subprocess.run(
+                [str(venv_noc), "--version"],
+                cwd=out_dir,
+                env=env,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            self.assertEqual("noc-living-docs 1.2.0\n", version.stdout)
+
             installed = subprocess.run(
                 [str(venv_noc), "setup", "--json"],
                 cwd=out_dir,
@@ -408,6 +419,82 @@ class SetupCliTests(unittest.TestCase):
             )
             self.assertEqual("repaired", json.loads(repaired.stdout)["action"])
             self.assertNotEqual("damaged\n", skill_file.read_text(encoding="utf-8"))
+
+            project = out_dir / "中文 Project with spaces"
+            project.mkdir()
+            initialized = subprocess.run(
+                [str(venv_noc), "init", "."],
+                cwd=project,
+                env=env,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            repeated = subprocess.run(
+                [str(venv_noc), "init", "."],
+                cwd=project,
+                env=env,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            ready_message = "Project memory is ready. Continue using Codex normally.\n"
+            self.assertEqual(ready_message, initialized.stdout)
+            self.assertEqual(ready_message, repeated.stdout)
+            generated = {
+                path.relative_to(project).as_posix()
+                for path in project.rglob("*")
+                if path.is_file()
+            }
+            self.assertEqual(
+                generated,
+                {
+                    "AGENTS.md",
+                    "noc_docs/project.md",
+                    "noc_docs/guardrails.md",
+                    "noc_docs/verification.md",
+                    "noc_docs/.living-docs/config.json",
+                    "noc_docs/.living-docs/routing.json",
+                    "noc_docs/.living-docs/manifest.json",
+                },
+            )
+
+            subprocess.run(["git", "-C", str(project), "init"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(project), "add", "."], check=True)
+            subprocess.run(
+                ["git", "-C", str(project), "-c", "user.name=Test", "-c", "user.email=t@example.com", "commit", "-m", "init"],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            (project / "app.py").write_text("bug_fixed = True\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(project), "add", "app.py"], check=True)
+            no_impact = subprocess.run(
+                [str(venv_noc), "check", ".", "--staged", "--memory-impact", "none", "--json"],
+                cwd=project,
+                env=env,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            self.assertEqual("ok", json.loads(no_impact.stdout)["status"])
+
+            project_doc = project / "noc_docs/project.md"
+            project_doc.write_text(project_doc.read_text(encoding="utf-8") + "\n- Durable capability.\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(project), "add", "noc_docs/project.md"], check=True)
+            durable = subprocess.run(
+                [str(venv_noc), "check", ".", "--staged", "--memory-impact", "project", "--json"],
+                cwd=project,
+                env=env,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            self.assertEqual("ok", json.loads(durable.stdout)["status"])
 
 
 if __name__ == "__main__":

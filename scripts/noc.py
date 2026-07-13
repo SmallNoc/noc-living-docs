@@ -1749,7 +1749,14 @@ CODE_FILENAMES = {
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="NOC Living Docs CLI.")
+    parser = argparse.ArgumentParser(
+        description="NOC Living Docs CLI. After initialization, use Codex normally."
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"noc-living-docs {cli_version()}",
+    )
     sub = parser.add_subparsers(dest="command", required=True)
 
     setup = sub.add_parser("setup", help="Install or check the bundled Codex Skill.")
@@ -1767,20 +1774,20 @@ def build_parser() -> argparse.ArgumentParser:
     init.add_argument("--no-index", dest="index", action="store_false")
     init.set_defaults(func=command_init)
 
-    index = sub.add_parser("index", help="Build routing indexes.")
+    index = sub.add_parser("index", help="[Advanced] Build routing indexes.")
     index.add_argument("target", nargs="?", default=".")
     index.set_defaults(func=command_index)
 
-    validate = sub.add_parser("validate", help="Validate repository or target project.")
+    validate = sub.add_parser("validate", help="[Advanced] Validate repository or target project.")
     validate.add_argument("--target")
     validate.set_defaults(func=command_validate)
 
-    hook = sub.add_parser("hook", help="Install, uninstall, or inspect Git hook.")
+    hook = sub.add_parser("hook", help="[Advanced] Install, uninstall, or inspect Git hook.")
     hook.add_argument("action", choices=["install", "uninstall", "status"])
     hook.add_argument("target", nargs="?", default=".")
     hook.set_defaults(func=command_hook)
 
-    check = sub.add_parser("check", help="Check whether code changes need NOC docs updates.")
+    check = sub.add_parser("check", help="[Advanced] Check project-memory updates.")
     check.add_argument("target", nargs="?", default=".")
     check.add_argument("--staged", action="store_true")
     check.add_argument("--strictness", choices=["off", "warn", "fail"], help="Override check strictness.")
@@ -1796,14 +1803,14 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("--json", action="store_true", help="Print a machine-readable memory-impact result.")
     check.set_defaults(func=command_check)
 
-    suggest_map = sub.add_parser("suggest-map", help="Suggest feature path mappings.")
+    suggest_map = sub.add_parser("suggest-map", help="[Advanced] Suggest feature path mappings.")
     suggest_map.add_argument("target", nargs="?", default=".")
     suggest_map.add_argument("--write", action="store_true", help="Merge suggestions into feature-map.json without overwriting existing paths.")
     suggest_map.add_argument("--yes", action="store_true", help="Confirm --write without interactive review.")
     suggest_map.add_argument("--interactive", action="store_true", help="Confirm suggestions one by one before writing.")
     suggest_map.set_defaults(func=command_suggest_map)
 
-    work = sub.add_parser("work", help="Print the docs workflow for a planned code change.")
+    work = sub.add_parser("work", help="[Advanced] Print the project-memory workflow.")
     work.add_argument("target", nargs="?", default=".")
     work.add_argument("--feature", help="Affected feature id.")
     work.add_argument("--path", action="append", help="Planned or changed code path. Can be repeated.")
@@ -1813,11 +1820,11 @@ def build_parser() -> argparse.ArgumentParser:
     work.add_argument("--json", action="store_true", help="Print the work plan as machine-readable JSON.")
     work.set_defaults(func=command_work)
 
-    doctor = sub.add_parser("doctor", help="Check local NOC setup and print repair suggestions.")
+    doctor = sub.add_parser("doctor", help="[Advanced] Check local NOC setup.")
     doctor.add_argument("target", nargs="?", default=".")
     doctor.set_defaults(func=command_doctor)
 
-    feature = sub.add_parser("feature", help="Create or rename feature documentation directories.")
+    feature = sub.add_parser("feature", help="[Advanced] Manage v1 feature documentation.")
     feature_sub = feature.add_subparsers(dest="feature_command", required=True)
 
     feature_create = feature_sub.add_parser("create", help="Create a real feature directory from the template.")
