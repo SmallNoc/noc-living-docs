@@ -21,6 +21,9 @@ confidence: medium
 
 | Date | Change | Command / Method | Result | Notes |
 |---|---|---|---|---|
+| 2026-07-14 | prepare 1.2.0 simplified-memory development release | `python -m unittest discover -s tests` | PASS | 87 tests passed. |
+| 2026-07-14 | prepare 1.2.0 simplified-memory development release | `python -m pytest -q` | PASS | 87 passed，31 subtests passed。 |
+| 2026-07-14 | prepare 1.2.0 simplified-memory development release | `python scripts/noc.py validate`; `python scripts/release.py --check`; `git diff --check` | PASS | Repository validation and release metadata passed for 1.2.0 Unreleased. |
 | 2026-07-08 | baseline before agent-usability work | `python -m unittest tests.test_noc_cli tests.test_release_cli` | PASS | 47 tests passed before implementation. |
 | 2026-07-08 | tighten agent memory routing | `python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py` | PASS | Python compile check passed. |
 | 2026-07-08 | tighten agent memory routing | `python -m unittest tests.test_noc_cli` | PASS | 48 CLI tests passed. |

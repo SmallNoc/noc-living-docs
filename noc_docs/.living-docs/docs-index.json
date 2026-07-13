@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-13T16:32:02.444747+00:00",
+  "generated_at": "2026-07-13T16:54:25.899565+00:00",
   "documents": {
     "noc_docs/development/documentation-policy.md": {
       "title": "Documentation Policy",
@@ -268,7 +268,7 @@
     },
     "noc_docs/features/release-quality/change-record.md": {
       "title": "Change Record: release-quality",
-      "summary": "- Added `tests.test_setup_cli` to the pull-request validation and tag publishing unittest commands. - Installed the `build` test dependency in PR validation so the wheel isolation test runs instead of failing before package construction. - Updated the canonical testing command so local and remote release gates execute ",
+      "summary": "- Aligned VERSION, package metadata, README version markers, CHANGELOG, and the bundled Skill manifest at 1.2.0 Unreleased. - Updated the publish workflow to run the complete test discovery and install the Skill before its simplified-init smoke test.",
       "tags": [
         "change-record",
         "features"
