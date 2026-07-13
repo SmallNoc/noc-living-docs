@@ -3,6 +3,7 @@
 ## 2026-07-13 - Run setup coverage in remote release gates
 
 - Added `tests.test_setup_cli` to the pull-request validation and tag publishing unittest commands.
+- Installed the `build` test dependency in PR validation so the wheel isolation test runs instead of failing before package construction.
 - Updated the canonical testing command so local and remote release gates execute the same stage 1 setup coverage.
 
 ## 2026-07-13 - Verify the CLI-to-Skill installation bundle

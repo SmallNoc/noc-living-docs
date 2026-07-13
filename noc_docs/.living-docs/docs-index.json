@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-13T15:33:10.784557+00:00",
+  "generated_at": "2026-07-13T15:37:26.336303+00:00",
   "documents": {
     "noc_docs/development/documentation-policy.md": {
       "title": "Documentation Policy",
@@ -268,7 +268,7 @@
     },
     "noc_docs/features/release-quality/change-record.md": {
       "title": "Change Record: release-quality",
-      "summary": "- Added `tests.test_setup_cli` to the pull-request validation and tag publishing unittest commands. - Updated the canonical testing command so local and remote release gates execute the same stage 1 setup coverage. - Added isolated CODEX_HOME setup tests for install, check, repair, upgrade, collision protection, JSON, ",
+      "summary": "- Added `tests.test_setup_cli` to the pull-request validation and tag publishing unittest commands. - Installed the `build` test dependency in PR validation so the wheel isolation test runs instead of failing before package construction. - Updated the canonical testing command so local and remote release gates execute ",
       "tags": [
         "change-record",
         "features"
