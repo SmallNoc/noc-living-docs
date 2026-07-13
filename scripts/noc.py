@@ -286,12 +286,49 @@ def run_script(name: str, args: list[str]) -> int:
 
 
 def command_init(args: argparse.Namespace) -> int:
-    forwarded = [str(args.target), "--mode", args.mode, "--agent-file", args.agent_file]
+    target = Path(args.target).resolve()
+    existing_config = load_config(target)
+    has_legacy_layout = (target / "noc_docs/features").is_dir() or (target / "noc_docs/domains").is_dir()
+    simplified = args.mode is None and not has_legacy_layout and existing_config.get("protocol_version") != 1
+    if simplified:
+        state = setup_state(codex_home())
+        if state["status"] != "ready":
+            actions = {
+                "missing": "noc setup",
+                "outdated": "noc setup",
+                "damaged": "noc setup --repair",
+            }
+            print(actions.get(state["status"], state.get("next_action") or "noc setup"))
+            return 1
+        forwarded = [str(target), "--layout", "simplified", "--agent-file", args.agent_file]
+    else:
+        mode = args.mode or detect_docs_mode(target)
+        forwarded = [str(target), "--mode", mode, "--agent-file", args.agent_file]
     if args.force:
         forwarded.append("--force")
     code = run_script("init-noc-docs.py", forwarded)
-    if code == 0 and args.index:
-        code = run_script("index-noc-docs.py", [str(args.target)])
+    if code == 0 and (simplified or args.index):
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT_DIR / "index-noc-docs.py"), str(target)],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        code = result.returncode
+        if code != 0:
+            sys.stderr.write(result.stderr or result.stdout)
+    if code == 0 and simplified:
+        health = subprocess.run(
+            [sys.executable, str(SCRIPT_DIR / "validate-noc-docs.py"), "--target", str(target)],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        code = health.returncode
+        if code != 0:
+            sys.stderr.write(health.stderr or health.stdout)
+    if code == 0 and simplified:
+        print("Project memory is ready. Continue using Codex normally.")
     return code
 
 
@@ -716,6 +753,12 @@ def command_feature_adopt(args: argparse.Namespace) -> int:
 
 def command_check(args: argparse.Namespace) -> int:
     target = Path(args.target).resolve()
+    config = load_config(target)
+    if config.get("protocol_version") == 2 and config.get("layout") == "simplified":
+        files = changed_files(target, args.staged)
+        code_files = [f for f in files if not f.startswith("noc_docs/") and is_code_file(f)]
+        print(f"Checked {len(code_files)} code change(s); simplified project memory updates are semantic, not mandatory.")
+        return 0
     strictness, strictness_source = resolve_check_strictness(target, args)
     print(f"Strictness: {strictness} (source: {strictness_source})")
     files = changed_files(target, args.staged)
@@ -996,6 +1039,25 @@ def resolve_work_matches(feature_map: dict, feature: str | None, paths: list[str
 
 
 def build_work_plan(target: Path, feature: str | None, paths: list[str], intent: str | None) -> dict:
+    config = load_config(target)
+    if config.get("protocol_version") == 2 and config.get("layout") == "simplified":
+        memory = ["noc_docs/project.md", "noc_docs/guardrails.md", "noc_docs/verification.md"]
+        return {
+            "schema_version": "1.0",
+            "protocol_version": 2,
+            "layout": "simplified",
+            "resolution_status": "project_memory",
+            "intent": intent,
+            "paths": paths,
+            "features": [{
+                "id": "project",
+                "read_before_code": memory,
+                "before_coding": [],
+                "update_after_code": [{"doc": "project memory", "reason": "only when future sessions need a new fact"}],
+            }],
+            "next_actions": [],
+            "finish_commands": [],
+        }
     feature_map = load_feature_map(target)
     matches = resolve_work_matches(feature_map, feature, paths)
     all_features = feature_map.get("features", {})
@@ -1032,6 +1094,8 @@ def build_work_plan(target: Path, feature: str | None, paths: list[str], intent:
         )
     return {
         "schema_version": "1.0",
+        "protocol_version": 1,
+        "layout": detect_docs_mode(target),
         "resolution_status": resolution_status,
         "intent": intent,
         "paths": paths,
@@ -1127,6 +1191,23 @@ def command_doctor(args: argparse.Namespace) -> int:
         report.fix(f"Run: noc init {target}")
 
     living_docs = noc_docs / ".living-docs"
+    raw_config = load_config(target)
+    if raw_config.get("protocol_version") == 2 and raw_config.get("layout") == "simplified":
+        config = doctor_json(report, living_docs / "config.json", ["documentation_root", "protocol_version", "layout"])
+        doctor_json(report, living_docs / "routing.json", ["protocol_version", "layout", "routes"])
+        doctor_json(report, living_docs / "manifest.json", ["protocol_version", "layout", "managed_files", "files"])
+        for name in ["project.md", "guardrails.md", "verification.md"]:
+            if (noc_docs / name).is_file():
+                report.ok(f"found noc_docs/{name}")
+            else:
+                report.error(f"missing noc_docs/{name}")
+                report.fix("Run: noc init <project>")
+        report.ok("protocol 2 simplified layout is ready")
+        doctor_hook(report, root)
+        print("Fix suggestions:")
+        print("- No action needed." if not report.fixes else "\n".join(f"- {fix}" for fix in report.fixes))
+        return 1 if report.errors else 0
+
     config = doctor_json(report, living_docs / "config.json", ["documentation_root", "mode"])
     feature_map = doctor_json(report, living_docs / "feature-map.json", ["mode", "features"])
     doctor_json(report, living_docs / "docs-index.json", ["documents"])
@@ -1550,7 +1631,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     init = sub.add_parser("init", help="Initialize NOC Living Docs in a project.")
     init.add_argument("target", nargs="?", default=".")
-    init.add_argument("--mode", choices=["auto", "small", "domain"], default="auto")
+    init.add_argument("--mode", choices=["auto", "small", "domain"], default=None)
     init.add_argument("--agent-file", choices=["AGENTS.md", "CLAUDE.md", "GEMINI.md"], default="AGENTS.md")
     init.add_argument("--force", action="store_true")
     init.add_argument("--no-index", dest="index", action="store_false")

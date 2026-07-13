@@ -9,7 +9,7 @@ confidence: medium
 
 ## Current Behavior
 
-通用 agent 模板和当前仓库 `AGENTS.md` 使用已安装的 `noc` 命令，不依赖仓库内脚本路径。模板在改代码前明确建议使用 `noc work <project> --path <code/path> --json`，也允许在 Git diff 更清晰时使用 `--changed` 或 `--staged`。现有 v1 文档维护协议保持不变。
+新建 v2 项目的 managed block 只要求通过 `noc work` 读取最小记忆，并仅在未来会话必须知道新事实时更新记录；普通修复、格式化和小型重构不强制更新。正式 Skill 可检测 v2 简化布局，同时保留现有 v1 文档维护协议，并不再强制固定的 NOC 最终回答模板。
 
 ## Important Files
 

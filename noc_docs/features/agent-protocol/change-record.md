@@ -1,5 +1,11 @@
 # Change Record: agent-protocol
 
+## 2026-07-14 - Support simplified project memory
+
+- Added a concise v2 managed block while retaining the legacy template for v1 projects.
+- Updated both packaged Skill copies to route v2 through project-level memory and avoid routine documentation churn.
+- Removed the mandatory fixed final-response template from the Skill.
+
 ## 2026-07-13 - Standardize installed CLI usage
 
 - Verified the canonical AGENTS template already uses `noc` commands.

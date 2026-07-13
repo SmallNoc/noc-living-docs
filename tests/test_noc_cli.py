@@ -73,7 +73,7 @@ class NocCliTests(unittest.TestCase):
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
 
         self.assertIn('name = "noc-living-docs"', pyproject)
-        self.assertIn('version = "1.1.0"', pyproject)
+        self.assertIn('version = "1.2.0"', pyproject)
         self.assertIn('license = "PolyForm-Noncommercial-1.0.0"', pyproject)
         self.assertIn('license-files = ["LICENSE"]', pyproject)
         self.assertIn('noc = "scripts.noc:main"', pyproject)
@@ -90,6 +90,8 @@ class NocCliTests(unittest.TestCase):
         self.assertIn("id-token: write", workflow)
         self.assertIn("environment:\n      name: pypi", workflow)
         self.assertIn("python -m build", workflow)
+        self.assertIn("python -m unittest discover -s tests", workflow)
+        self.assertIn("noc setup", workflow)
         self.assertIn("noc init /tmp/noc-publish-check", workflow)
         self.assertIn("pypa/gh-action-pypi-publish@release/v1", workflow)
         self.assertNotIn("password:", workflow.lower())

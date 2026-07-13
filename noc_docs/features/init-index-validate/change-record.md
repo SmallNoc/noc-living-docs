@@ -1,5 +1,11 @@
 # Change Record: init-index-validate
 
+## 2026-07-14 - Add simplified protocol v2 initialization
+
+- Made bare `noc init <project>` create only project, guardrails, verification, routing, config, manifest, and the managed AGENTS block.
+- Added safe project-file detection, idempotent writes, internal indexing, and v2 validation/doctor support.
+- Preserved explicit legacy modes and existing v1 projects without migration or deletion.
+
 ## 2026-07-10 - Validate PyPI release files
 
 ### Reason

@@ -23,4 +23,6 @@ confidence: medium
 | 2026-07-08 | initialize main repo docs | `python scripts/noc.py init . --mode small` | PASS | 生成 `AGENTS.md` 和 `noc_docs/`，随后创建真实 features。 |
 | 2026-07-09 | validate standard Codex skill path | `python scripts/noc.py validate` | PASS | 仓库自检验证 `.agents/skills/project-living-docs/` 和兼容路径存在，并接受 `Use for` skill description。 |
 | 2026-07-10 | validate PyPI release files | `python scripts/noc.py validate` | PASS | 仓库自检覆盖 `docs/release.md` 和 `.github/workflows/publish.yml`。 |
+| 2026-07-14 | simplified v2 initialization and v1 compatibility | `python -m unittest discover -s tests` | PASS | 87 tests；覆盖最小结构、Python/Node/Java、幂等、缺失 Skill、中文空格路径、非 Git 和 v1 不迁移。 |
+| 2026-07-14 | full pytest regression | `python -m pytest -q` | PASS | 87 passed，31 subtests passed。 |
 

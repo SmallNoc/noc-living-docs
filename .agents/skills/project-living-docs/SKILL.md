@@ -21,7 +21,7 @@ Do not use it for general questions that do not involve project memory, code beh
 
 ## Execution
 
-1. Identify affected feature/domain from the request, changed paths, and `noc_docs/.living-docs/feature-map.json`.
+1. Run the work plan first; it identifies either v2 project memory or the affected v1 feature/domain.
 2. Run a work plan when code may change:
 
 ```bash
@@ -30,12 +30,11 @@ noc work /path/to/project --path <code/path> --json --intent "<agreed requiremen
 
 Use `--feature <feature>` when feature names are clearer than paths. Prefer `--json` for machine-readable routing; fall back to the text output only when the installed CLI does not support JSON.
 
-3. Read the smallest relevant docs listed in the work plan: usually `agent-guide.md`, `status.md`, `guardrails.md`, and `test-record.md`, plus `requirements.md` or domain guardrails when relevant.
-4. Write confirmed new/changed intent to `requirements.md`; put uncertain discussion in `notes.md`.
+3. Read only the files returned by the work plan. For simplified v2 projects this is normally `project.md`, `guardrails.md`, and `verification.md`; v1 projects keep their feature/domain documents.
+4. For v2, update memory only when requirements, behavior, constraints, API, data structure, verification, or project phase creates a fact future sessions need. Routine fixes, formatting, and small refactors require no memory churn.
 5. Change code.
 6. Update `status.md`, `test-record.md`, `change-record.md`, and `guardrails.md` only when behavior, verification, important changes, or constraints changed.
-7. Run `noc index <project>` after docs, feature, or mapping changes.
-8. Run `noc check <project> --staged --warn-only` before commit when Git is available.
+7. Call internal NOC commands as needed; do not ask ordinary users to learn or run advanced commands.
 
 For detailed workflow rules, read `references/workflow.md`.
 
@@ -54,7 +53,7 @@ Stop and ask the user before editing code when:
 
 A task using this skill is done only when:
 
-- affected docs were identified through feature map, paths, or explicit feature name
+- affected docs were identified through the v2 routing data or v1 feature map
 - required docs were read or missing docs were called out
 - code changes and docs changes agree
 - `requirements.md` changed only for intended behavior changes
@@ -63,21 +62,7 @@ A task using this skill is done only when:
 - `change-record.md` records important implementation changes, not routine churn
 - indexes/checks were run when available, or skipped with reason
 
-## Final Response Format
-
-End with:
-
-```text
-NOC Living Docs:
-- docs checked:
-- docs updated:
-- docs intentionally unchanged:
-- commands run:
-- tests run:
-- remaining risks:
-```
-
-Keep the lists short. Use `none` when a category does not apply.
+In the final response, mention memory updates only when useful. Do not force a fixed NOC template onto every answer.
 
 ## References
 

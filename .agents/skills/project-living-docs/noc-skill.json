@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "name": "project-living-docs",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "managed_by": "noc-living-docs",
   "manager_id": "b7cf6fd1-0f93-4b97-9b39-eec3aebcbd70",
   "required_files": [

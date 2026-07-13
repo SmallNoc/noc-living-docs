@@ -399,7 +399,7 @@ python -m unittest tests.test_noc_cli tests.test_release_cli
 python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py
 ```
 
-Current version: `1.1.0`.
+Current version: `1.2.0`.
 
 ## GitHub Discovery
 
@@ -826,7 +826,7 @@ python -m unittest tests.test_noc_cli tests.test_release_cli
 python -m py_compile scripts/noc.py scripts/init-noc-docs.py scripts/index-noc-docs.py scripts/release.py scripts/validate-noc-docs.py
 ```
 
-当前版本：`1.1.0`。
+当前版本：`1.2.0`。
 
 ## GitHub 发现性
 

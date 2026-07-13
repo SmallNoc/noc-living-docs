@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-13T15:37:26.336303+00:00",
+  "generated_at": "2026-07-13T16:54:25.899565+00:00",
   "documents": {
     "noc_docs/development/documentation-policy.md": {
       "title": "Documentation Policy",
@@ -37,7 +37,7 @@
     },
     "noc_docs/features/agent-protocol/change-record.md": {
       "title": "Change Record: agent-protocol",
-      "summary": "- Verified the canonical AGENTS template already uses `noc` commands. - Kept the managed block and v1 documentation workflow unchanged while aligning installed-user guidance with `noc setup`. Agents need a deterministic first step before reading broader project context.",
+      "summary": "- Added a concise v2 managed block while retaining the legacy template for v1 projects. - Updated both packaged Skill copies to route v2 through project-level memory and avoid routine documentation churn. - Removed the mandatory fixed final-response template from the Skill.",
       "tags": [
         "change-record",
         "features"
@@ -93,7 +93,7 @@
     },
     "noc_docs/features/cli-core/change-record.md": {
       "title": "Change Record: cli-core",
-      "summary": "- Added `noc setup`, `--check`, `--repair`, and `--json`. - Setup installs missing or outdated NOC-managed Skills idempotently and refuses to overwrite user-managed collisions. - Added explicit CLI/Skill version matching and actionable next-step output.",
+      "summary": "- Added protocol/layout fields to work-plan JSON without removing v1 fields. - Added v2 project-level fallback context and non-mandatory documentation checks. - Kept all v1 commands and explicit legacy initialization modes available. - Added `noc setup`, `--check`, `--repair`, and `--json`.",
       "tags": [
         "change-record",
         "features"
@@ -212,7 +212,7 @@
     },
     "noc_docs/features/init-index-validate/change-record.md": {
       "title": "Change Record: init-index-validate",
-      "summary": "PyPI publishing support adds release documentation and a tag-triggered workflow that should be part of repository self-validation. - Added `docs/release.md` and `.github/workflows/publish.yml` to required repository paths in `validate-noc-docs.py`.",
+      "summary": "- Made bare `noc init <project>` create only project, guardrails, verification, routing, config, manifest, and the managed AGENTS block. - Added safe project-file detection, idempotent writes, internal indexing, and v2 validation/doctor support.",
       "tags": [
         "change-record",
         "features"
@@ -268,7 +268,7 @@
     },
     "noc_docs/features/release-quality/change-record.md": {
       "title": "Change Record: release-quality",
-      "summary": "- Added `tests.test_setup_cli` to the pull-request validation and tag publishing unittest commands. - Installed the `build` test dependency in PR validation so the wheel isolation test runs instead of failing before package construction. - Updated the canonical testing command so local and remote release gates execute ",
+      "summary": "- Aligned VERSION, package metadata, README version markers, CHANGELOG, and the bundled Skill manifest at 1.2.0 Unreleased. - Updated the publish workflow to run the complete test discovery and install the Skill before its simplified-init smoke test.",
       "tags": [
         "change-record",
         "features"

@@ -1,5 +1,11 @@
 # Change Record: release-quality
 
+## 2026-07-14 - Prepare the 1.2.0 development release
+
+- Aligned VERSION, package metadata, README version markers, CHANGELOG, and the bundled Skill manifest at 1.2.0 Unreleased.
+- Updated the publish workflow to run the complete test discovery and install the Skill before its simplified-init smoke test.
+- Kept tagging, GitHub Release creation, and PyPI publishing out of this pull request.
+
 ## 2026-07-13 - Run setup coverage in remote release gates
 
 - Added `tests.test_setup_cli` to the pull-request validation and tag publishing unittest commands.
