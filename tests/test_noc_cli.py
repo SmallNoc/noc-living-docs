@@ -132,6 +132,31 @@ class NocCliTests(unittest.TestCase):
         self.assertIn("true", {row["should_trigger"] for row in evals})
         self.assertIn("false", {row["should_trigger"] for row in evals})
 
+    def test_skill_defines_semantic_memory_impact_without_fixed_final_template(self) -> None:
+        for skill_root in [
+            ROOT / ".agents/skills/project-living-docs",
+            ROOT / "skills/codex/project-living-docs",
+        ]:
+            skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+            workflow = (skill_root / "references/workflow.md").read_text(encoding="utf-8")
+            rows = list(csv.DictReader((skill_root / "evals/project-living-docs.prompts.csv").read_text(encoding="utf-8").splitlines()))
+            impacts = {row["scenario"]: row.get("memory_impact") for row in rows}
+
+            self.assertIn("If the next Codex session did not know this fact", skill)
+            for impact in ["none", "project", "guardrails", "verification"]:
+                self.assertIn(f"`{impact}`", workflow)
+            self.assertNotIn("NOC Living Docs:\n- docs checked:", skill)
+            self.assertIn("Project memory updated:", skill)
+            self.assertEqual(impacts["formatting"], "none")
+            self.assertEqual(impacts["variable_rename"], "none")
+            self.assertEqual(impacts["small_refactor"], "none")
+            self.assertEqual(impacts["bug_fix_existing_behavior"], "none")
+            self.assertEqual(impacts["ordinary_test"], "none")
+            self.assertEqual(impacts["new_capability"], "project")
+            self.assertEqual(impacts["new_security_constraint"], "guardrails")
+            self.assertEqual(impacts["verification_command_change"], "verification")
+            self.assertEqual(impacts["multiple_memory_impacts"], "project+guardrails")
+
     def test_agent_entry_and_codex_skill_prefer_work_json(self) -> None:
         agents = (ROOT / "templates/AGENTS.md").read_text(encoding="utf-8")
         skill = (ROOT / "skills/codex/project-living-docs/SKILL.md").read_text(encoding="utf-8")

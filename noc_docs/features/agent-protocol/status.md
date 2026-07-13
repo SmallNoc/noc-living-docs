@@ -11,6 +11,8 @@ confidence: medium
 
 新建 v2 项目的 managed block 只要求通过 `noc work` 读取最小记忆，并仅在未来会话必须知道新事实时更新记录；普通修复、格式化和小型重构不强制更新。正式 Skill 可检测 v2 简化布局，同时保留现有 v1 文档维护协议，并不再强制固定的 NOC 最终回答模板。
 
+两套正式 Skill 现在根据实际 diff 声明 none/project/guardrails/verification；格式化、局部重命名、行为不变重构、恢复既有要求的 Bug 修复和普通测试均为 none。长期影响只更新对应 v2 文件，v1 继续读取旧结构但使用相同的语义阈值。
+
 ## Important Files
 
 - `templates/AGENTS.md`

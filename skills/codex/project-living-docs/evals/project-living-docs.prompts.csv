@@ -1,19 +1,28 @@
-prompt,should_trigger,scenario
-"Initialize NOC Living Docs in this repository and preserve the existing AGENTS.md rules.",true,initialization
-"Use NOC Living Docs for this login change and keep the feature docs in sync.",true,code_change
-"We agreed that failed login should lock the account after five attempts. Implement it and update the docs.",true,new_requirement_code
-"Refactor the billing service without changing behavior and record the verification.",true,refactor
-"Add a new reporting export API and update requirements, status, and tests.",true,api_feature
-"Change the user table migration and make sure the schema docs and test record are updated.",true,schema_change
-"Tighten permission checks for admin users and check guardrails first.",true,security_change
-"Run the NOC check before committing these staged TypeScript changes.",true,check_command
-"Generate a work plan for src/auth/login.py before coding.",true,work_plan_path
-"Suggest feature mappings for this Java monorepo.",true,suggest_map
-"Audit noc_docs for stale feature documentation.",true,audit
-"Use NOC docs to answer what the billing feature currently does.",true,query_docs
-"Create a Python script that prints hello world.",false,generic_code
-"What is the capital of France?",false,general_question
-"Summarize this pasted article without touching the repo.",false,unrelated_summary
-"Rename a variable in a throwaway snippet, no project files involved.",false,non_project_snippet
-"Explain how HTTP caching works conceptually.",false,general_explanation
-"Draft a marketing tagline for our product.",false,copywriting
+prompt,should_trigger,scenario,memory_impact
+"Initialize NOC Living Docs in this repository and preserve the existing AGENTS.md rules.",true,initialization,project
+"Use NOC Living Docs for this login change and keep the feature docs in sync.",true,code_change,
+"We agreed that failed login should lock the account after five attempts. Implement it and update the docs.",true,new_requirement_code,project+guardrails
+"Refactor the billing service without changing behavior and record the verification.",true,refactor,none
+"Add a new reporting export API and update requirements, status, and tests.",true,api_feature,project
+"Change the user table migration and make sure the schema docs and test record are updated.",true,schema_change,project+guardrails
+"Tighten permission checks for admin users and check guardrails first.",true,security_change,guardrails
+"Run the NOC check before committing these staged TypeScript changes.",true,check_command,
+"Generate a work plan for src/auth/login.py before coding.",true,work_plan_path,
+"Suggest feature mappings for this Java monorepo.",true,suggest_map,
+"Audit noc_docs for stale feature documentation.",true,audit,
+"Use NOC docs to answer what the billing feature currently does.",true,query_docs,
+"Create a Python script that prints hello world.",false,generic_code,
+"What is the capital of France?",false,general_question,
+"Summarize this pasted article without touching the repo.",false,unrelated_summary,
+"Rename a variable in a throwaway snippet, no project files involved.",false,non_project_snippet,
+"Explain how HTTP caching works conceptually.",false,general_explanation,
+"Draft a marketing tagline for our product.",false,copywriting,
+"Format the existing project files without changing behavior.",true,formatting,none
+"Rename a local variable without changing behavior.",true,variable_rename,none
+"Extract a small helper while preserving existing behavior.",true,small_refactor,none
+"Fix the implementation so it once again satisfies the existing requirement.",true,bug_fix_existing_behavior,none
+"Add an ordinary regression test using the current test command.",true,ordinary_test,none
+"Add a new user-visible export capability that future Codex sessions must preserve.",true,new_capability,project
+"Add a new rule that authentication tokens must never be written to logs.",true,new_security_constraint,guardrails
+"Replace the standard test command with python -m unittest and make it the required gate.",true,verification_command_change,verification
+"Add a new public capability and a compatibility prohibition that future work must preserve.",true,multiple_memory_impacts,project+guardrails

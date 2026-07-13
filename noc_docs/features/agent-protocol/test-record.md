@@ -24,4 +24,6 @@ confidence: medium
 | 2026-07-08 | route-first protocol wording | `python -m unittest tests.test_noc_cli.NocCliTests.test_agent_entry_and_codex_skill_prefer_work_json` | PASS | 验证 README 包含 agent memory router 定位，模板和 skill 继续优先 JSON work plan。 |
 | 2026-07-13 | installed CLI entry wording | `python -m unittest tests.test_setup_cli.SetupCliTests.test_formal_skill_and_user_entry_use_installed_noc_command` | PASS | 正式 Skill、workflow reference 和 AGENTS 模板不包含 `python scripts/noc.py`。 |
 | 2026-07-14 | simplified Skill and managed block | `python -m unittest discover -s tests` | PASS | 87 tests；验证双 Skill 内容一致、用户 AGENTS 内容保留和 v2 managed block 幂等。 |
+| 2026-07-14 | semantic memory impact Skill eval | `python -m unittest tests.test_noc_cli.NocCliTests.test_skill_defines_semantic_memory_impact_without_fixed_final_template` | PASS | 覆盖 none/project/guardrails/verification、多影响、双 Skill 一致性和简化最终回答。 |
+| 2026-07-14 | full semantic memory regression | `python -m pytest -q` | PASS | 92 passed，31 subtests passed。 |
 

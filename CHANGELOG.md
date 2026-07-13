@@ -8,6 +8,8 @@
 
 - New projects now default to simplified protocol v2 project memory.
 - `noc init` now completes Skill readiness checks, project detection, initialization, indexing, and health validation in one operation.
+- Added semantic memory-impact classification for `none`, `project`, `guardrails`, and `verification`.
+- Added repeatable `noc check --memory-impact` declarations with stable JSON results for Skill automation.
 
 ### Changed
 
@@ -15,6 +17,8 @@
 - Added minimum protocol v2 support to `validate`, `doctor`, `index`, `work`, and `check`.
 - Simplified the generated AGENTS managed block so normal users do not need to learn advanced NOC commands.
 - Kept existing protocol v1 projects and commands compatible without automatic migration or document deletion.
+- Stopped requiring project-memory updates for ordinary Bug fixes, formatting, local renames, behavior-preserving small refactors, and routine tests.
+- Removed the fixed NOC Living Docs final-response template; memory updates now use only an optional short summary.
 
 ## [1.1.0] - 2026-07-13
 

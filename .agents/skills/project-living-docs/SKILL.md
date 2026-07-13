@@ -31,10 +31,19 @@ noc work /path/to/project --path <code/path> --json --intent "<agreed requiremen
 Use `--feature <feature>` when feature names are clearer than paths. Prefer `--json` for machine-readable routing; fall back to the text output only when the installed CLI does not support JSON.
 
 3. Read only the files returned by the work plan. For simplified v2 projects this is normally `project.md`, `guardrails.md`, and `verification.md`; v1 projects keep their feature/domain documents.
-4. For v2, update memory only when requirements, behavior, constraints, API, data structure, verification, or project phase creates a fact future sessions need. Routine fixes, formatting, and small refactors require no memory churn.
+4. After changing code, inspect the actual diff and classify its memory impact. Ask: **If the next Codex session did not know this fact, could it make an incorrect change?** Only a clear "yes" belongs in long-term project memory.
 5. Change code.
-6. Update `status.md`, `test-record.md`, `change-record.md`, and `guardrails.md` only when behavior, verification, important changes, or constraints changed.
-7. Call internal NOC commands as needed; do not ask ordinary users to learn or run advanced commands.
+6. Update only the files selected by the impact classification. Never write temporary execution records, chat history, ordinary test results, or implementation narration into long-term memory. Do not turn uncertain content into facts.
+7. Run `noc check <project> --memory-impact <impact>` internally, repeating the option for multiple impacts. Do not ask ordinary users to learn or run advanced commands.
+
+## Memory Impact
+
+- `none`: formatting, comment fixes, local renames, behavior-preserving small refactors, implementation bug fixes that restore existing requirements, running existing tests, and ordinary tests added under the existing verification approach. Do not modify `noc_docs/`.
+- `project`: project goals, project phase, major capabilities, technical boundaries, or architecture facts changed. In v2, update only `project.md`.
+- `guardrails`: durable security, permission, data-loss, compatibility, public API, migration, or deployment constraints changed. In v2, update only `guardrails.md`.
+- `verification`: standard test commands, build/release/acceptance procedures, or durable verification gates changed. In v2, update only `verification.md`.
+
+Multiple durable impacts may apply; update only their corresponding files. Do not create `change-record.md`, `test-record.md`, `notes.md`, areas, or any new long-term document type for v2. For v1, keep reading the existing structure but apply the same semantic threshold and avoid routine document churn.
 
 For detailed workflow rules, read `references/workflow.md`.
 
@@ -62,7 +71,7 @@ A task using this skill is done only when:
 - `change-record.md` records important implementation changes, not routine churn
 - indexes/checks were run when available, or skipped with reason
 
-In the final response, mention memory updates only when useful. Do not force a fixed NOC template onto every answer.
+Use a normal final response focused on development and test results. Do not output a fixed NOC template. Only when memory changed, append one short sentence such as `Project memory updated: project.md`.
 
 ## References
 

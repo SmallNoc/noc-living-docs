@@ -33,6 +33,20 @@ class SimplifiedProjectMemoryTests(unittest.TestCase):
         run(["setup", "--json"], env=env)
         return env
 
+    def initialized_git_project(self, root: Path) -> tuple[Path, dict[str, str]]:
+        project = root / "project"
+        project.mkdir()
+        env = self.ready_home(root)
+        run(["init", str(project)], env=env)
+        subprocess.run(["git", "-C", str(project), "init"], check=True, stdout=subprocess.PIPE)
+        subprocess.run(["git", "-C", str(project), "add", "."], check=True)
+        subprocess.run(
+            ["git", "-C", str(project), "-c", "user.name=Test", "-c", "user.email=t@example.com", "commit", "-m", "init"],
+            check=True,
+            stdout=subprocess.PIPE,
+        )
+        return project, env
+
     def test_default_init_creates_only_v2_minimal_structure(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -180,6 +194,106 @@ class SimplifiedProjectMemoryTests(unittest.TestCase):
             self.assertTrue((project / "noc_docs/features/_feature/requirements.md").is_file())
             config = json.loads((project / "noc_docs/.living-docs/config.json").read_text(encoding="utf-8"))
             self.assertEqual(config.get("protocol_version", 1), 1)
+
+    def test_memory_impact_none_passes_without_docs_update_and_returns_stable_json(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project, env = self.initialized_git_project(Path(tmp))
+            (project / "app.py").write_text("renamed_value = 1\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(project), "add", "app.py"], check=True)
+
+            result = run(["check", str(project), "--staged", "--memory-impact", "none", "--json"], env=env)
+            payload = json.loads(result.stdout)
+
+            self.assertEqual(
+                set(payload),
+                {"memory_impact", "required_docs", "updated_docs", "status"},
+            )
+            self.assertEqual(payload["memory_impact"], ["none"])
+            self.assertEqual(payload["required_docs"], [])
+            self.assertEqual(payload["updated_docs"], [])
+            self.assertEqual(payload["status"], "ok")
+
+    def test_declared_long_term_impact_fails_when_required_memory_is_unchanged(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project, env = self.initialized_git_project(Path(tmp))
+            (project / "app.py").write_text("NEW_CAPABILITY = True\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(project), "add", "app.py"], check=True)
+
+            result = run(
+                [
+                    "check",
+                    str(project),
+                    "--staged",
+                    "--memory-impact",
+                    "project",
+                    "--json",
+                    "--environment",
+                    "ci",
+                    "--github-annotations",
+                ],
+                env=env,
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertEqual(result.returncode, 1)
+            self.assertEqual(payload["required_docs"], ["noc_docs/project.md"])
+            self.assertEqual(payload["updated_docs"], [])
+            self.assertEqual(payload["status"], "missing_required_docs")
+
+    def test_multiple_memory_impacts_require_and_accept_only_matching_docs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project, env = self.initialized_git_project(Path(tmp))
+            (project / "app.py").write_text("PUBLIC_API = True\n", encoding="utf-8")
+            project_doc = project / "noc_docs/project.md"
+            project_doc.write_text(project_doc.read_text(encoding="utf-8") + "\n- 新增公开能力。\n", encoding="utf-8")
+            verification = project / "noc_docs/verification.md"
+            verification.write_text(verification.read_text(encoding="utf-8") + "\n- `python -m unittest`\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(project), "add", "."], check=True)
+
+            result = run(
+                [
+                    "check",
+                    str(project),
+                    "--staged",
+                    "--memory-impact",
+                    "project",
+                    "--memory-impact",
+                    "verification",
+                    "--json",
+                    "--environment",
+                    "ci",
+                ],
+                env=env,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertEqual(payload["memory_impact"], ["project", "verification"])
+            self.assertEqual(payload["required_docs"], ["noc_docs/project.md", "noc_docs/verification.md"])
+            self.assertEqual(payload["updated_docs"], ["noc_docs/project.md", "noc_docs/verification.md"])
+            self.assertEqual(payload["status"], "ok")
+
+    def test_declared_impact_rejects_unrelated_project_memory_churn(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project, env = self.initialized_git_project(Path(tmp))
+            (project / "app.py").write_text("NEW_CAPABILITY = True\n", encoding="utf-8")
+            project_doc = project / "noc_docs/project.md"
+            project_doc.write_text(project_doc.read_text(encoding="utf-8") + "\n- 新能力。\n", encoding="utf-8")
+            guardrails = project / "noc_docs/guardrails.md"
+            guardrails.write_text(guardrails.read_text(encoding="utf-8") + "\n- 临时记录。\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(project), "add", "."], check=True)
+
+            result = run(
+                ["check", str(project), "--staged", "--memory-impact", "project", "--json", "--environment", "ci"],
+                env=env,
+                check=False,
+            )
+            payload = json.loads(result.stdout)
+
+            self.assertEqual(result.returncode, 1)
+            self.assertEqual(payload["required_docs"], ["noc_docs/project.md"])
+            self.assertEqual(payload["updated_docs"], ["noc_docs/guardrails.md", "noc_docs/project.md"])
+            self.assertEqual(payload["status"], "unexpected_memory_updates")
 
 
 if __name__ == "__main__":

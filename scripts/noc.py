@@ -753,6 +753,8 @@ def command_feature_adopt(args: argparse.Namespace) -> int:
 
 def command_check(args: argparse.Namespace) -> int:
     target = Path(args.target).resolve()
+    if args.memory_impact or args.json:
+        return command_memory_impact_check(target, args)
     config = load_config(target)
     if config.get("protocol_version") == 2 and config.get("layout") == "simplified":
         files = changed_files(target, args.staged)
@@ -804,6 +806,134 @@ def command_check(args: argparse.Namespace) -> int:
     print("If docs are intentionally unchanged, mention that in the commit or final agent response.")
     emit_github_annotation(args, "code changed but no noc_docs files changed", "warning" if strictness == "warn" else "error")
     return check_result(strictness)
+
+
+MEMORY_IMPACT_DOCS = {
+    "project": "noc_docs/project.md",
+    "guardrails": "noc_docs/guardrails.md",
+    "verification": "noc_docs/verification.md",
+}
+MEMORY_IMPACT_ORDER = ["project", "guardrails", "verification"]
+
+
+def command_memory_impact_check(target: Path, args: argparse.Namespace) -> int:
+    declared = list(dict.fromkeys(args.memory_impact or ["none"]))
+    if "none" in declared and len(declared) > 1:
+        result = {
+            "memory_impact": declared,
+            "required_docs": [],
+            "updated_docs": [],
+            "status": "invalid_memory_impact",
+        }
+        print_memory_impact_result(result, args.json)
+        return 2
+
+    impacts = [impact for impact in MEMORY_IMPACT_ORDER if impact in declared]
+    normalized = ["none"] if not impacts else impacts
+    files = changed_files(target, args.staged)
+    docs_files = sorted(path.replace("\\", "/") for path in files if path.startswith("noc_docs/"))
+    config = load_config(target)
+    unexpected_updates = False
+
+    if normalized == ["none"]:
+        required_docs: list[str] = []
+        if config.get("protocol_version") == 2 and config.get("layout") == "simplified":
+            updated_docs = sorted(path for path in docs_files if path in MEMORY_IMPACT_DOCS.values())
+        else:
+            updated_docs = sorted(path for path in docs_files if path.endswith(".md"))
+        missing_categories: list[str] = []
+        unexpected_updates = bool(updated_docs)
+    elif config.get("protocol_version") == 2 and config.get("layout") == "simplified":
+        required_docs = [MEMORY_IMPACT_DOCS[impact] for impact in normalized]
+        updated_docs = sorted(path for path in docs_files if path in MEMORY_IMPACT_DOCS.values())
+        missing_categories = [impact for impact in normalized if MEMORY_IMPACT_DOCS[impact] not in updated_docs]
+        unexpected_updates = any(path not in required_docs for path in updated_docs)
+    else:
+        required_by_impact = v1_memory_impact_docs(target, files, normalized)
+        required_docs = sorted({path for paths in required_by_impact.values() for path in paths})
+        updated_docs = sorted(path for path in docs_files if path.endswith(".md"))
+        missing_categories = [
+            impact
+            for impact, candidates in required_by_impact.items()
+            if not any(candidate in updated_docs for candidate in candidates)
+        ]
+        unexpected_updates = any(path not in required_docs for path in updated_docs)
+
+    if missing_categories:
+        status = "missing_required_docs"
+    elif unexpected_updates:
+        status = "unexpected_memory_updates"
+    else:
+        status = "ok"
+    result = {
+        "memory_impact": normalized,
+        "required_docs": required_docs,
+        "updated_docs": updated_docs,
+        "status": status,
+    }
+    print_memory_impact_result(result, args.json)
+    if status == "ok":
+        return 0
+    strictness, _ = resolve_check_strictness(target, args)
+    if not args.json:
+        annotation = (
+            "declared memory impact is missing corresponding project memory: " + ", ".join(missing_categories)
+            if missing_categories
+            else "project memory changed outside the declared semantic impact"
+        )
+        emit_github_annotation(
+            args,
+            annotation,
+            "warning" if strictness == "warn" else "error",
+        )
+    return check_result(strictness)
+
+
+def v1_memory_impact_docs(target: Path, files: list[str], impacts: list[str]) -> dict[str, list[str]]:
+    feature_map = load_feature_map(target)
+    code_files = [path for path in files if not path.startswith("noc_docs/") and is_code_file(path)]
+    entries = []
+    for info in feature_map.get("features", {}).values():
+        if any(any(path_matches(changed, pattern) for pattern in info.get("paths", [])) for changed in code_files):
+            entries.append(info)
+    keys = {
+        "project": ["requirements", "status"],
+        "guardrails": ["guardrails"],
+        "verification": ["tests"],
+    }
+    result: dict[str, list[str]] = {}
+    for impact in impacts:
+        candidates = sorted(
+            {
+                info[key].replace("\\", "/")
+                for info in entries
+                for key in keys[impact]
+                if isinstance(info.get(key), str)
+            }
+        )
+        result[impact] = candidates
+    return result
+
+
+def print_memory_impact_result(result: dict, as_json: bool) -> None:
+    if as_json:
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        return
+    print("Memory impact: " + ", ".join(result["memory_impact"]))
+    if result["status"] == "ok":
+        if result["memory_impact"] == ["none"]:
+            print("No project memory update required.")
+        elif result["updated_docs"]:
+            print("Project memory updated: " + ", ".join(result["updated_docs"]))
+    elif result["status"] == "missing_required_docs":
+        missing = [path for path in result["required_docs"] if path not in result["updated_docs"]]
+        print("WARNING: declared long-term memory impact is missing corresponding updates.")
+        if missing:
+            print("Required: " + ", ".join(missing))
+    elif result["status"] == "unexpected_memory_updates":
+        print("WARNING: project memory changed outside the declared semantic impact.")
+    else:
+        print("ERROR: memory impact `none` cannot be combined with long-term impact categories.")
 
 
 def resolve_check_strictness(target: Path, args: argparse.Namespace) -> tuple[str, str]:
@@ -1657,6 +1787,13 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("--environment", choices=["manual", "local", "ci"], help="Select strictness environment.")
     check.add_argument("--github-annotations", action="store_true", help="Emit GitHub Actions warning/error annotations.")
     check.add_argument("--warn-only", action="store_true", help="Return success even when docs are missing.")
+    check.add_argument(
+        "--memory-impact",
+        action="append",
+        choices=["none", "project", "guardrails", "verification"],
+        help="Declare semantic project-memory impact. Repeat for multiple categories.",
+    )
+    check.add_argument("--json", action="store_true", help="Print a machine-readable memory-impact result.")
     check.set_defaults(func=command_check)
 
     suggest_map = sub.add_parser("suggest-map", help="Suggest feature path mappings.")
