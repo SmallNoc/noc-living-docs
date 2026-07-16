@@ -7,6 +7,13 @@
 - Compatibility: existing v2 simplified projects remain read-only under `work`, `index`, `doctor`, and `validate`; v1 small/domain routing remains unchanged.
 - Verification: `python -m unittest discover -s tests`, `python scripts/noc.py validate .`, `python scripts/release.py --check`, and the explicit simplified no-write hash comparison passed.
 
+## 2026-07-16 - feature-archive project-memory routing
+
+- Reason: after new init creates feature-archive projects, existing `work` and semantic memory-impact checks must still return the v2 project-memory contract.
+- Changed: `work --json` recognizes `layout: feature-archive` and returns project-level memory plus `layout_version`; `check --memory-impact` treats feature-archive project-level memory files like simplified v2 for project/guardrails/verification impacts.
+- Non-goals: no candidate routing, feature ensure, structured update, evidence record, or migration command was added.
+- Verification: full unittest discovery and stage 2 targeted tests passed.
+
 ## 2026-07-14 - Add declarative semantic memory checks
 
 - Added repeatable `--memory-impact` categories and machine-readable check output.

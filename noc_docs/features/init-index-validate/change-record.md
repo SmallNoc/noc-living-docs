@@ -7,6 +7,13 @@
 - Compatibility: simplified projects without `language` remain valid and are reported as `unspecified`; no ordinary validation or doctor path mutates existing simplified projects.
 - Verification: targeted stage 1 tests, full unittest discovery, repository validation, release check, and explicit old simplified no-write regression passed.
 
+## 2026-07-16 - feature-archive init and rebuildable indexes
+
+- Reason: implement stage 2 of the MVP: new init and deterministic, rebuildable indexes.
+- Changed: new default `noc init` creates feature-archive layout with Chinese project-level Markdown, empty `features/`, feature-archive config, and four derived JSON files. `noc index` rebuilds feature-archive routing, manifest, feature index, and evidence index from Markdown facts.
+- Compatibility: existing v2 simplified projects are not converted by default init or ordinary commands; v1 small/domain explicit modes remain available.
+- Verification: stage 2 init/index tests, simplified compatibility tests, full unittest discovery, repository validation, release check, old simplified no-write script, and isolated wheel init/index verification passed.
+
 ## 2026-07-14 - Add simplified protocol v2 initialization
 
 - Made bare `noc init <project>` create only project, guardrails, verification, routing, config, manifest, and the managed AGENTS block.

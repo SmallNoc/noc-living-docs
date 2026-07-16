@@ -20,6 +20,7 @@ confidence: medium
 
 | Date | Change | Command / Method | Result | Notes |
 |---|---|---|---|---|
+| 2026-07-16 | feature-archive stage 2 init/index | `python -m unittest tests.test_feature_archive_init -v`; `python -m unittest tests.test_simplified_memory -v`; `python -m unittest discover -s tests`; `python scripts/noc.py validate .`; `python scripts/release.py --check`; stage-specific init/index/idempotency/no-write/wheel scripts | PASS | 11 feature-archive init/index tests passed；12 compatibility tests passed；130 total tests passed；new init creates empty `features/` and rebuildable derived indexes. |
 | 2026-07-16 | feature-archive stage 1 validation | `python -m unittest tests.test_feature_archive_stage1 -v`; `python -m unittest tests.test_simplified_memory -v`; `python -m unittest discover -s tests`; `python scripts/noc.py validate .`; `python scripts/release.py --check` | PASS | 19 stage 1 tests passed；12 simplified tests passed；119 total tests passed；repository validation and release check passed. |
 | 2026-07-08 | initialize main repo docs | `python scripts/noc.py init . --mode small` | PASS | 生成 `AGENTS.md` 和 `noc_docs/`，随后创建真实 features。 |
 | 2026-07-09 | validate standard Codex skill path | `python scripts/noc.py validate` | PASS | 仓库自检验证 `.agents/skills/project-living-docs/` 和兼容路径存在，并接受 `Use for` skill description。 |
