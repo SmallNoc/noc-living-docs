@@ -16,6 +16,11 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.noclib.schemas import validate_config_schema, validate_overview_frontmatter
+
 SCRIPT_DIR = ROOT / "scripts"
 TEMPLATES = ROOT / "templates/noc_docs"
 SKILL_NAME = "project-living-docs"
@@ -1322,8 +1327,47 @@ def command_doctor(args: argparse.Namespace) -> int:
 
     living_docs = noc_docs / ".living-docs"
     raw_config = load_config(target)
+    if raw_config.get("protocol_version") == 2 and raw_config.get("layout") == "feature-archive":
+        config = doctor_json(report, living_docs / "config.json", ["documentation_root", "protocol_version", "layout", "layout_version"])
+        report.ok(language_report(config))
+        for error in validate_config_schema(config):
+            report.error(f"feature-archive config invalid: {error}")
+            report.fix("Fix noc_docs/.living-docs/config.json before running feature-archive workflows.")
+        for name in ["project.md", "guardrails.md", "verification.md"]:
+            if (noc_docs / name).is_file():
+                report.ok(f"found noc_docs/{name}")
+            else:
+                report.error(f"missing noc_docs/{name}")
+                report.fix("Restore the missing project-level memory file.")
+        features_root = noc_docs / "features"
+        if features_root.is_dir():
+            report.ok("found noc_docs/features/")
+            for feature_dir_path in sorted(features_root.iterdir()):
+                if not feature_dir_path.is_dir() or feature_dir_path.name.startswith("."):
+                    continue
+                overview = feature_dir_path / "overview.md"
+                if not overview.is_file():
+                    report.error(f"missing {overview.relative_to(target).as_posix()}")
+                    report.fix("Create the missing feature overview through the feature-archive workflow.")
+                    continue
+                errors = validate_overview_frontmatter(parse_simple_frontmatter(overview))
+                if errors:
+                    report.error(f"{overview.relative_to(target).as_posix()} invalid: {'; '.join(errors)}")
+                    report.fix("Fix the feature overview frontmatter.")
+                else:
+                    report.ok(f"valid {overview.relative_to(target).as_posix()}")
+        else:
+            report.error("missing noc_docs/features/")
+            report.fix("Run explicit migration or initialize a new feature-archive project.")
+        report.ok("protocol 2 feature-archive layout is ready")
+        doctor_hook(report, root)
+        print("Fix suggestions:")
+        print("- No action needed." if not report.fixes else "\n".join(f"- {fix}" for fix in report.fixes))
+        return 1 if report.errors else 0
+
     if raw_config.get("protocol_version") == 2 and raw_config.get("layout") == "simplified":
         config = doctor_json(report, living_docs / "config.json", ["documentation_root", "protocol_version", "layout"])
+        report.ok(language_report(config))
         doctor_json(report, living_docs / "routing.json", ["protocol_version", "layout", "routes"])
         doctor_json(report, living_docs / "manifest.json", ["protocol_version", "layout", "managed_files", "files"])
         for name in ["project.md", "guardrails.md", "verification.md"]:
@@ -1440,6 +1484,28 @@ def doctor_hook(report: DoctorReport, root: Path | None) -> None:
     else:
         report.error("pre-commit hook NOC block does not reference a valid entry")
         report.fix("Run: noc hook install <project> to refresh the hook.")
+
+
+def parse_simple_frontmatter(path: Path) -> dict:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    if not lines or lines[0].strip() != "---":
+        return {}
+    data = {}
+    for line in lines[1:]:
+        if line.strip() == "---":
+            break
+        if ":" not in line or line.startswith(" "):
+            continue
+        key, raw = line.split(":", 1)
+        value = raw.strip()
+        data[key.strip()] = int(value) if value.isdigit() else value
+    return data
+
+
+def language_report(config: dict) -> str:
+    language = config.get("language") if isinstance(config.get("language"), str) else "unspecified"
+    machine_keys = config.get("machine_keys") if isinstance(config.get("machine_keys"), str) else "unspecified"
+    return f"language: {language}; machine_keys: {machine_keys}"
 
 
 def resolve_work_features(feature_map: dict, feature: str | None, paths: list[str]) -> list[str]:

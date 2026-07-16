@@ -78,9 +78,63 @@ def write_feature_archive_project(project: Path, *, feature_id: str = "user-logi
         "updated_at: 2026-07-16\n"
         "language: zh-CN\n"
         "---\n\n"
-        "# 用户登录\n",
+        "# 用户登录\n\n## 功能目标\n\n支持用户使用账号登录系统。\n",
         encoding="utf-8",
     )
+
+
+def write_legacy_simplified_project_without_language(project: Path) -> None:
+    (project / "noc_docs/.living-docs").mkdir(parents=True)
+    (project / "AGENTS.md").write_text(
+        "# Agent Protocol\n\n<!-- noc-living-docs:start -->\n\n## NOC\n\n<!-- noc-living-docs:end -->\n",
+        encoding="utf-8",
+    )
+    for name in ["project.md", "guardrails.md", "verification.md"]:
+        (project / "noc_docs" / name).write_text(f"# {name}\n", encoding="utf-8")
+    (project / "noc_docs/.living-docs/config.json").write_text(
+        json.dumps(
+            {
+                "protocol": "noc-living-docs",
+                "protocol_version": 2,
+                "layout": "simplified",
+                "documentation_root": "noc_docs",
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (project / "noc_docs/.living-docs/routing.json").write_text(
+        json.dumps(
+            {
+                "protocol_version": 2,
+                "layout": "simplified",
+                "routes": [{"path": "**", "memory": ["noc_docs/project.md", "noc_docs/guardrails.md", "noc_docs/verification.md"]}],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (project / "noc_docs/.living-docs/manifest.json").write_text(
+        json.dumps(
+            {
+                "protocol_version": 2,
+                "layout": "simplified",
+                "managed_files": [],
+                "files": {},
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def git_init(project: Path) -> None:
+    subprocess.run(["git", "-C", str(project), "init"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.run(["git", "-C", str(project), "config", "user.email", "test@example.com"], check=True)
+    subprocess.run(["git", "-C", str(project), "config", "user.name", "Test User"], check=True)
 
 
 class FeatureArchiveSchemaTests(unittest.TestCase):
@@ -102,6 +156,32 @@ class FeatureArchiveSchemaTests(unittest.TestCase):
         }
 
         self.assertEqual([], schemas.validate_config_schema(payload))
+
+    def test_feature_archive_config_schema_accepts_zh_cn_language_and_en_us_machine_keys(self) -> None:
+        payload = {
+            "protocol": "noc-living-docs",
+            "protocol_version": 2,
+            "layout": "feature-archive",
+            "layout_version": "1.0",
+            "documentation_root": "noc_docs",
+            "language": "zh-CN",
+            "machine_keys": "en-US",
+        }
+
+        self.assertEqual([], schemas.validate_config_schema(payload))
+
+    def test_feature_archive_config_schema_rejects_translated_machine_keys(self) -> None:
+        payload = {
+            "protocol": "noc-living-docs",
+            "protocol_version": 2,
+            "layout": "feature-archive",
+            "layout_version": "1.0",
+            "documentation_root": "noc_docs",
+            "language": "zh-CN",
+            "machine_keys": "zh-CN",
+        }
+
+        self.assertIn("machine_keys must be en-US", schemas.validate_config_schema(payload))
 
     def test_feature_archive_config_schema_rejects_missing_layout_version(self) -> None:
         payload = {
@@ -278,7 +358,8 @@ class FeatureArchiveValidateTests(unittest.TestCase):
 
             result = run_noc(["validate", "--target", str(project)])
 
-            self.assertEqual("NOC project validation passed.\n", result.stdout)
+            self.assertIn("Language: zh-CN; machine_keys: en-US", result.stdout)
+            self.assertIn("NOC project validation passed.", result.stdout)
             self.assertEqual(before, file_hashes(project))
 
     def test_validate_rejects_invalid_overview_id(self) -> None:
@@ -290,6 +371,67 @@ class FeatureArchiveValidateTests(unittest.TestCase):
 
             self.assertNotEqual(0, result.returncode)
             self.assertIn("id must be ASCII kebab-case", result.stdout)
+
+    def test_validate_allows_chinese_body_with_english_machine_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            write_feature_archive_project(project)
+
+            result = run_noc(["validate", "--target", str(project)])
+
+            overview = (project / "noc_docs/features/user-login/overview.md").read_text(encoding="utf-8")
+            self.assertIn("## 功能目标", overview)
+            self.assertIn("id: user-login", overview)
+            self.assertIn("schema_version: 1", overview)
+            self.assertIn("Language: zh-CN; machine_keys: en-US", result.stdout)
+
+    def test_validate_accepts_legacy_simplified_without_language_and_does_not_write(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            write_legacy_simplified_project_without_language(project)
+            before = file_hashes(project)
+
+            result = run_noc(["validate", "--target", str(project)])
+
+            self.assertIn("NOC project validation passed.", result.stdout)
+            self.assertEqual(before, file_hashes(project))
+
+
+class FeatureArchiveDoctorTests(unittest.TestCase):
+    def test_doctor_reports_feature_archive_layout(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            write_feature_archive_project(project)
+            git_init(project)
+
+            result = run_noc(["doctor", str(project)])
+
+            self.assertIn("protocol 2 feature-archive layout is ready", result.stdout)
+            self.assertIn("language: zh-CN; machine_keys: en-US", result.stdout)
+
+    def test_doctor_feature_archive_does_not_modify_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            write_feature_archive_project(project)
+            git_init(project)
+            before = file_hashes(project)
+
+            run_noc(["doctor", str(project)])
+
+            self.assertEqual(before, file_hashes(project))
+
+    def test_doctor_accepts_legacy_simplified_without_language_and_does_not_write(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            write_legacy_simplified_project_without_language(project)
+            git_init(project)
+            before = file_hashes(project)
+
+            result = run_noc(["doctor", str(project)])
+
+            self.assertIn("protocol 2 simplified layout is ready", result.stdout)
+            self.assertIn("language: unspecified; machine_keys: unspecified", result.stdout)
+            self.assertEqual(before, file_hashes(project))
 
 
 if __name__ == "__main__":

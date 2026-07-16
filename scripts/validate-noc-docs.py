@@ -160,6 +160,7 @@ def check_project(target: Path) -> None:
     if config.get("protocol_version") == 2:
         if config.get("layout") == "feature-archive":
             check_feature_archive_project(target, noc_docs, config)
+            print_language_config(config)
             validate_agent_file(target)
             return
         if config.get("layout") != "simplified":
@@ -171,6 +172,7 @@ def check_project(target: Path) -> None:
             data = json.loads((noc_docs / ".living-docs" / name).read_text(encoding="utf-8"))
             if data.get("protocol_version") != 2 or data.get("layout") != "simplified":
                 fail(f"simplified target {name} must declare protocol_version 2 and simplified layout")
+        print_language_config(config)
         validate_agent_file(target)
         return
 
@@ -185,6 +187,12 @@ def check_project(target: Path) -> None:
         fail("target must not initialize both noc_docs/features and noc_docs/domains")
 
     validate_agent_file(target)
+
+
+def print_language_config(config: dict) -> None:
+    language = config.get("language") if isinstance(config.get("language"), str) else "unspecified"
+    machine_keys = config.get("machine_keys") if isinstance(config.get("machine_keys"), str) else "unspecified"
+    print(f"Language: {language}; machine_keys: {machine_keys}")
 
 
 def check_feature_archive_project(target: Path, noc_docs: Path, config: dict) -> None:
