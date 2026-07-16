@@ -25,6 +25,7 @@ from scripts.noclib.features import ensure_feature
 from scripts.noclib.feature_update import update_feature
 from scripts.noclib.evidence import collect_code_evidence, record_verification_evidence
 from scripts.noclib.feature_check import check_feature_impact
+from scripts.noclib.migration import migrate_apply, migrate_dry_run, migrate_rollback
 
 SCRIPT_DIR = ROOT / "scripts"
 TEMPLATES = ROOT / "templates/noc_docs"
@@ -890,6 +891,26 @@ def command_evidence(args: argparse.Namespace) -> int:
     else:
         print(f"Changed paths: {len(payload['changed_paths'])}")
     return 0
+
+
+def command_migrate(args: argparse.Namespace) -> int:
+    target = Path(args.target).resolve()
+    if args.rollback:
+        code, payload = migrate_rollback(target, args.rollback)
+    elif args.apply:
+        code, payload = migrate_apply(target, backup=args.backup)
+    else:
+        code, payload = migrate_dry_run(target)
+    if args.json:
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+    else:
+        print(f"{payload.get('status')}: {payload.get('source_layout', '')} -> {payload.get('target_layout', '')}".strip())
+        rollback = payload.get("rollback")
+        if isinstance(rollback, dict) and rollback.get("rollback_command"):
+            print(f"Rollback: {rollback['rollback_command']}")
+        if payload.get("error"):
+            print(f"ERROR: {payload['error']}")
+    return code
 
 
 MEMORY_IMPACT_DOCS = {
@@ -1960,6 +1981,17 @@ def build_parser() -> argparse.ArgumentParser:
     evidence.add_argument("--file", help="Verification evidence JSON file for `evidence record`.")
     evidence.add_argument("--json", action="store_true", help="Print evidence as machine-readable JSON.")
     evidence.set_defaults(func=command_evidence)
+
+    migrate = sub.add_parser("migrate", help="[Advanced] Explicitly migrate legacy NOC docs.")
+    migrate.add_argument("target", nargs="?", default=".")
+    migrate.add_argument("--to", choices=["feature-archive"], help="Target layout for dry-run or apply.")
+    migrate_mode = migrate.add_mutually_exclusive_group()
+    migrate_mode.add_argument("--dry-run", action="store_true", help="Plan migration without writing files.")
+    migrate_mode.add_argument("--apply", action="store_true", help="Apply the migration. Requires --backup.")
+    migrate_mode.add_argument("--rollback", help="Restore noc_docs from a migration backup id.")
+    migrate.add_argument("--backup", action="store_true", help="Create a full noc_docs backup before applying.")
+    migrate.add_argument("--json", action="store_true", help="Print the migration result as machine-readable JSON.")
+    migrate.set_defaults(func=command_migrate)
 
     suggest_map = sub.add_parser("suggest-map", help="[Advanced] Suggest feature path mappings.")
     suggest_map.add_argument("target", nargs="?", default=".")
