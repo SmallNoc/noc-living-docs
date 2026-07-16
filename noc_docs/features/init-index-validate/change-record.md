@@ -1,5 +1,12 @@
 # Change Record: init-index-validate
 
+## 2026-07-16 - evidence index rebuild
+
+- Reason: stage 5 evidence files must have a rebuildable derived index without making index a command runner.
+- Changed: `noc index` rebuilds `evidence-index.json` from stored evidence JSON files and reports damaged evidence files as errors.
+- Compatibility: Markdown facts are not changed by evidence index rebuild; old simplified/small/domain index behavior remains compatible.
+- Verification: evidence index deletion/rebuild tests, damaged evidence test, full unittest discovery, and stage 5专项脚本 passed.
+
 ## 2026-07-16 - simplified initializer hash regression
 
 - Reason: stage 3.1 fixed a reported regression in the direct simplified initializer path.

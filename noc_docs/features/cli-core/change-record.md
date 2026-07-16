@@ -1,5 +1,12 @@
 # Change Record: cli-core
 
+## 2026-07-16 - feature evidence and impact checks
+
+- Reason: implement stage 5 so future Skill workflows can submit real code and verification evidence while the CLI enforces deterministic consistency checks.
+- Changed: added `noc evidence <project> --staged --json`, `noc evidence record <project> --feature-id --file --json`, and `noc check <project> --feature-impact-file --json`; added staged Git evidence collection, deterministic signals, verification evidence validation, sensitive-value redaction, stable evidence ids, and feature impact checks.
+- Compatibility: evidence recording is restricted to feature-archive layout; evidence collection and check are read-only; existing `check --memory-impact` and old simplified/small/domain behavior remain compatible.
+- Verification: stage 5 evidence/check tests, full unittest discovery, repository validation, release check,专项脚本,旧 layout regressions, stage 3/4 regressions, and wheel-isolated evidence/check verification passed.
+
 ## 2026-07-16 - structured feature update command
 
 - Reason: implement stage 4 so future Skill workflows submit structured facts while the CLI owns safe, local, idempotent `overview.md` writes.

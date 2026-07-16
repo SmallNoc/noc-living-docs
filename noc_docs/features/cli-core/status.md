@@ -25,6 +25,10 @@ Bare `noc init` now establishes simplified v2 project memory after verifying the
 
 阶段 4 为 feature-archive 项目增加 `noc feature update <project> --id <feature-id> --patch-file <patch.json> --json`。CLI 只接受结构化 patch，不理解自然语言、不运行测试、不写业务代码；它局部更新 `overview.md` 的中文章节，使用 `<!-- noc:id=... -->` 稳定定位受管理条目，保留未知章节和用户手工内容。实际修改前会备份原 overview，使用原子写入，支持可选 `expected_overview_sha256` 并发保护；无变化时返回 `unchanged` 且不创建备份。
 
+阶段 5 为 feature-archive 项目增加 evidence 和 feature impact check。`noc evidence <project> --staged --json` 只读收集真实 staged Git diff，输出 changed paths、diff 统计和确定性 signals，不运行测试、不推断 passed、不修改 Markdown、索引、Git index 或工作树。`noc evidence record <project> --feature-id <feature-id> --file <json> --json` 只记录 Skill 已执行后提交的验证证据，要求 feature 存在、layout 为 feature-archive、`passed` 必须有真实 `exit_code: 0`，并对 command 和 output summary 脱敏后原子写入 evidence 文件与派生 evidence index。
+
+`noc check <project> --feature-impact-file <impact.json> --json` 校验 Skill 提交的结构化 feature impact 声明，覆盖 `none`、`implementation`、`requirement` 和 `major`。CLI 检查功能存在、声明章节实际存在、verification evidence 与 feature 匹配、failed/not_run evidence 不会被伪装成 passed、major change id 出现在 overview 中；它只报告错误和 warning，不写 overview、不写 evidence、不运行测试、不自动分类 change_class。既有 `noc check --memory-impact ... --json` 合同保持兼容。
+
 ## Important Files
 
 - `scripts/noc.py`
@@ -41,6 +45,9 @@ Bare `noc init` now establishes simplified v2 project memory after verifying the
 - feature-archive 阶段 3 的 candidate routing 输出 `candidates`、`ambiguity` 和 `action`，但 CLI 只给出证据和分数，最终语义选择仍由 Skill 或用户确认。
 - `noc feature ensure` 要求稳定 ASCII kebab-case `--id`，中文显示名保存在 `name`，`--alias` 可重复，`--intent` 只写入初始“已确认需求”章节；已存在同 id 时不覆盖用户内容。
 - `noc feature update` 的 patch 字段覆盖已确认需求、当前实现、重要约束、代码范围、验证方式、最近验证结果、最近重大变更和待确认事项；验证结果必须由 patch 显式提供，`passed` 必须有 `exit_code: 0`。
+- `noc evidence` 的代码证据 schema_version 为 `1.0`，支持 staged added/modified/deleted/renamed、Windows `/` 路径规范化、中文路径和 test/api/database/config/security/documentation signals。
+- `noc evidence record` 的验证证据保存到 `noc_docs/.living-docs/evidence/<feature-id>/<evidence-id>.json`；`evidence-id` 由 feature_id、command、cwd、started_at、finished_at、exit_code、result 和 scope 稳定哈希生成，相同证据重复提交返回 `existing`。
+- `noc check --feature-impact-file` 的 impact schema_version 为 `1.0`，`change_class` 只允许 `none`、`implementation`、`requirement`、`major`；多功能变更使用 `documentation_updates` 按 feature 拆分。
 
 ## Known Issues
 

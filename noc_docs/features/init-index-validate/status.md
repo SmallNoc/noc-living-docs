@@ -23,6 +23,8 @@ confidence: medium
 
 阶段 4 中，`noc feature update` 在 overview 实际变化后会重建 feature-archive 派生索引，与 `feature ensure` 保持一致。`unchanged`、invalid patch 和 SHA conflict 都不会重建索引或创建备份；如果索引失败，overview 保留已写入事实并返回可手动运行的 `noc index` 命令。
 
+阶段 5 中，`evidence-index.json` 从 `noc_docs/.living-docs/evidence/*/*.json` 重建，不再只是空结构。`noc index` 不执行任何 evidence command 或测试命令，只读取 evidence 摘要元数据；删除 `evidence-index.json` 后可由 `noc index` 恢复，损坏的 evidence JSON 会让 index 报错而不是静默丢弃。
+
 ## Important Files
 
 - `scripts/init-noc-docs.py`
@@ -40,6 +42,7 @@ confidence: medium
 - feature-archive stage 2: `feature-index.json` 在空功能集合时为 `{"schema_version": "1.0", "features": []}`；有 overview 时索引 `id`、`name`、`aliases`、`status`、`language`、`overview_path` 和 `updated_at`。
 - feature-archive stage 3: candidate routing 使用索引和 overview 正文作为事实来源；索引缺失 fallback 是只读行为，不会隐式修复或升级项目。
 - feature-archive stage 4: `noc_docs/.living-docs/backups/<timestamp>/features/<feature-id>/overview.md` 保存实际写入前的 overview 备份；该备份只在内容变化时创建。
+- feature-archive stage 5: `noc_docs/.living-docs/evidence/<feature-id>/<evidence-id>.json` 是验证证据事实文件；`evidence-index.json` 是可重建派生摘要，包含 id、feature_id、result、scope、command、recorded_at 和 path。
 
 ## Known Issues
 
