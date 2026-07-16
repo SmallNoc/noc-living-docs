@@ -1,5 +1,12 @@
 # Change Record: init-index-validate
 
+## 2026-07-16 - read-only feature-archive validation
+
+- Reason: establish schema and layout recognition before implementing creation, routing, updates, evidence, or migration.
+- Changed: `validate-noc-docs.py` accepts feature-archive projects, validates overview frontmatter, reports language configuration, and remains read-only. `noc validate <target>` now forwards to the same target validation path as `--target`.
+- Compatibility: simplified projects without `language` remain valid and are reported as `unspecified`; no ordinary validation or doctor path mutates existing simplified projects.
+- Verification: targeted stage 1 tests, full unittest discovery, repository validation, release check, and explicit old simplified no-write regression passed.
+
 ## 2026-07-14 - Add simplified protocol v2 initialization
 
 - Made bare `noc init <project>` create only project, guardrails, verification, routing, config, manifest, and the managed AGENTS block.

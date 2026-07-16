@@ -1,5 +1,12 @@
 # Change Record: cli-core
 
+## 2026-07-16 - feature-archive stage 1 CLI recognition
+
+- Reason: implement the first MVP stage for schema and read-only layout recognition without changing new-project init defaults.
+- Changed: added `scripts.noclib.schemas` and `scripts.noclib.layouts`; updated `doctor` to recognize feature-archive projects and report language configuration; allowed `noc validate <target>` as a positional equivalent of `--target`.
+- Compatibility: existing v2 simplified projects remain read-only under `work`, `index`, `doctor`, and `validate`; v1 small/domain routing remains unchanged.
+- Verification: `python -m unittest discover -s tests`, `python scripts/noc.py validate .`, `python scripts/release.py --check`, and the explicit simplified no-write hash comparison passed.
+
 ## 2026-07-14 - Add declarative semantic memory checks
 
 - Added repeatable `--memory-impact` categories and machine-readable check output.

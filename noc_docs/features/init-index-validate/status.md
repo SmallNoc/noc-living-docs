@@ -11,6 +11,8 @@ confidence: medium
 
 `noc init` 对未指定 `--mode` 的新项目生成 protocol v2 简化结构：三个项目级 Markdown 和记忆配置、路由、清单；它从 README、项目标志、源码和测试目录提取可确认事实，并保留已有 AGENTS 内容。显式 small/domain/auto 和已有 features/domains 项目仍走 v1 流程。`index`、`validate` 和 `doctor` 可识别两种协议，本仓库自身保持 v1。
 
+阶段 1 feature-archive MVP 只增加只读识别：`validate` 可校验手工存在的 `layout: feature-archive`、`layout_version: "1.0"`、项目级三文件和 `features/<feature-id>/overview.md` frontmatter；`doctor` 可报告 feature-archive 布局状态。旧 simplified 项目的 `work/index/doctor/validate` 不创建 `features/`，不改 `routing.json`，不补写缺失的 `language` 字段。
+
 ## Important Files
 
 - `scripts/init-noc-docs.py`
@@ -24,6 +26,7 @@ confidence: medium
 - `noc_docs/.living-docs/config.json`
 - `noc_docs/.living-docs/feature-map.json`
 - v2: `config.json`、`routing.json`、`manifest.json`
+- feature-archive stage 1: `config.json` 的 `protocol_version`、`layout`、`layout_version`、`language`、`machine_keys` 只被读取和校验；派生索引生成留给后续阶段。
 
 ## Known Issues
 

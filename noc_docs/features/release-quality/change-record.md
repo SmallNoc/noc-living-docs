@@ -1,5 +1,12 @@
 # Change Record: release-quality
 
+## 2026-07-16 - package noclib helper modules
+
+- Reason: stage 1 introduced `scripts.noclib` for schema and layout helpers, and installed CLI smoke tests require those modules in the wheel.
+- Changed: `pyproject.toml` package list now includes `scripts.noclib`; package metadata tests were updated to expect the helper package.
+- Compatibility: no version, CHANGELOG, README, GitHub publish workflow, tag, or PyPI publishing behavior changed.
+- Verification: targeted wheel installation test and full unittest discovery passed.
+
 ## 2026-07-14 - Prepare v1.2.1 release metadata
 
 - Used the tested release CLI patch bump to create the 1.2.1 changelog entry and update `VERSION`.
