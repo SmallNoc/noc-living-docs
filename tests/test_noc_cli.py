@@ -121,7 +121,7 @@ class NocCliTests(unittest.TestCase):
         self.assertIn('license = "PolyForm-Noncommercial-1.0.0"', pyproject)
         self.assertIn('license-files = ["LICENSE"]', pyproject)
         self.assertIn('noc = "scripts.noc:main"', pyproject)
-        self.assertIn('packages = ["scripts", "templates", "noc_assets.project_living_docs"]', pyproject)
+        self.assertIn('packages = ["scripts", "scripts.noclib", "templates", "noc_assets.project_living_docs"]', pyproject)
         self.assertIn('"noc_assets.project_living_docs" = ".agents/skills/project-living-docs"', pyproject)
         self.assertIn('"noc_assets.project_living_docs" = ["*.md", "*.json", "references/*.md", "evals/*.csv"]', pyproject)
         self.assertIn('"noc_docs/.living-docs/*.json"', pyproject)
