@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import subprocess
 import sys
@@ -25,6 +26,14 @@ def run(args: list[str], *, env: dict[str, str] | None = None, check: bool = Tru
     if check and result.returncode != 0:
         raise AssertionError(f"command failed: {args}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}")
     return result
+
+
+def project_file_hashes(project: Path) -> dict[str, str]:
+    hashes: dict[str, str] = {}
+    for path in sorted(project.rglob("*")):
+        if path.is_file() and ".git" not in path.relative_to(project).parts:
+            hashes[path.relative_to(project).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return hashes
 
 
 class SimplifiedProjectMemoryTests(unittest.TestCase):
@@ -165,6 +174,19 @@ class SimplifiedProjectMemoryTests(unittest.TestCase):
             (project / "app.py").write_text("print('fix')\n", encoding="utf-8")
             check_result = run(["check", str(project)], env=env)
             self.assertNotIn("WARNING: code changed but no noc_docs files changed", check_result.stdout)
+
+    def test_existing_simplified_work_index_doctor_validate_do_not_modify_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project, env = self.initialized_git_project(Path(tmp))
+            before = project_file_hashes(project)
+
+            run(["work", str(project), "--path", "src/app.py", "--json"], env=env)
+            run(["index", str(project)], env=env)
+            run(["doctor", str(project)], env=env)
+            run(["validate", "--target", str(project)], env=env)
+
+            self.assertEqual(before, project_file_hashes(project))
+            self.assertFalse((project / "noc_docs/features").exists())
 
     def test_existing_v1_project_is_not_migrated_by_default_init(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
