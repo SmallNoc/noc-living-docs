@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import unittest
+import json
+import tempfile
+from pathlib import Path
 
+from scripts.noclib import layouts
 from scripts.noclib import schemas
 
 
@@ -102,6 +106,93 @@ class FeatureArchiveSchemaTests(unittest.TestCase):
             "verification_evidence[0] passed requires exit_code 0",
             schemas.validate_evidence_payload(payload),
         )
+
+
+class FeatureArchiveLayoutDetectionTests(unittest.TestCase):
+    def write_config(self, project: Path, payload: dict) -> None:
+        config = project / "noc_docs/.living-docs/config.json"
+        config.parent.mkdir(parents=True)
+        config.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    def test_detect_layout_recognizes_simplified_v2(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            self.write_config(
+                project,
+                {
+                    "protocol": "noc-living-docs",
+                    "protocol_version": 2,
+                    "layout": "simplified",
+                    "documentation_root": "noc_docs",
+                },
+            )
+
+            info = layouts.detect_layout(project)
+
+            self.assertTrue(layouts.is_simplified_v2(info))
+            self.assertEqual(2, info.protocol_version)
+            self.assertEqual("simplified", info.layout)
+            self.assertEqual("1.0", info.layout_version)
+
+    def test_detect_layout_recognizes_feature_archive_v2(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            self.write_config(
+                project,
+                {
+                    "protocol": "noc-living-docs",
+                    "protocol_version": 2,
+                    "layout": "feature-archive",
+                    "layout_version": "1.0",
+                    "documentation_root": "noc_docs",
+                },
+            )
+
+            info = layouts.detect_layout(project)
+
+            self.assertTrue(layouts.is_feature_archive_v2(info))
+            self.assertEqual("feature-archive", info.layout)
+            self.assertEqual("1.0", info.layout_version)
+
+    def test_detect_layout_recognizes_v1_small(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            self.write_config(
+                project,
+                {
+                    "protocol": "noc-living-docs",
+                    "version": "0.1.0",
+                    "documentation_root": "noc_docs",
+                    "mode": "small",
+                },
+            )
+
+            info = layouts.detect_layout(project)
+
+            self.assertTrue(layouts.is_v1_small(info))
+            self.assertEqual(1, info.protocol_version)
+            self.assertEqual("small", info.layout)
+            self.assertEqual("small", info.mode)
+
+    def test_detect_layout_recognizes_v1_domain(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            self.write_config(
+                project,
+                {
+                    "protocol": "noc-living-docs",
+                    "version": "0.1.0",
+                    "documentation_root": "noc_docs",
+                    "mode": "domain",
+                },
+            )
+
+            info = layouts.detect_layout(project)
+
+            self.assertTrue(layouts.is_v1_domain(info))
+            self.assertEqual(1, info.protocol_version)
+            self.assertEqual("domain", info.layout)
+            self.assertEqual("domain", info.mode)
 
 
 if __name__ == "__main__":
