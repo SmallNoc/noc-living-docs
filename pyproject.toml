@@ -34,7 +34,7 @@ noc = "scripts.noc:main"
 
 [tool.setuptools]
 include-package-data = false
-packages = ["scripts", "templates", "noc_assets.project_living_docs"]
+packages = ["scripts", "scripts.noclib", "templates", "noc_assets.project_living_docs"]
 
 [tool.setuptools.package-dir]
 "noc_assets.project_living_docs" = ".agents/skills/project-living-docs"
