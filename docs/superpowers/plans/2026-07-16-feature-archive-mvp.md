@@ -17,6 +17,20 @@
 - Existing v1 `layout` inferred from `mode: small` or `mode: domain`: keeps the existing feature/domain behavior. v1 migration is explicit and dry-run first.
 - `protocol_version` is not enough to distinguish behavior. All protocol decisions must use `protocol_version`, `layout`, and `layout_version`.
 
+## Global Language Rules
+
+- `language` in `noc_docs/.living-docs/config.json` is the only default source for generated Markdown body language.
+- When `language` is `zh-CN`, automatically created and updated Markdown prose uses Simplified Chinese.
+- Default feature overview headings for `zh-CN` are exactly: `功能目标`, `已确认需求`, `当前实现`, `重要约束`, `代码范围`, `验证方式`, `最近验证结果`, `最近重大变更`, `待确认事项`.
+- Project-level additions to `project.md`, `guardrails.md`, and `verification.md` follow the same `language` value.
+- Machine-readable identifiers remain stable English and are not translated: JSON keys, YAML frontmatter keys, CLI parameters, schema fields, feature ids, filenames, code paths, class names, function names, API names, commands, and error codes.
+- If the user request is in Chinese, confirmed requirements, implementation notes, and major changes written by structured patch stay in Chinese unless the source text is a code identifier or command.
+- Technical terms may keep English tokens, but explanatory prose follows `language`, for example: `通过 Git diff 获取实际代码变更范围。`
+- Existing document body language is preserved during ordinary updates. The updater must not translate a whole existing document.
+- Migration preserves original source text language. Newly generated migration notes use the current `language` value.
+- If `language` is missing, CLI and Skill infer the dominant language from existing project Markdown. If no dominant language can be determined, use `en-US`. Do not infer language from the operating system locale.
+- Skill and CLI templates follow the same language rules; Skill must not write English prose into a Chinese feature archive unless the user or source evidence is English.
+
 ## File Structure
 
 ### New Modules
@@ -134,6 +148,7 @@ Validation rules:
 - `status` must be one of `proposed`, `active`, `deprecated`, `removed`.
 - `schema_version` must be `1`.
 - `name`, `created_at`, `updated_at`, and `language` must be non-empty strings.
+- `language` is a document-generation setting, not a machine key translation setting.
 
 ### Candidate Payload Schema
 
@@ -530,16 +545,20 @@ Expected: commit succeeds only if files changed after the previous commit.
 Tasks:
 
 1. Write failing tests that new `noc init` creates feature-archive config with `layout_version: "1.0"` and project-level three Markdown files, but no feature directories with placeholder files.
-2. Implement `scripts/noclib/overview.py` helpers:
+2. Write failing tests that `language: zh-CN` creates Chinese project-level prose and Chinese overview section headings when a feature is created in Phase 3.
+3. Implement `scripts/noclib/overview.py` helpers:
    - `render_overview_frontmatter(feature_id: str, name: str, aliases: list[str], today: str) -> str`
    - `parse_overview_frontmatter(text: str) -> dict`
-3. Implement feature-archive init path in `scripts/init-noc-docs.py`.
-4. Implement feature-archive `index` output:
+   - `default_overview_sections(language: str) -> list[str]`
+   - `detect_markdown_language(paths: list[Path]) -> str`
+4. Implement feature-archive init path in `scripts/init-noc-docs.py`.
+5. Implement feature-archive `index` output:
    - `feature-index.json`
    - `routing.json`
    - `manifest.json`
-5. Confirm old simplified projects are not converted by rerunning the Stage 1 no-write regression.
-6. Commit each passing task independently.
+6. Confirm JSON and YAML/frontmatter keys remain English while generated Markdown body uses Chinese for `zh-CN`.
+7. Confirm old simplified projects are not converted by rerunning the Stage 1 no-write regression.
+8. Commit each passing task independently.
 
 Commands:
 
@@ -573,9 +592,10 @@ Tasks:
 
 1. Tests for high, medium, low, ambiguous, no candidate, intent/path conflict, and multi-feature outputs.
 2. Tests for `feature ensure` idempotency and ASCII kebab-case rejection.
-3. Implement `noc work` feature-archive candidate output.
-4. Implement `noc feature ensure`.
-5. Commit routing and ensure separately.
+3. Tests for Chinese feature names, Chinese paths, and ASCII feature ids coexisting in feature candidates and overview creation.
+4. Implement `noc work` feature-archive candidate output.
+5. Implement `noc feature ensure`, using `language` to generate Chinese headings for `zh-CN`.
+6. Commit routing and ensure separately.
 
 ## Phase 4: Structured Feature Update
 
@@ -596,9 +616,12 @@ Tasks:
 
 1. Failing tests for each patch key.
 2. Failing tests for duplicate suppression.
-3. Failing tests for backup before write and atomic output.
-4. Implement `noc feature update`.
-5. Commit schema enforcement, patch application, and CLI command separately.
+3. Failing tests that a Chinese structured patch writes Chinese prose into `已确认需求`, `当前实现`, and `最近重大变更`.
+4. Failing tests that updating an existing Chinese `overview.md` does not translate existing body text into English.
+5. Failing tests that JSON and YAML machine fields remain English after update.
+6. Failing tests for backup before write and atomic output.
+7. Implement `noc feature update`.
+8. Commit schema enforcement, patch application, and CLI command separately.
 
 ## Phase 5: Evidence And Check
 
@@ -646,10 +669,11 @@ Tasks:
 2. Test simplified apply requires backup.
 3. Test v1 dry-run preserves every source file in report.
 4. Test v1 uncertain semantic content goes to legacy appendix.
-5. Test rollback instructions point to real backup.
-6. Implement `noc migrate --dry-run`.
-7. Implement `noc migrate --apply --backup`.
-8. Commit dry-run and apply separately.
+5. Test migration preserves original source language and uses current `language` only for newly generated notes.
+6. Test rollback instructions point to real backup.
+7. Implement `noc migrate --dry-run`.
+8. Implement `noc migrate --apply --backup`.
+9. Commit dry-run and apply separately.
 
 ## Phase 7: Skill And User-Facing Docs
 
@@ -668,10 +692,11 @@ Tasks:
 
 1. Tests for Skill references to `feature update` and no direct overview rewrite.
 2. Tests for README first screen still showing zero-learning flow.
-3. Tests that both Skill trees stay synchronized.
-4. Update Skill workflow.
-5. Update README advanced details.
-6. Commit Skill and README separately.
+3. Tests that Skill instructions require preserving `language: zh-CN` prose during structured patch generation.
+4. Tests that both Skill trees stay synchronized.
+5. Update Skill workflow.
+6. Update README advanced details.
+7. Commit Skill and README separately.
 
 ## Phase 8: Release-Readiness Verification Without Publishing
 
@@ -707,7 +732,7 @@ python -m twine check dist/*
 
 ## Plan Self-Check
 
-- Covers all confirmed MVP items: yes.
+- Covers all confirmed MVP items and the confirmed Chinese document language rules: yes.
 - Contains no placeholder markers or vague deferred implementation steps: yes.
 - Function and field names are consistent across phases: yes.
 - Excludes MVP non-goals from Phase 1 and keeps complex splitting, auto test execution, automatic v1 semantic migration, automatic deletion, and automatic feature-id rename out of MVP: yes.
