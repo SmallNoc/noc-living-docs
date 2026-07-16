@@ -21,7 +21,7 @@ Bare `noc init` now establishes simplified v2 project memory after verifying the
 
 阶段 2 中 `work` 和 `check --memory-impact` 将 feature-archive 识别为 v2 项目记忆布局。`work --json` 对 feature-archive 返回项目级三文件和 `layout_version`。
 
-阶段 3 为 feature-archive 项目增加候选识别和功能确保。`work --json` 读取 `feature-index.json`，在索引缺失或损坏时只读扫描 `features/*/overview.md`，基于 feature-id、中文或英文名称、aliases、overview 正文关键词、反引号代码路径和状态惩罚生成候选分数、证据和置信度；top1/top2 分数接近时返回 `action: ask_user`。`noc feature ensure <project> --id <feature-id> --name <name>` 只用于 feature-archive layout，幂等创建 `noc_docs/features/<feature-id>/overview.md`，并在创建成功后重建派生索引。
+阶段 3 为 feature-archive 项目增加候选识别和功能确保。`work --json` 读取 `feature-index.json`，在索引缺失或损坏时只读扫描 `features/*/overview.md`，基于 feature-id、中文或英文名称、aliases、overview 正文关键词、反引号代码路径、测试路径与代码范围关联和状态惩罚生成候选分数、证据和置信度；top1/top2 分数接近时返回 `action: ask_user`。`noc feature ensure <project> --id <feature-id> --name <name>` 只用于 feature-archive layout，幂等创建 `noc_docs/features/<feature-id>/overview.md`，并在创建成功后重建派生索引。
 
 ## Important Files
 

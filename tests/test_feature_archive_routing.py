@@ -141,6 +141,20 @@ class FeatureArchiveCandidateRoutingTests(unittest.TestCase):
             self.assertIn({"type": "code_path_prefix_match", "value": "src/auth/"}, prefix["candidates"][0]["evidence"])
             self.assertEqual("user-login", chinese["candidates"][0]["id"])
 
+    def test_test_path_related_to_feature_code_scope_matches(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project, env = ready_project(Path(tmp))
+            write_overview(project, "user-login", "用户登录", body="## 代码范围\n\n- `src/auth/`\n")
+            run(["index", str(project)], env=env)
+
+            payload = work(project, env, "--path", "tests/auth/test_login.py")
+
+            self.assertEqual("user-login", payload["candidates"][0]["id"])
+            self.assertIn(
+                {"type": "test_path_related_match", "value": "tests/auth/test_login.py -> src/auth/"},
+                payload["candidates"][0]["evidence"],
+            )
+
     def test_intent_and_path_combined_raise_score(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project, env = ready_project(Path(tmp))

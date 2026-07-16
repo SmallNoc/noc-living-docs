@@ -202,7 +202,23 @@ def score_feature(feature: dict[str, Any], paths: list[str], intent: str | None)
                 score += 0.72
                 evidence.append({"type": "code_path_prefix_match", "value": candidate})
                 strong_sources.add("path")
+            elif test_path_relates_to_code_scope(normalized_changed, candidate):
+                score += 0.62
+                evidence.append({"type": "test_path_related_match", "value": f"{normalized_changed} -> {candidate}"})
+                strong_sources.add("path")
     return score, dedupe_evidence(evidence), strong_sources
+
+
+def test_path_relates_to_code_scope(changed: str, candidate: str) -> bool:
+    if not candidate.startswith("src/") or not candidate.endswith("/"):
+        return False
+    changed_parts = changed.split("/")
+    candidate_parts = candidate.strip("/").split("/")
+    if len(changed_parts) < 3 or len(candidate_parts) < 2:
+        return False
+    if changed_parts[0] not in {"test", "tests"}:
+        return False
+    return changed_parts[1] == candidate_parts[1]
 
 
 def extract_code_paths(body: str) -> list[str]:
