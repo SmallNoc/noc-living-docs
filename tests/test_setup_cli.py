@@ -458,6 +458,8 @@ class SetupCliTests(unittest.TestCase):
                     "noc_docs/.living-docs/config.json",
                     "noc_docs/.living-docs/routing.json",
                     "noc_docs/.living-docs/manifest.json",
+                    "noc_docs/.living-docs/feature-index.json",
+                    "noc_docs/.living-docs/evidence-index.json",
                 },
             )
 
