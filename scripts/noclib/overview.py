@@ -52,7 +52,10 @@ def parse_frontmatter_text(text: str) -> dict[str, Any]:
         key = key.strip()
         value = raw.strip()
         if value:
-            data[key] = int(value) if value.isdigit() else value
+            if value == "[]":
+                data[key] = []
+            else:
+                data[key] = int(value) if value.isdigit() else value
             index += 1
             continue
         items: list[str] = []

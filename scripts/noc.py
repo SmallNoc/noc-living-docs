@@ -20,6 +20,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.noclib.schemas import validate_config_schema, validate_overview_frontmatter
+from scripts.noclib.candidates import feature_archive_work_plan
 
 SCRIPT_DIR = ROOT / "scripts"
 TEMPLATES = ROOT / "templates/noc_docs"
@@ -1179,24 +1180,22 @@ def resolve_work_matches(feature_map: dict, feature: str | None, paths: list[str
 
 def build_work_plan(target: Path, feature: str | None, paths: list[str], intent: str | None) -> dict:
     config = load_config(target)
-    if config.get("protocol_version") == 2 and config.get("layout") in {"simplified", "feature-archive"}:
+    if config.get("protocol_version") == 2 and config.get("layout") == "feature-archive":
+        return feature_archive_work_plan(target, config, paths, intent)
+    if config.get("protocol_version") == 2 and config.get("layout") == "simplified":
         memory = ["noc_docs/project.md", "noc_docs/guardrails.md", "noc_docs/verification.md"]
-        layout = config.get("layout")
-        feature_id = "project" if layout == "simplified" else "feature-archive"
-        update_doc = "project memory" if layout == "simplified" else "project memory and feature archive"
         return {
             "schema_version": "1.0",
             "protocol_version": 2,
-            "layout": layout,
-            "layout_version": config.get("layout_version", "1.0"),
+            "layout": "simplified",
             "resolution_status": "project_memory",
             "intent": intent,
             "paths": paths,
             "features": [{
-                "id": feature_id,
+                "id": "project",
                 "read_before_code": memory,
                 "before_coding": [],
-                "update_after_code": [{"doc": update_doc, "reason": "only when future sessions need a new fact"}],
+                "update_after_code": [{"doc": "project memory", "reason": "only when future sessions need a new fact"}],
             }],
             "next_actions": [],
             "finish_commands": [],
