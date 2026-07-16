@@ -22,6 +22,7 @@ if str(ROOT) not in sys.path:
 from scripts.noclib.schemas import validate_config_schema, validate_overview_frontmatter
 from scripts.noclib.candidates import feature_archive_work_plan
 from scripts.noclib.features import ensure_feature
+from scripts.noclib.feature_update import update_feature
 
 SCRIPT_DIR = ROOT / "scripts"
 TEMPLATES = ROOT / "templates/noc_docs"
@@ -681,6 +682,24 @@ def command_feature_ensure(args: argparse.Namespace) -> int:
         print(f"ERROR: feature name or alias conflicts with `{conflict['id']}`")
     else:
         print(f"ERROR: {payload.get('error', 'feature ensure failed')}")
+    return code
+
+
+def command_feature_update(args: argparse.Namespace) -> int:
+    target = Path(args.target).resolve()
+    code, payload = update_feature(target, args.id, Path(args.patch_file).resolve())
+    if args.json:
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return code
+    status = payload.get("status")
+    if status == "updated":
+        print(f"Updated feature `{payload['feature_id']}` at {payload['overview_path']}")
+    elif status == "unchanged":
+        print(f"Feature `{payload['feature_id']}` unchanged")
+    elif status == "conflict":
+        print("ERROR: overview changed; reread the document and regenerate the patch")
+    else:
+        print(f"ERROR: {payload.get('error', status or 'feature update failed')}")
     return code
 
 
@@ -1939,6 +1958,13 @@ def build_parser() -> argparse.ArgumentParser:
     feature_ensure.add_argument("--intent", help="Confirmed user intent to record as the initial requirement.")
     feature_ensure.add_argument("--json", action="store_true", help="Print the result as machine-readable JSON.")
     feature_ensure.set_defaults(func=command_feature_ensure)
+
+    feature_update = feature_sub.add_parser("update", help="Apply a structured feature-archive overview patch.")
+    feature_update.add_argument("target", help="Project directory containing noc_docs.")
+    feature_update.add_argument("--id", required=True, help="Stable ASCII kebab-case feature id.")
+    feature_update.add_argument("--patch-file", required=True, help="JSON patch file produced by an agent workflow.")
+    feature_update.add_argument("--json", action="store_true", help="Print the result as machine-readable JSON.")
+    feature_update.set_defaults(func=command_feature_update)
 
     feature_rename = feature_sub.add_parser("rename", help="Rename an existing feature directory and mapping.")
     feature_rename.add_argument("target", help="Project directory containing noc_docs.")
