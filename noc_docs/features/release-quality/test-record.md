@@ -21,6 +21,7 @@ confidence: medium
 
 | Date | Change | Command / Method | Result | Notes |
 |---|---|---|---|---|
+| 2026-07-16 | feature-archive stage 4 wheel journey | Build wheel in a temporary directory, install into isolated venv, run `noc setup --json`, `noc init <project>`, `noc feature ensure`, and `noc feature update --patch-file --json` | PASS | Installed wheel updated `user-login` from a structured patch and returned `status: updated`; version remained 1.2.1 and no publish/tag was performed. |
 | 2026-07-16 | feature-archive stage 3 wheel journey | Build wheel in a temporary directory, install into isolated venv, run `noc setup --json`, `noc init <project>`, `noc feature ensure`, `noc index <project>`, and `noc work --intent --json` | PASS | Installed wheel created `material-query` with Chinese name `材料查询`; `work` returned it as high-confidence top candidate. |
 | 2026-07-16 | feature-archive stage 2 wheel journey | Build wheel in a temporary directory, install into isolated venv, run `noc setup --json`, `noc init <project>`, and `noc index <project>` | PASS | `WHEEL_INIT_INDEX_OK noc_living_docs-1.2.1-py3-none-any.whl`; installed CLI created `layout: feature-archive` and all four derived JSON files. |
 | 2026-07-16 | package feature-archive helper modules | `python -m unittest tests.test_setup_cli.SetupCliTests.test_built_wheel_contains_skill_manifest_and_references -v`; `python -m unittest discover -s tests`; `python scripts/release.py --check` | PASS | wheel 安装测试通过，确认 `scripts.noclib` 随 CLI 打包；119 tests passed；release check passed for 1.2.1。 |

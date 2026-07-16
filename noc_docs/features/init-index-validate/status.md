@@ -19,6 +19,10 @@ confidence: medium
 
 阶段 3 中，`noc feature ensure` 在成功创建新功能 overview 后调用 feature-archive 索引重建，使 `feature-index.json` 立即包含新功能。`noc work` 依赖 `feature-index.json` 加载候选，但当该派生索引缺失或 JSON 损坏时，只读扫描 `features/*/overview.md` 作为 fallback，不重建索引、不修改 Markdown。
 
+阶段 3.1 修复了底层 `scripts/init-noc-docs.py --layout simplified` 旧路径缺少 `hashlib` import 的问题。该路径现在可直接生成 simplified config、routing 和带 SHA-256 的 manifest；默认 `noc init` 的 feature-archive 行为不变。
+
+阶段 4 中，`noc feature update` 在 overview 实际变化后会重建 feature-archive 派生索引，与 `feature ensure` 保持一致。`unchanged`、invalid patch 和 SHA conflict 都不会重建索引或创建备份；如果索引失败，overview 保留已写入事实并返回可手动运行的 `noc index` 命令。
+
 ## Important Files
 
 - `scripts/init-noc-docs.py`
@@ -35,6 +39,7 @@ confidence: medium
 - feature-archive stage 1: `config.json` 的 `protocol_version`、`layout`、`layout_version`、`language`、`machine_keys` 只被读取和校验；派生索引生成留给后续阶段。
 - feature-archive stage 2: `feature-index.json` 在空功能集合时为 `{"schema_version": "1.0", "features": []}`；有 overview 时索引 `id`、`name`、`aliases`、`status`、`language`、`overview_path` 和 `updated_at`。
 - feature-archive stage 3: candidate routing 使用索引和 overview 正文作为事实来源；索引缺失 fallback 是只读行为，不会隐式修复或升级项目。
+- feature-archive stage 4: `noc_docs/.living-docs/backups/<timestamp>/features/<feature-id>/overview.md` 保存实际写入前的 overview 备份；该备份只在内容变化时创建。
 
 ## Known Issues
 

@@ -21,6 +21,8 @@ README 首屏现以安装、默认 v2 simplified 初始化、正常使用 Codex 
 
 阶段 3 wheel 验证覆盖安装后的 `noc feature ensure`、`noc index` 和 `noc work --intent --json`，确认 `scripts.noclib.candidates` 与 `scripts.noclib.features` 已随 wheel 打包。版本号仍为 `1.2.1`，本阶段未执行发布、打 tag、合并或修改发布配置。
 
+阶段 4 wheel 验证覆盖安装后的 `noc feature update`，确认 `scripts.noclib.feature_update` 已随 wheel 打包并可在隔离环境中更新 feature-archive overview。版本号仍为 `1.2.1`，本阶段未执行发布、打 tag、合并或修改 Trusted Publishing。
+
 ## Important Files
 
 - `tests/test_noc_cli.py`
@@ -40,7 +42,7 @@ README 首屏现以安装、默认 v2 simplified 初始化、正常使用 Codex 
 
 - Python package entry point: `noc = "scripts.noc:main"`
 - Python packages: `scripts`、`scripts.noclib`、`templates`、`noc_assets.project_living_docs`
-- feature-archive 初始化、索引、候选识别和 ensure helper 位于 `scripts.noclib.overview`、`scripts.noclib.indexes`、`scripts.noclib.candidates` 与 `scripts.noclib.features`，已包含在 wheel 包中。
+- feature-archive 初始化、索引、候选识别、ensure 和 structured update helper 位于 `scripts.noclib.overview`、`scripts.noclib.indexes`、`scripts.noclib.candidates`、`scripts.noclib.features` 与 `scripts.noclib.feature_update`，已包含在 wheel 包中。
 - `README.md` 是项目主要产品入口，归入 release-quality 路由。
 - `pyproject.toml` package version 当前为 `1.2.1`，与 `VERSION`、README、CHANGELOG 和 Skill 清单保持一致。
 - `pyproject.toml` 使用 SPDX license expression、`license-files = ["LICENSE"]`、显式 package data，确保 wheel 包含 `templates/noc_docs/.living-docs/*.json` 且不包含 `__pycache__`。

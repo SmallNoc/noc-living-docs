@@ -1,5 +1,12 @@
 # Change Record: cli-core
 
+## 2026-07-16 - structured feature update command
+
+- Reason: implement stage 4 so future Skill workflows submit structured facts while the CLI owns safe, local, idempotent `overview.md` writes.
+- Changed: added `noc feature update --id --patch-file --json`; added structured patch validation, stable `noc:id` Markdown markers, localized section updates, SHA conflict checks, backup creation, atomic writes, and derived index refresh after real changes.
+- Compatibility: command is restricted to feature-archive layout; simplified, small, and domain projects are not migrated or modified.
+- Verification: stage 4 update tests, full unittest discovery, repository validation, release check, and wheel-isolated update verification passed.
+
 ## 2026-07-16 - feature-archive candidate routing and ensure
 
 - Reason: implement stage 3 of the MVP without adding structured updates, evidence recording, migration, or Skill automation.

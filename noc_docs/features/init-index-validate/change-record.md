@@ -1,5 +1,19 @@
 # Change Record: init-index-validate
 
+## 2026-07-16 - simplified initializer hash regression
+
+- Reason: stage 3.1 fixed a reported regression in the direct simplified initializer path.
+- Changed: restored the `hashlib` import used to build SHA-256 manifest entries in `scripts/init-noc-docs.py --layout simplified`.
+- Compatibility: no init layout behavior changed; feature-archive default init remains unchanged.
+- Verification: the new direct simplified initializer regression test failed with `NameError: hashlib is not defined` before the fix and passed after the import was restored.
+
+## 2026-07-16 - feature update index and backup behavior
+
+- Reason: stage 4 structured overview updates must keep derived indexes rebuildable while preserving rollback evidence.
+- Changed: successful `feature update` writes a timestamped backup, atomically replaces overview, and rebuilds feature-archive derived indexes only when content changes.
+- Compatibility: unchanged, invalid, conflict, and unsupported-layout results do not create backups or modify derived indexes.
+- Verification: stage 4 update tests and专项脚本 covered backup equality, unchanged idempotency, SHA conflict zero-write, and wheel-installed update.
+
 ## 2026-07-16 - feature ensure index integration
 
 - Reason: stage 3 feature creation must leave rebuildable derived indexes consistent without making `work` a writer.
