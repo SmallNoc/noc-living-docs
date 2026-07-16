@@ -1,12 +1,86 @@
 from __future__ import annotations
 
 import unittest
+import hashlib
 import json
+import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
 from scripts.noclib import layouts
 from scripts.noclib import schemas
+
+
+ROOT = Path(__file__).resolve().parents[1]
+CLI = ROOT / "scripts/noc.py"
+
+
+def run_noc(args: list[str], check: bool = True) -> subprocess.CompletedProcess[str]:
+    result = subprocess.run(
+        [sys.executable, str(CLI), *args],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if check and result.returncode != 0:
+        raise AssertionError(f"command failed: {args}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}")
+    return result
+
+
+def file_hashes(project: Path) -> dict[str, str]:
+    hashes: dict[str, str] = {}
+    for path in sorted(project.rglob("*")):
+        if path.is_file():
+            hashes[path.relative_to(project).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return hashes
+
+
+def write_feature_archive_project(project: Path, *, feature_id: str = "user-login") -> None:
+    (project / "noc_docs/.living-docs").mkdir(parents=True)
+    (project / "noc_docs/features" / feature_id).mkdir(parents=True)
+    (project / "AGENTS.md").write_text(
+        "# Agent Protocol\n\n<!-- noc-living-docs:start -->\n\n## NOC\n\n<!-- noc-living-docs:end -->\n",
+        encoding="utf-8",
+    )
+    for name in ["project.md", "guardrails.md", "verification.md"]:
+        (project / "noc_docs" / name).write_text(f"# {name}\n", encoding="utf-8")
+    (project / "noc_docs/.living-docs/config.json").write_text(
+        json.dumps(
+            {
+                "protocol": "noc-living-docs",
+                "protocol_version": 2,
+                "layout": "feature-archive",
+                "layout_version": "1.0",
+                "documentation_root": "noc_docs",
+                "language": "zh-CN",
+                "machine_keys": "en-US",
+                "feature_id_style": "ascii-kebab-case",
+                "routing": {
+                    "high_confidence": 0.78,
+                    "medium_confidence": 0.55,
+                    "ambiguity_delta": 0.12,
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (project / "noc_docs/features" / feature_id / "overview.md").write_text(
+        "---\n"
+        f"id: {feature_id}\n"
+        "name: 用户登录\n"
+        "status: active\n"
+        "schema_version: 1\n"
+        "created_at: 2026-07-16\n"
+        "updated_at: 2026-07-16\n"
+        "language: zh-CN\n"
+        "---\n\n"
+        "# 用户登录\n",
+        encoding="utf-8",
+    )
 
 
 class FeatureArchiveSchemaTests(unittest.TestCase):
@@ -193,6 +267,29 @@ class FeatureArchiveLayoutDetectionTests(unittest.TestCase):
             self.assertEqual(1, info.protocol_version)
             self.assertEqual("domain", info.layout)
             self.assertEqual("domain", info.mode)
+
+
+class FeatureArchiveValidateTests(unittest.TestCase):
+    def test_validate_accepts_feature_archive_layout_without_writing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            write_feature_archive_project(project)
+            before = file_hashes(project)
+
+            result = run_noc(["validate", "--target", str(project)])
+
+            self.assertEqual("NOC project validation passed.\n", result.stdout)
+            self.assertEqual(before, file_hashes(project))
+
+    def test_validate_rejects_invalid_overview_id(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            write_feature_archive_project(project, feature_id="用户登录")
+
+            result = run_noc(["validate", "--target", str(project)], check=False)
+
+            self.assertNotEqual(0, result.returncode)
+            self.assertIn("id must be ASCII kebab-case", result.stdout)
 
 
 if __name__ == "__main__":
