@@ -12,6 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CLI = ROOT / "scripts/noc.py"
+INIT_SCRIPT = ROOT / "scripts/init-noc-docs.py"
 
 
 def run(args: list[str], *, env: dict[str, str] | None = None, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -78,6 +79,28 @@ def write_manual_overview(project: Path) -> None:
 
 
 class FeatureArchiveInitTests(unittest.TestCase):
+    def test_direct_simplified_layout_initializer_writes_hash_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "simplified"
+            project.mkdir()
+
+            result = subprocess.run(
+                [sys.executable, str(INIT_SCRIPT), str(project), "--layout", "simplified"],
+                cwd=ROOT,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            config = read_json(project / "noc_docs/.living-docs/config.json")
+            manifest = read_json(project / "noc_docs/.living-docs/manifest.json")
+            self.assertEqual("simplified", config["layout"])
+            self.assertEqual("simplified", manifest["layout"])
+            self.assertIn("managed_files", manifest)
+            self.assertIn("noc_docs/project.md", manifest["files"])
+            self.assertFalse((project / "noc_docs/features").exists())
+
     def test_default_init_creates_feature_archive_structure_without_business_features(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

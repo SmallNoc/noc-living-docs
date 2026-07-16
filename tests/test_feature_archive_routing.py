@@ -109,6 +109,30 @@ class FeatureArchiveCandidateRoutingTests(unittest.TestCase):
             self.assertEqual("user-login", by_alias["candidates"][0]["id"])
             self.assertIn({"type": "alias_match", "value": "账号登录"}, by_alias["candidates"][0]["evidence"])
 
+    def test_alias_high_confidence_but_weak_common_terms_are_not_high(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project, env = ready_project(Path(tmp))
+            write_overview(
+                project,
+                "user-login",
+                "用户登录",
+                aliases=["登录"],
+                body="## 功能目标\n\n支持用户登录和账号管理查询。\n",
+            )
+            run(["index", str(project)], env=env)
+
+            alias = work(project, env, "--intent", "登录")
+            self.assertEqual("user-login", alias["candidates"][0]["id"])
+            self.assertEqual("high", alias["candidates"][0]["confidence"])
+
+            for term in ["用户", "管理", "查询"]:
+                with self.subTest(term=term):
+                    payload = work(project, env, "--intent", term)
+                    if payload["candidates"]:
+                        self.assertNotEqual("high", payload["candidates"][0]["confidence"])
+                    else:
+                        self.assertEqual("no_match", payload["action"])
+
     def test_english_name_case_normalized_match(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project, env = ready_project(Path(tmp))
