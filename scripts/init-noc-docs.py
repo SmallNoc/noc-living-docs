@@ -4,13 +4,18 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import shutil
+import sys
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.noclib.indexes import write_feature_archive_indexes
+
 TEMPLATES = ROOT / "templates"
 START = "<!-- noc-living-docs:start -->"
 END = "<!-- noc-living-docs:end -->"
@@ -47,7 +52,7 @@ def parse_args() -> argparse.Namespace:
         default="auto",
         help="Documentation layout mode.",
     )
-    parser.add_argument("--layout", choices=["legacy", "simplified"], default="legacy", help=argparse.SUPPRESS)
+    parser.add_argument("--layout", choices=["legacy", "simplified", "feature-archive"], default="legacy", help=argparse.SUPPRESS)
     parser.add_argument(
         "--agent-file",
         choices=["AGENTS.md", "CLAUDE.md", "GEMINI.md"],
@@ -258,6 +263,95 @@ def simplified_project_text(target: Path, facts: dict[str, list[str]]) -> str:
 """
 
 
+def project_title(target: Path, facts: dict[str, list[str]]) -> str:
+    title = target.name
+    if facts["readmes"]:
+        readme = target / facts["readmes"][0]
+        for line in readme.read_text(encoding="utf-8", errors="replace").splitlines():
+            if line.startswith("# ") and line[2:].strip():
+                return line[2:].strip()
+    return title
+
+
+def feature_archive_project_text(target: Path, facts: dict[str, list[str]]) -> str:
+    return f"""# 项目档案：{project_title(target, facts)}
+
+## 项目目标
+
+待补充。请以用户明确说明、项目源码和现有文档为准。
+
+## 当前阶段
+
+待补充。
+
+## 主要能力
+
+待补充。不要根据目录名或包名编造业务能力。
+
+## 架构与模块职责
+
+- 项目标志：{bullet(facts['markers'])}
+- README：{bullet(facts['readmes'])}
+- 主要源码目录：{bullet(facts['sources'])}
+- 测试目录：{bullet(facts['tests'])}
+
+## 项目边界
+
+待补充。仅记录可由用户确认、代码事实或项目文档支持的边界。
+"""
+
+
+def feature_archive_guardrails_text() -> str:
+    return """# 项目约束
+
+## 安全约束
+
+待补充。涉及认证、授权、密钥、隐私或敏感数据的变更必须基于明确证据记录。
+
+## 兼容性约束
+
+待补充。公共 API、数据格式和持久化语义变化必须明确记录。
+
+## 数据约束
+
+待补充。不得编造数据库结构、迁移策略或数据保留规则。
+
+## 权限约束
+
+待补充。权限边界不明确时，应先向用户确认。
+
+## 发布与迁移约束
+
+待补充。发布、部署和迁移方式必须来自项目配置、脚本、CI 或用户确认。
+"""
+
+
+def feature_archive_verification_text(facts: dict[str, list[str]]) -> str:
+    candidates = verification_candidates(facts)
+    return """# 项目验证
+
+## 构建方式
+
+待补充。请从项目配置、构建脚本或 CI 中确认。
+
+## 测试方式
+
+""" + ("\n".join(f"- {item}" for item in candidates) if candidates else "待补充。请从项目配置、现有测试和 CI 文件确定命令。") + f"""
+
+## 启动方式
+
+待补充。不要在没有脚本、配置或用户确认时编造启动命令。
+
+## 验收要求
+
+待补充。记录长期有效的验收方式，不记录临时聊天过程。
+
+## 已识别测试目录
+
+{bullet(facts["tests"])}
+"""
+
+
 def verification_candidates(facts: dict[str, list[str]]) -> list[str]:
     markers = set(facts["markers"])
     candidates = []
@@ -329,6 +423,31 @@ def initialize_simplified(target: Path, agent_file: str) -> None:
     (living / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
+def initialize_feature_archive(target: Path, agent_file: str) -> None:
+    facts = detected_project_facts(target)
+    merge_agent_file(target, agent_file, "simplified")
+    write_if_missing(target / "noc_docs/project.md", feature_archive_project_text(target, facts), [], target)
+    write_if_missing(target / "noc_docs/guardrails.md", feature_archive_guardrails_text(), [], target)
+    write_if_missing(target / "noc_docs/verification.md", feature_archive_verification_text(facts), [], target)
+    (target / "noc_docs/features").mkdir(parents=True, exist_ok=True)
+    living = target / "noc_docs/.living-docs"
+    living.mkdir(parents=True, exist_ok=True)
+    config_path = living / "config.json"
+    if not config_path.exists():
+        config = {
+            "protocol": "noc-living-docs",
+            "protocol_version": 2,
+            "layout": "feature-archive",
+            "layout_version": "1.0",
+            "documentation_root": "noc_docs",
+            "language": "zh-CN",
+            "machine_keys": "en-US",
+            "feature_id_style": "ascii-kebab-case",
+        }
+        config_path.write_text(json.dumps(config, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    write_feature_archive_indexes(target)
+
+
 def main() -> None:
     args = parse_args()
     target = Path(args.target).resolve()
@@ -336,6 +455,9 @@ def main() -> None:
 
     if args.layout == "simplified":
         initialize_simplified(target, args.agent_file)
+        return
+    if args.layout == "feature-archive":
+        initialize_feature_archive(target, args.agent_file)
         return
 
     mode, reasons = detect_mode(target, args.mode)

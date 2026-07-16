@@ -293,9 +293,12 @@ def run_script(name: str, args: list[str]) -> int:
 def command_init(args: argparse.Namespace) -> int:
     target = Path(args.target).resolve()
     existing_config = load_config(target)
+    if args.mode is None and existing_config.get("protocol_version") == 2 and existing_config.get("layout") in {"simplified", "feature-archive"}:
+        print("Project memory is ready. Continue using Codex normally.")
+        return 0
     has_legacy_layout = (target / "noc_docs/features").is_dir() or (target / "noc_docs/domains").is_dir()
-    simplified = args.mode is None and not has_legacy_layout and existing_config.get("protocol_version") != 1
-    if simplified:
+    feature_archive = args.mode is None and not has_legacy_layout and existing_config.get("protocol_version") != 1
+    if feature_archive:
         state = setup_state(codex_home())
         if state["status"] != "ready":
             actions = {
@@ -305,14 +308,14 @@ def command_init(args: argparse.Namespace) -> int:
             }
             print(actions.get(state["status"], state.get("next_action") or "noc setup"))
             return 1
-        forwarded = [str(target), "--layout", "simplified", "--agent-file", args.agent_file]
+        forwarded = [str(target), "--layout", "feature-archive", "--agent-file", args.agent_file]
     else:
         mode = args.mode or detect_docs_mode(target)
         forwarded = [str(target), "--mode", mode, "--agent-file", args.agent_file]
     if args.force:
         forwarded.append("--force")
     code = run_script("init-noc-docs.py", forwarded)
-    if code == 0 and (simplified or args.index):
+    if code == 0 and (feature_archive or args.index):
         result = subprocess.run(
             [sys.executable, str(SCRIPT_DIR / "index-noc-docs.py"), str(target)],
             text=True,
@@ -322,7 +325,7 @@ def command_init(args: argparse.Namespace) -> int:
         code = result.returncode
         if code != 0:
             sys.stderr.write(result.stderr or result.stdout)
-    if code == 0 and simplified:
+    if code == 0 and feature_archive:
         health = subprocess.run(
             [sys.executable, str(SCRIPT_DIR / "validate-noc-docs.py"), "--target", str(target)],
             text=True,
@@ -332,7 +335,7 @@ def command_init(args: argparse.Namespace) -> int:
         code = health.returncode
         if code != 0:
             sys.stderr.write(health.stderr or health.stdout)
-    if code == 0 and simplified:
+    if code == 0 and feature_archive:
         print("Project memory is ready. Continue using Codex normally.")
     return code
 
