@@ -23,6 +23,8 @@ from scripts.noclib.schemas import validate_config_schema, validate_overview_fro
 from scripts.noclib.candidates import feature_archive_work_plan
 from scripts.noclib.features import ensure_feature
 from scripts.noclib.feature_update import update_feature
+from scripts.noclib.evidence import collect_code_evidence, record_verification_evidence
+from scripts.noclib.feature_check import check_feature_impact
 
 SCRIPT_DIR = ROOT / "scripts"
 TEMPLATES = ROOT / "templates/noc_docs"
@@ -804,6 +806,13 @@ def command_feature_adopt(args: argparse.Namespace) -> int:
 
 def command_check(args: argparse.Namespace) -> int:
     target = Path(args.target).resolve()
+    if args.feature_impact_file:
+        code, payload = check_feature_impact(target, Path(args.feature_impact_file).resolve())
+        if args.json:
+            print(json.dumps(payload, indent=2, ensure_ascii=False))
+        else:
+            print(payload["status"])
+        return code
     if args.memory_impact or args.json:
         return command_memory_impact_check(target, args)
     config = load_config(target)
@@ -857,6 +866,30 @@ def command_check(args: argparse.Namespace) -> int:
     print("If docs are intentionally unchanged, mention that in the commit or final agent response.")
     emit_github_annotation(args, "code changed but no noc_docs files changed", "warning" if strictness == "warn" else "error")
     return check_result(strictness)
+
+
+def command_evidence(args: argparse.Namespace) -> int:
+    if args.target_or_action == "record":
+        if not args.record_target:
+            print(json.dumps({"status": "invalid_evidence", "error": "record target is required"}, indent=2, ensure_ascii=False))
+            return 2
+        if not args.feature_id or not args.file:
+            print(json.dumps({"status": "invalid_evidence", "error": "--feature-id and --file are required"}, indent=2, ensure_ascii=False))
+            return 2
+        target = Path(args.record_target).resolve()
+        code, payload = record_verification_evidence(target, args.feature_id, Path(args.file).resolve())
+        if args.json:
+            print(json.dumps(payload, indent=2, ensure_ascii=False))
+        else:
+            print(payload.get("status", "error"))
+        return code
+    target = Path(args.target_or_action or ".").resolve()
+    payload = collect_code_evidence(target, "staged" if args.staged else "staged")
+    if args.json:
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+    else:
+        print(f"Changed paths: {len(payload['changed_paths'])}")
+    return 0
 
 
 MEMORY_IMPACT_DOCS = {
@@ -1909,6 +1942,7 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("--environment", choices=["manual", "local", "ci"], help="Select strictness environment.")
     check.add_argument("--github-annotations", action="store_true", help="Emit GitHub Actions warning/error annotations.")
     check.add_argument("--warn-only", action="store_true", help="Return success even when docs are missing.")
+    check.add_argument("--feature-impact-file", help="Structured feature impact JSON file for feature-archive checks.")
     check.add_argument(
         "--memory-impact",
         action="append",
@@ -1917,6 +1951,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     check.add_argument("--json", action="store_true", help="Print a machine-readable memory-impact result.")
     check.set_defaults(func=command_check)
+
+    evidence = sub.add_parser("evidence", help="[Advanced] Collect or record feature-archive evidence.")
+    evidence.add_argument("target_or_action", nargs="?", default=".")
+    evidence.add_argument("record_target", nargs="?")
+    evidence.add_argument("--staged", action="store_true", help="Collect staged Git evidence.")
+    evidence.add_argument("--feature-id", help="Feature id for `evidence record`.")
+    evidence.add_argument("--file", help="Verification evidence JSON file for `evidence record`.")
+    evidence.add_argument("--json", action="store_true", help="Print evidence as machine-readable JSON.")
+    evidence.set_defaults(func=command_evidence)
 
     suggest_map = sub.add_parser("suggest-map", help="[Advanced] Suggest feature path mappings.")
     suggest_map.add_argument("target", nargs="?", default=".")

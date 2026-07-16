@@ -11,6 +11,7 @@ from typing import Any
 
 from scripts.noclib.overview import parse_frontmatter_file
 from scripts.noclib.schemas import validate_overview_frontmatter
+from scripts.noclib.evidence import build_evidence_index
 
 
 PROJECT_MEMORY = ["noc_docs/project.md", "noc_docs/guardrails.md", "noc_docs/verification.md"]
@@ -93,10 +94,6 @@ def build_routing_index() -> dict[str, Any]:
     }
 
 
-def build_evidence_index() -> dict[str, Any]:
-    return {"schema_version": "1.0", "evidence": []}
-
-
 def build_manifest(target: Path, generated: dict[str, str]) -> dict[str, Any]:
     files: dict[str, dict[str, Any]] = {}
     for path in sorted((target / "noc_docs").rglob("*.md")):
@@ -126,7 +123,7 @@ def build_feature_archive_indexes(target: Path) -> dict[str, str]:
     payloads: dict[str, dict[str, Any]] = {
         "noc_docs/.living-docs/routing.json": build_routing_index(),
         "noc_docs/.living-docs/feature-index.json": build_feature_index(target),
-        "noc_docs/.living-docs/evidence-index.json": build_evidence_index(),
+        "noc_docs/.living-docs/evidence-index.json": build_evidence_index(target),
     }
     rendered = {rel: stable_json(payload) for rel, payload in payloads.items()}
     rendered["noc_docs/.living-docs/manifest.json"] = stable_json(build_manifest(target, rendered))
