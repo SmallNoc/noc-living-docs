@@ -1,5 +1,12 @@
 # Change Record: cli-core
 
+## 2026-07-16 - feature-archive candidate routing and ensure
+
+- Reason: implement stage 3 of the MVP without adding structured updates, evidence recording, migration, or Skill automation.
+- Changed: `work --json` now scores feature-archive candidates with deterministic evidence from ids, names, aliases, overview text, code paths, and status; `noc feature ensure` creates a missing feature overview idempotently with Chinese body text when the project language is `zh-CN`.
+- Compatibility: `work` remains read-only, falls back to overview scanning when the feature index is missing, and does not modify old simplified projects.
+- Verification: targeted routing and ensure tests, full unittest discovery, repository validation, release check, stage 3 no-write checks, and isolated wheel ensure/index/work verification passed.
+
 ## 2026-07-16 - feature-archive stage 1 CLI recognition
 
 - Reason: implement the first MVP stage for schema and read-only layout recognition without changing new-project init defaults.

@@ -21,6 +21,7 @@ CLI 行为通过 `tests/test_noc_cli.py` 的 subprocess 测试验证，重点覆
 
 | Date | Change | Command / Method | Result | Notes |
 |---|---|---|---|---|
+| 2026-07-16 | feature-archive candidate routing and ensure | `python -m unittest tests.test_feature_archive_routing -v`; `python -m unittest tests.test_feature_archive_ensure -v`; `python -m unittest discover -s tests` | PASS | 14 routing tests passed；8 ensure tests passed；152 total tests passed。覆盖中文 name/aliases、路径证据、歧义、索引缺失只读 fallback、ensure 幂等和旧 layout 拒绝。 |
 | 2026-07-16 | feature-archive project-memory routing | `python -m unittest tests.test_simplified_memory -v`; `python -m unittest discover -s tests` | PASS | feature-archive default init now passes v2 `work/check` regressions；130 total tests passed. |
 | 2026-07-16 | feature-archive stage 1 CLI recognition | `python -m unittest discover -s tests`; `python scripts/noc.py validate .`; `python scripts/release.py --check`; explicit simplified no-write hash comparison script | PASS | 119 tests passed；`validate .` passed；release check passed for 1.2.1；旧 simplified fixture 在 `work/index/doctor/validate` 后文件树和 SHA-256 未变化。 |
 | 2026-07-14 | prepare v1.2.1 version output | `python -m unittest discover -s tests` | PASS | 99 tests passed，包含 `noc --version` 输出 1.2.1 的回归断言。 |

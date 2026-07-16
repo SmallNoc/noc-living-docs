@@ -1,5 +1,12 @@
 # Change Record: init-index-validate
 
+## 2026-07-16 - feature ensure index integration
+
+- Reason: stage 3 feature creation must leave rebuildable derived indexes consistent without making `work` a writer.
+- Changed: `noc feature ensure` creates a feature overview and then rewrites feature-archive derived indexes through the existing index builder; `work` can still route from overview files if `feature-index.json` is absent.
+- Compatibility: `work` fallback remains read-only and old simplified projects are not converted or repaired by ordinary commands.
+- Verification: stage 3 targeted tests and the explicit missing-index fallback/no-write script passed.
+
 ## 2026-07-16 - read-only feature-archive validation
 
 - Reason: establish schema and layout recognition before implementing creation, routing, updates, evidence, or migration.

@@ -19,7 +19,9 @@ Bare `noc init` now establishes simplified v2 project memory after verifying the
 
 阶段 1 feature-archive MVP 增加了只读 schema/layout 识别基础：`scripts.noclib.schemas` 校验 feature-archive config、overview frontmatter、candidate、patch 和 evidence payload 的基础形状；`scripts.noclib.layouts` 识别 simplified、feature-archive、v1 small 和 v1 domain。`doctor` 可识别 feature-archive layout，报告 `language` 与 `machine_keys` 配置，并保持只读。`validate` 现在同时支持 `noc validate <target>` 和 `noc validate --target <target>`。
 
-阶段 2 中 `work` 和 `check --memory-impact` 将 feature-archive 识别为 v2 项目记忆布局。`work --json` 对 feature-archive 返回项目级三文件和 `layout_version`，但本阶段不执行 candidate routing 或语义评分。
+阶段 2 中 `work` 和 `check --memory-impact` 将 feature-archive 识别为 v2 项目记忆布局。`work --json` 对 feature-archive 返回项目级三文件和 `layout_version`。
+
+阶段 3 为 feature-archive 项目增加候选识别和功能确保。`work --json` 读取 `feature-index.json`，在索引缺失或损坏时只读扫描 `features/*/overview.md`，基于 feature-id、中文或英文名称、aliases、overview 正文关键词、反引号代码路径和状态惩罚生成候选分数、证据和置信度；top1/top2 分数接近时返回 `action: ask_user`。`noc feature ensure <project> --id <feature-id> --name <name>` 只用于 feature-archive layout，幂等创建 `noc_docs/features/<feature-id>/overview.md`，并在创建成功后重建派生索引。
 
 ## Important Files
 
@@ -34,7 +36,8 @@ Bare `noc init` now establishes simplified v2 project memory after verifying the
 - `resolution_status` 当前取值为 `resolved`、`unresolved` 或 `missing_feature`。
 - `CODEX_HOME` 可覆盖 Codex 根目录；未设置时使用 `~/.codex`。
 - `language` 与 `machine_keys` 是 v2 layout 的文档语言和机器字段配置；feature-archive 要求 `language: zh-CN` 合法且 `machine_keys: en-US` 保持英文机器字段。
-- feature-archive 阶段 2 的 `work --json` 仍是项目级入口，后续 candidate routing 将在阶段 3 添加。
+- feature-archive 阶段 3 的 candidate routing 输出 `candidates`、`ambiguity` 和 `action`，但 CLI 只给出证据和分数，最终语义选择仍由 Skill 或用户确认。
+- `noc feature ensure` 要求稳定 ASCII kebab-case `--id`，中文显示名保存在 `name`，`--alias` 可重复，`--intent` 只写入初始“已确认需求”章节；已存在同 id 时不覆盖用户内容。
 
 ## Known Issues
 

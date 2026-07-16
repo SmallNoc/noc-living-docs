@@ -17,6 +17,8 @@ confidence: medium
 
 `noc index` 现在可以从 Markdown 事实来源重建 feature-archive 派生 JSON。事实来源是 `project.md`、`guardrails.md`、`verification.md` 和 `features/*/overview.md`；派生数据是 `routing.json`、`manifest.json`、`feature-index.json` 和 `evidence-index.json`。删除派生 JSON 后重新执行 `noc index` 可恢复完整索引，重复执行保持幂等；索引失败时先校验 overview frontmatter，不覆盖已有派生索引。
 
+阶段 3 中，`noc feature ensure` 在成功创建新功能 overview 后调用 feature-archive 索引重建，使 `feature-index.json` 立即包含新功能。`noc work` 依赖 `feature-index.json` 加载候选，但当该派生索引缺失或 JSON 损坏时，只读扫描 `features/*/overview.md` 作为 fallback，不重建索引、不修改 Markdown。
+
 ## Important Files
 
 - `scripts/init-noc-docs.py`
@@ -31,7 +33,8 @@ confidence: medium
 - `noc_docs/.living-docs/feature-map.json`
 - v2: `config.json`、`routing.json`、`manifest.json`
 - feature-archive stage 1: `config.json` 的 `protocol_version`、`layout`、`layout_version`、`language`、`machine_keys` 只被读取和校验；派生索引生成留给后续阶段。
-- feature-archive stage 2: `feature-index.json` 在空功能集合时为 `{"schema_version": "1.0", "features": []}`；有 overview 时索引 `id`、`name`、`aliases`、`status`、`language`、`overview_path` 和 `updated_at`，但不做语义候选评分。
+- feature-archive stage 2: `feature-index.json` 在空功能集合时为 `{"schema_version": "1.0", "features": []}`；有 overview 时索引 `id`、`name`、`aliases`、`status`、`language`、`overview_path` 和 `updated_at`。
+- feature-archive stage 3: candidate routing 使用索引和 overview 正文作为事实来源；索引缺失 fallback 是只读行为，不会隐式修复或升级项目。
 
 ## Known Issues
 

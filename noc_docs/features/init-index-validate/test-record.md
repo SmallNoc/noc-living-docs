@@ -20,6 +20,7 @@ confidence: medium
 
 | Date | Change | Command / Method | Result | Notes |
 |---|---|---|---|---|
+| 2026-07-16 | feature-archive stage 3 routing/index integration | Stage 3专项脚本：ensure 创建功能、`noc index`、intent/path work、删除 `feature-index.json` 后 work fallback、旧 simplified 普通命令哈希对比 | PASS | 缺失 `feature-index.json` 时 `work` 成功从 overview fallback，且不写回索引；旧 simplified fixture 在 `work/index/doctor/validate` 后文件树和 SHA-256 未变化。 |
 | 2026-07-16 | feature-archive stage 2 init/index | `python -m unittest tests.test_feature_archive_init -v`; `python -m unittest tests.test_simplified_memory -v`; `python -m unittest discover -s tests`; `python scripts/noc.py validate .`; `python scripts/release.py --check`; stage-specific init/index/idempotency/no-write/wheel scripts | PASS | 11 feature-archive init/index tests passed；12 compatibility tests passed；130 total tests passed；new init creates empty `features/` and rebuildable derived indexes. |
 | 2026-07-16 | feature-archive stage 1 validation | `python -m unittest tests.test_feature_archive_stage1 -v`; `python -m unittest tests.test_simplified_memory -v`; `python -m unittest discover -s tests`; `python scripts/noc.py validate .`; `python scripts/release.py --check` | PASS | 19 stage 1 tests passed；12 simplified tests passed；119 total tests passed；repository validation and release check passed. |
 | 2026-07-08 | initialize main repo docs | `python scripts/noc.py init . --mode small` | PASS | 生成 `AGENTS.md` 和 `noc_docs/`，随后创建真实 features。 |
