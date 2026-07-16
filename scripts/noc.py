@@ -852,7 +852,7 @@ def command_memory_impact_check(target: Path, args: argparse.Namespace) -> int:
             updated_docs = sorted(path for path in docs_files if path.endswith(".md"))
         missing_categories: list[str] = []
         unexpected_updates = bool(updated_docs)
-    elif config.get("protocol_version") == 2 and config.get("layout") == "simplified":
+    elif config.get("protocol_version") == 2 and config.get("layout") in {"simplified", "feature-archive"}:
         required_docs = [MEMORY_IMPACT_DOCS[impact] for impact in normalized]
         updated_docs = sorted(path for path in docs_files if path in MEMORY_IMPACT_DOCS.values())
         missing_categories = [impact for impact in normalized if MEMORY_IMPACT_DOCS[impact] not in updated_docs]
@@ -1179,20 +1179,24 @@ def resolve_work_matches(feature_map: dict, feature: str | None, paths: list[str
 
 def build_work_plan(target: Path, feature: str | None, paths: list[str], intent: str | None) -> dict:
     config = load_config(target)
-    if config.get("protocol_version") == 2 and config.get("layout") == "simplified":
+    if config.get("protocol_version") == 2 and config.get("layout") in {"simplified", "feature-archive"}:
         memory = ["noc_docs/project.md", "noc_docs/guardrails.md", "noc_docs/verification.md"]
+        layout = config.get("layout")
+        feature_id = "project" if layout == "simplified" else "feature-archive"
+        update_doc = "project memory" if layout == "simplified" else "project memory and feature archive"
         return {
             "schema_version": "1.0",
             "protocol_version": 2,
-            "layout": "simplified",
+            "layout": layout,
+            "layout_version": config.get("layout_version", "1.0"),
             "resolution_status": "project_memory",
             "intent": intent,
             "paths": paths,
             "features": [{
-                "id": "project",
+                "id": feature_id,
                 "read_before_code": memory,
                 "before_coding": [],
-                "update_after_code": [{"doc": "project memory", "reason": "only when future sessions need a new fact"}],
+                "update_after_code": [{"doc": update_doc, "reason": "only when future sessions need a new fact"}],
             }],
             "next_actions": [],
             "finish_commands": [],
