@@ -21,6 +21,7 @@ if str(ROOT) not in sys.path:
 
 from scripts.noclib.schemas import validate_config_schema, validate_overview_frontmatter
 from scripts.noclib.candidates import feature_archive_work_plan
+from scripts.noclib.features import ensure_feature
 
 SCRIPT_DIR = ROOT / "scripts"
 TEMPLATES = ROOT / "templates/noc_docs"
@@ -660,6 +661,27 @@ def command_feature_create(args: argparse.Namespace) -> int:
     if args.path:
         print("Mapped paths: " + ", ".join(args.path))
     return 0
+
+
+def command_feature_ensure(args: argparse.Namespace) -> int:
+    target = Path(args.target).resolve()
+    code, payload = ensure_feature(target, args.id, args.name, args.alias or [], args.intent)
+    if args.json:
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return code
+    status = payload.get("status")
+    if status == "created":
+        feature = payload["feature"]
+        print(f"Created feature `{feature['id']}` at {feature['overview_path']}")
+    elif status == "existing":
+        feature = payload["feature"]
+        print(f"Feature `{feature['id']}` already exists at {feature['overview_path']}")
+    elif status == "conflict":
+        conflict = payload["conflict"]
+        print(f"ERROR: feature name or alias conflicts with `{conflict['id']}`")
+    else:
+        print(f"ERROR: {payload.get('error', 'feature ensure failed')}")
+    return code
 
 
 def rename_structured_feature_titles(feature_path: Path, old_id: str, new_id: str) -> None:
@@ -1908,6 +1930,15 @@ def build_parser() -> argparse.ArgumentParser:
     feature_create.add_argument("--path", action="append", help="Code path to map into feature-map.json. Can be repeated.")
     feature_create.add_argument("--no-index", action="store_true", help="Skip running `noc index` after creation.")
     feature_create.set_defaults(func=command_feature_create)
+
+    feature_ensure = feature_sub.add_parser("ensure", help="Ensure a feature-archive overview exists.")
+    feature_ensure.add_argument("target", help="Project directory containing noc_docs.")
+    feature_ensure.add_argument("--id", required=True, help="Stable ASCII kebab-case feature id.")
+    feature_ensure.add_argument("--name", required=True, help="Display name stored in overview frontmatter.")
+    feature_ensure.add_argument("--alias", action="append", help="Alias used for candidate routing. Can be repeated.")
+    feature_ensure.add_argument("--intent", help="Confirmed user intent to record as the initial requirement.")
+    feature_ensure.add_argument("--json", action="store_true", help="Print the result as machine-readable JSON.")
+    feature_ensure.set_defaults(func=command_feature_ensure)
 
     feature_rename = feature_sub.add_parser("rename", help="Rename an existing feature directory and mapping.")
     feature_rename.add_argument("target", help="Project directory containing noc_docs.")
