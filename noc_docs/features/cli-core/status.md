@@ -29,6 +29,8 @@ Bare `noc init` now establishes simplified v2 project memory after verifying the
 
 `noc check <project> --feature-impact-file <impact.json> --json` 校验 Skill 提交的结构化 feature impact 声明，覆盖 `none`、`implementation`、`requirement` 和 `major`。CLI 检查功能存在、声明章节实际存在、verification evidence 与 feature 匹配、failed/not_run evidence 不会被伪装成 passed、major change id 出现在 overview 中；它只报告错误和 warning，不写 overview、不写 evidence、不运行测试、不自动分类 change_class。既有 `noc check --memory-impact ... --json` 合同保持兼容。
 
+阶段 6 增加了显式迁移入口 `noc migrate`。`--to feature-archive --dry-run --json` 使用与 apply 相同的规划逻辑并保持零写入；`--apply --backup --json` 才会迁移旧 simplified 或 v1 small/domain 项目，并在项目根 `.noc-backups/migrations/<backup-id>/` 保存完整 `noc_docs` 备份和 SHA-256 manifest。`--rollback <backup-id> --json` 只接受当前项目内合法备份，校验 manifest 后恢复 `noc_docs`，并在恢复前再次备份当前状态。普通 `work/index/doctor/validate/check/evidence` 命令不会创建 `features/`、改写 layout 或创建迁移备份。
+
 ## Important Files
 
 - `scripts/noc.py`
@@ -48,6 +50,7 @@ Bare `noc init` now establishes simplified v2 project memory after verifying the
 - `noc evidence` 的代码证据 schema_version 为 `1.0`，支持 staged added/modified/deleted/renamed、Windows `/` 路径规范化、中文路径和 test/api/database/config/security/documentation signals。
 - `noc evidence record` 的验证证据保存到 `noc_docs/.living-docs/evidence/<feature-id>/<evidence-id>.json`；`evidence-id` 由 feature_id、command、cwd、started_at、finished_at、exit_code、result 和 scope 稳定哈希生成，相同证据重复提交返回 `existing`。
 - `noc check --feature-impact-file` 的 impact schema_version 为 `1.0`，`change_class` 只允许 `none`、`implementation`、`requirement`、`major`；多功能变更使用 `documentation_updates` 按 feature 拆分。
+- `noc migrate` 的 dry-run/apply JSON 包含 `source_layout`、`target_layout`、`can_apply`、`operations`、`conflicts`、`warnings` 和 `backup_scope`；apply 额外返回 `backup_id`、`backup_path`、`backup_file_count` 和 `rollback.rollback_command`。
 
 ## Known Issues
 

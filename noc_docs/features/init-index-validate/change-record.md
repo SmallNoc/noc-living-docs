@@ -1,5 +1,12 @@
 # Change Record: init-index-validate
 
+## 2026-07-16 - feature-archive migration rebuilds
+
+- Reason: stage 6 migrations must produce valid feature-archive projects without treating derived JSON as source of truth.
+- Changed: simplified migration updates config and rebuilds derived indexes; v1 migration creates feature overview files plus `legacy/` copies of original v1 Markdown, preserving domain metadata when present.
+- Compatibility: ordinary init/index/validate/doctor/work/check/evidence paths still do not migrate old simplified or v1 projects.
+- Verification: migration tests cover dry-run zero-write, apply backup, rollback, v1 original text preservation, conflict refusal, unsafe path refusal, and post-apply validate for v1 migration.
+
 ## 2026-07-16 - evidence index rebuild
 
 - Reason: stage 5 evidence files must have a rebuildable derived index without making index a command runner.

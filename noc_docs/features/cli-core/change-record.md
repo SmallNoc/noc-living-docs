@@ -1,5 +1,12 @@
 # Change Record: cli-core
 
+## 2026-07-16 - explicit feature-archive migration
+
+- Reason: implement stage 6 so old simplified and v1 projects can move to feature-archive only through an explicit, reversible command.
+- Changed: added `noc migrate` with dry-run, apply-with-backup, and rollback JSON paths; migration rejects unsafe documentation roots, conflicting target feature structures, invalid backup ids, and damaged backup manifests.
+- Compatibility: ordinary commands still do not silently migrate old layouts; apply requires `--backup`; rollback preserves the original migration backup and creates a pre-rollback backup.
+- Verification: stage 6 migration tests cover simplified dry-run/apply/rollback, v1 conservative preservation, conflicts, unsafe paths, damaged manifests, ordinary command non-migration, and forced apply failure recovery.
+
 ## 2026-07-16 - feature evidence and impact checks
 
 - Reason: implement stage 5 so future Skill workflows can submit real code and verification evidence while the CLI enforces deterministic consistency checks.

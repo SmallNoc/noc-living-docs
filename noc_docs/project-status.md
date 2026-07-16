@@ -27,6 +27,7 @@ NOC Living Docs 是一个 Python CLI 和文档协议，用固定的 `noc_docs/` 
 - 检查 staged code changes 是否有对应 NOC docs updates。
 - 为 Codex 和通用 agents 提供入口协议。
 - 支持构建 PyPI wheel/sdist，并通过 GitHub Actions Trusted Publishing 发布 `noc-living-docs`。
+- 支持通过显式 `noc migrate` 将旧 simplified 或 v1 small/domain 项目保守迁移到 feature-archive，并通过校验过的备份回滚。
 
 ## Important Entry Points
 
