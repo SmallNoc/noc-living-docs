@@ -343,8 +343,9 @@ def command_index(args: argparse.Namespace) -> int:
 
 def command_validate(args: argparse.Namespace) -> int:
     forwarded = []
-    if args.target:
-        forwarded.extend(["--target", str(args.target)])
+    target = args.target or args.target_positional
+    if target:
+        forwarded.extend(["--target", str(target)])
     return run_script("validate-noc-docs.py", forwarded)
 
 
@@ -1845,6 +1846,7 @@ def build_parser() -> argparse.ArgumentParser:
     index.set_defaults(func=command_index)
 
     validate = sub.add_parser("validate", help="[Advanced] Validate repository or target project.")
+    validate.add_argument("target_positional", nargs="?")
     validate.add_argument("--target")
     validate.set_defaults(func=command_validate)
 

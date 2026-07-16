@@ -396,6 +396,15 @@ class FeatureArchiveValidateTests(unittest.TestCase):
             self.assertIn("NOC project validation passed.", result.stdout)
             self.assertEqual(before, file_hashes(project))
 
+    def test_validate_accepts_positional_target_for_project_validation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            write_feature_archive_project(project)
+
+            result = run_noc(["validate", str(project)])
+
+            self.assertIn("NOC project validation passed.", result.stdout)
+
 
 class FeatureArchiveDoctorTests(unittest.TestCase):
     def test_doctor_reports_feature_archive_layout(self) -> None:
