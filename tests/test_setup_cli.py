@@ -51,6 +51,19 @@ class SetupCliTests(unittest.TestCase):
             self.assertTrue((skill / "SKILL.md").is_file())
             self.assertTrue((skill / "references/workflow.md").is_file())
             self.assertTrue((skill / "noc-skill.json").is_file())
+            for relative in [
+                "SKILL.md",
+                "references/workflow.md",
+                "references/feature-doc-template.md",
+                "references/domain-mode-guide.md",
+                "references/codex-prompts.md",
+                "evals/project-living-docs.prompts.csv",
+            ]:
+                self.assertEqual(
+                    (ROOT / ".agents/skills/project-living-docs" / relative).read_text(encoding="utf-8").replace("\r\n", "\n"),
+                    (skill / relative).read_text(encoding="utf-8").replace("\r\n", "\n"),
+                )
+            self.assertFalse((codex_home / ".git/hooks/pre-commit").exists())
             self.assertIn("NOC is ready for Codex", result.stdout)
             self.assertIn("noc init .", result.stdout)
 
@@ -354,6 +367,13 @@ class SetupCliTests(unittest.TestCase):
                 "noc_assets/project_living_docs/references/feature-doc-template.md",
                 "noc_assets/project_living_docs/references/domain-mode-guide.md",
                 "noc_assets/project_living_docs/references/codex-prompts.md",
+                "noc_assets/project_living_docs/evals/project-living-docs.prompts.csv",
+                "noc_assets/codex_project_living_docs/SKILL.md",
+                "noc_assets/codex_project_living_docs/references/workflow.md",
+                "noc_assets/codex_project_living_docs/references/feature-doc-template.md",
+                "noc_assets/codex_project_living_docs/references/domain-mode-guide.md",
+                "noc_assets/codex_project_living_docs/references/codex-prompts.md",
+                "noc_assets/codex_project_living_docs/evals/project-living-docs.prompts.csv",
             }
             self.assertTrue(expected.issubset(names), expected - names)
 
@@ -382,7 +402,7 @@ class SetupCliTests(unittest.TestCase):
                 stderr=subprocess.PIPE,
                 text=True,
             )
-            self.assertEqual("noc-living-docs 1.2.1\n", version.stdout)
+            self.assertEqual("noc-living-docs 1.3.0\n", version.stdout)
 
             installed = subprocess.run(
                 [str(venv_noc), "setup", "--json"],
@@ -458,6 +478,8 @@ class SetupCliTests(unittest.TestCase):
                     "noc_docs/.living-docs/config.json",
                     "noc_docs/.living-docs/routing.json",
                     "noc_docs/.living-docs/manifest.json",
+                    "noc_docs/.living-docs/feature-index.json",
+                    "noc_docs/.living-docs/evidence-index.json",
                 },
             )
 

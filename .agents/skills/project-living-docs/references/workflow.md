@@ -2,9 +2,39 @@
 
 ## Protocol Detection
 
-Read `noc_docs/.living-docs/config.json`. When `protocol_version` is `2` and `layout` is `simplified`, use `routing.json` and the three project-level memory files returned by `noc work`. Otherwise retain the v1 feature/domain workflow below. Never migrate a v1 project implicitly.
+Read `noc_docs/.living-docs/config.json` and always start with `noc work <project> --path <code/path> --json --intent "<intent>"` when code may change.
+
+- `protocol_version: 2`, `layout: feature-archive`: use the feature-archive workflow below.
+- `protocol_version: 2`, `layout: simplified`: use the three project-level memory files returned by `noc work`.
+- v1 `small` or `domain`: retain the v1 feature/domain workflow below.
+
+Do not silently migrate simplified, small, or domain projects. Migration only happens when the user explicitly asks for it.
 
 For v2, update memory only for durable changes to requirements, behavior, constraints, API, data structures, verification, or project phase. Ordinary bug fixes, formatting, and small refactors do not require documentation changes.
+
+## Feature-Archive Workflow
+
+Use this workflow only when `layout` is `feature-archive`.
+
+1. Run `noc work <project> --path <code/path> --json --intent "<intent>"`.
+2. Select the feature:
+   - high confidence, non-ambiguous candidate: use it automatically.
+   - clear new business feature: run `noc feature ensure <project> --id <ascii-kebab-id> --name "<display name>" --json`.
+   - ambiguous or low confidence result: ask the user once which feature to use or whether to create one.
+3. Read `project.md`, `guardrails.md`, `verification.md`, and `noc_docs/features/<feature-id>/overview.md` before editing code.
+4. Change code.
+5. Run real, relevant verification. `passed` requires exit_code 0; if verification was not run, record `not_run` or explain why.
+6. Run `noc evidence <project> --staged --json` to collect code evidence.
+7. Write verification evidence JSON and run `noc evidence record <project> --feature-id <feature-id> --file <evidence.json> --json`.
+8. Generate a structured feature patch and run `noc feature update <project> --id <feature-id> --patch-file <patch.json> --json`.
+9. Write a feature impact JSON and run `noc check <project> --feature-impact-file <impact.json> --json`.
+10. Final response: concise, in the user’s language, with verification and NOC docs changed.
+
+Do not freely rewrite `overview.md`; update it only through `noc feature update`. Do not write unconfirmed user discussion as confirmed requirements. Do not turn plans into current implementation. Do not mark tests passed without real verification. Do not create major changes for ordinary edits.
+
+### Feature-Archive Language
+
+When `language: zh-CN`, keep generated feature prose and final summaries in Simplified Chinese. Preserve explicit Chinese user requirements in `已确认需求`. JSON/YAML keys, feature ids, CLI flags, paths, code identifiers, and commands stay English or original. Never translate an existing Chinese `overview.md` into English.
 
 ## Semantic Memory Impact
 
@@ -63,6 +93,11 @@ After editing code:
 noc init /path/to/project
 noc work /path/to/project --path <code/path> --json --intent "<intent>"
 noc work /path/to/project --feature <feature> --json
+noc feature ensure /path/to/project --id <feature-id> --name "<name>" --json
+noc feature update /path/to/project --id <feature-id> --patch-file <patch.json> --json
+noc evidence /path/to/project --staged --json
+noc evidence record /path/to/project --feature-id <feature-id> --file <evidence.json> --json
+noc check <project> --feature-impact-file <impact.json> --json
 noc suggest-map /path/to/project
 noc index /path/to/project
 noc check /path/to/project --staged --warn-only

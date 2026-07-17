@@ -6,9 +6,16 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.noclib.indexes import write_feature_archive_indexes
 
 DOC_ROOT = "noc_docs"
 
@@ -202,6 +209,10 @@ def main() -> None:
     if config.get("protocol_version") == 2 and config.get("layout") == "simplified":
         index_simplified(target, noc_docs)
         print("Indexed simplified project memory.")
+        return
+    if config.get("protocol_version") == 2 and config.get("layout") == "feature-archive":
+        write_feature_archive_indexes(target)
+        print("Indexed feature archive project memory.")
         return
 
     index_dir = noc_docs / ".living-docs"

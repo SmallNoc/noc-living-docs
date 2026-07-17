@@ -26,3 +26,8 @@ prompt,should_trigger,scenario,memory_impact
 "Add a new rule that authentication tokens must never be written to logs.",true,new_security_constraint,guardrails
 "Replace the standard test command with python -m unittest and make it the required gate.",true,verification_command_change,verification
 "Add a new public capability and a compatibility prohibition that future work must preserve.",true,multiple_memory_impacts,project+guardrails
+"给登录功能增加连续失败五次后锁定账号 30 分钟。",true,feature_archive_existing_feature,feature
+"这是一个明确的新业务功能：新增材料查询功能。",true,feature_archive_new_feature,feature
+"这次变更可能属于多个功能时，先问我一次再继续。",true,feature_archive_ambiguous_once,
+"测试没有运行，不要把验证结果写成 passed。",true,feature_archive_verification_not_run,verification
+"这个旧 simplified 项目先不要迁移，只按现有项目级记忆工作。",true,simplified_no_silent_migration,none

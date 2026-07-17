@@ -5,7 +5,7 @@
 ![Codex Skill](https://img.shields.io/badge/Codex-Skill-blue)
 ![Living Docs](https://img.shields.io/badge/Living%20Docs-NOC-green)
 
-A local project-memory Skill for Codex, with a CLI that handles setup and one-time project initialization.
+A local feature archive for Codex, with a CLI that handles setup and one-time project initialization.
 
 ## Start in three steps
 
@@ -23,18 +23,20 @@ cd my-project
 noc init .
 ```
 
-`noc init .` creates the default v2 simplified project memory. It does not create feature or domain documents.
+`noc init .` creates the default feature-archive project memory. Each feature gets its own archive when Codex needs one.
 
 ### 3. Use Codex normally
 
 ```text
-帮我给登录接口增加失败次数限制。
+给登录功能增加连续失败五次后锁定账号 30 分钟。
 ```
 
-- You do not need to run `work`, `index`, `check`, `feature`, or `suggest-map` yourself.
-- The Codex Skill automatically reads the smallest useful project memory.
-- It updates memory only when a change creates a durable fact that future Codex sessions must know.
-- Ordinary bug fixes and small refactors do not create documentation work.
+- You do not need to learn `feature ensure`, `feature update`, `evidence record`, `feature-impact-file`, `candidate score`, or `feature-map`.
+- NOC helps Codex recognize or create the right feature archive.
+- It reads requirements, current behavior, and guardrails before code changes.
+- It can maintain code scope and verification results from real evidence.
+- It records major changes only when the change is actually major.
+- It can restore context for later Codex conversations.
 - NOC does not call a model or upload code; all project memory stays in your project.
 
 中文说明在下方：[中文](#中文)。
@@ -49,7 +51,7 @@ The commands and protocol details below are optional. The Codex Skill runs the r
 
 AI coding agents are fast, but project memory is fragile. Requirements disappear with chat sessions, guardrails are forgotten, and verification knowledge is easily buried. NOC is a local agent memory router: it tells an agent which small set of durable project facts to read before changing code.
 
-For a default v2 simplified project, the deterministic first step is:
+For a default feature-archive project, Codex starts from a deterministic work plan:
 
 ```bash
 noc work . --path src/app.py --json
@@ -57,35 +59,26 @@ noc work . --path src/app.py --json
 
 ## What It Looks Like
 
-The following is the actual JSON shape returned for that path in a newly initialized v2 project:
+The following is a shortened JSON shape for a feature-archive project before any feature exists:
 
 ```json
 {
   "schema_version": "1.0",
   "protocol_version": 2,
-  "layout": "simplified",
-  "resolution_status": "project_memory",
+  "layout": "feature-archive",
+  "layout_version": "1.0",
+  "resolution_status": "no_match",
   "intent": null,
   "paths": [
     "src/app.py"
   ],
   "features": [
-    {
-      "id": "project",
-      "read_before_code": [
-        "noc_docs/project.md",
-        "noc_docs/guardrails.md",
-        "noc_docs/verification.md"
-      ],
-      "before_coding": [],
-      "update_after_code": [
-        {
-          "doc": "project memory",
-          "reason": "only when future sessions need a new fact"
-        }
-      ]
-    }
+    "noc_docs/project.md",
+    "noc_docs/guardrails.md",
+    "noc_docs/verification.md"
   ],
+  "candidates": [],
+  "action": "create_feature_or_ask_user",
   "next_actions": [],
   "finish_commands": []
 }
@@ -93,7 +86,7 @@ The following is the actual JSON shape returned for that path in a newly initial
 
 ## Generated Documents
 
-Default `noc init .` creates the v2 simplified structure:
+Default `noc init .` creates the feature-archive structure:
 
 ```text
 <project>/
@@ -102,10 +95,15 @@ Default `noc init .` creates the v2 simplified structure:
     project.md
     guardrails.md
     verification.md
+    features/
+      <feature-id>/
+        overview.md
     .living-docs/
       config.json
       routing.json
       manifest.json
+      feature-index.json
+      evidence-index.json
 ```
 
 The three Markdown files have distinct responsibilities:
@@ -115,20 +113,27 @@ The three Markdown files have distinct responsibilities:
 | `noc_docs/project.md` | Durable goals, phase, capabilities, boundaries, and architecture facts. |
 | `noc_docs/guardrails.md` | Durable constraints involving security, compatibility, permissions, data loss, APIs, migration, or deployment. |
 | `noc_docs/verification.md` | Standard test, build, release, and acceptance commands or gates. |
+| `noc_docs/features/<feature-id>/overview.md` | One feature archive: goal, confirmed requirements, implementation, constraints, code scope, verification, results, major changes, and pending questions. |
 
-The `.living-docs` JSON files store protocol configuration, routing, and the generated file manifest. Agents use them through `noc work --json` rather than parsing them by hand.
-The v2 routing file is `noc_docs/.living-docs/routing.json`.
+The `.living-docs` JSON files store protocol configuration, routing, feature index, evidence index, and the generated file manifest. Agents use them through `noc work --json` rather than parsing them by hand.
+The v2 routing file is `noc_docs/.living-docs/routing.json`; the feature index is `noc_docs/.living-docs/feature-index.json`.
 
-## Default v2 workflow
+New projects use the default feature-archive layout. Chinese projects generate Simplified Chinese prose by default while JSON keys, YAML keys, feature ids, paths, code identifiers, commands, and CLI flags stay English or original. NOC never fabricates passing test results: a `passed` verification result must come from a real command with exit code 0. Old projects are never silently migrated; v1 small/domain projects remain compatible.
 
-Before changing code, run `noc work` and read the returned files. After changing code, classify whether the diff creates a durable project, guardrail, or verification fact. Update only the matching memory file; routine fixes and tests do not require a memory update. Then run the relevant checks:
+## How It Works
+
+During normal Codex use, the Skill handles the internal commands:
 
 ```bash
-noc doctor .
-noc check . --staged --memory-impact none
+noc work . --path src/app.py --json
+noc feature ensure . --id user-login --name "用户登录" --json
+noc feature update . --id user-login --patch-file patch.json --json
+noc evidence . --staged --json
+noc evidence record . --feature-id user-login --file evidence.json --json
+noc check . --feature-impact-file impact.json --json
 ```
 
-Use `--memory-impact project`, `guardrails`, or `verification` when the diff creates that kind of durable fact. The Codex Skill handles this during normal use.
+These commands are advanced implementation details; ordinary users describe the change to Codex.
 
 ## Installation and updates
 
@@ -154,7 +159,7 @@ python scripts/noc.py --help
 | Command | What it does |
 |---|---|
 | `noc setup` | Installs or checks the matching Codex Skill. |
-| `noc init <project>` | Creates default v2 simplified project memory and an agent entry block. |
+| `noc init <project>` | Creates default feature-archive project memory and an agent entry block. |
 | `noc doctor <project>` | Checks setup, JSON, Git, mode, indexes, and hook state. |
 | `noc work <project> --path <path> --json` | Routes a path to the memory an agent should read. |
 | `noc check <project>` | Verifies memory impact against changed files. |
@@ -166,7 +171,7 @@ Use `noc <command> --help` for arguments.
 
 ## Legacy v1 / Advanced compatibility
 
-The v1 feature/domain protocol remains supported for existing projects and explicit compatibility use. It is not the default and is never created by plain `noc init .`.
+The v1 feature/domain protocol remains supported for existing projects and explicit compatibility use. It is not the default and is never created by plain `noc init .`. Existing simplified, v1 small, and v1 domain projects are not silently migrated.
 
 - `noc init . --mode small` explicitly creates the v1 small feature layout.
 - `noc init . --mode domain` explicitly creates the v1 domain layout.
@@ -196,7 +201,7 @@ python scripts/noc.py validate
 python scripts/release.py --check
 ```
 
-Current version: `1.2.1`.
+Current version: `1.3.0`.
 
 More reading: [Why NOC](docs/why-noc.md), [Agent Compatibility](docs/agent-compatibility.md), [Comparisons](docs/comparisons.md), and [Release](docs/release.md).
 
@@ -208,7 +213,7 @@ This repo is source-available and non-commercial by default. Code, scripts, temp
 
 ## 中文
 
-NOC 是 Codex 的本地项目记忆 Skill，CLI 负责安装和一次性项目初始化。
+NOC 是 Codex 的本地功能档案 Skill，CLI 负责安装和一次性项目初始化。
 
 ### 三步开始使用
 
@@ -226,11 +231,15 @@ NOC 是 Codex 的本地项目记忆 Skill，CLI 负责安装和一次性项目�
    noc init .
    ```
 
-   `noc init .` 默认创建 v2 simplified 项目记忆，不会创建 feature 或 domain 文档。
+   `noc init .` 默认创建 feature-archive 项目记忆；每个功能在需要时拥有独立目录和 `overview.md`。
 
-3. 此后正常向 Codex 提出开发需求。无需手动运行 `work`、`index`、`check`、`feature` 或 `suggest-map`。
+3. 此后正常向 Codex 提出开发需求。例如：
 
-Codex Skill 会自动读取最小项目记忆，并且只在产生未来会话必须知道的新事实时更新记录。普通 Bug 修复和小型重构不会带来文档负担。NOC 不调用模型、不上传代码，所有记录都保存在项目本地。
+   ```text
+   给登录功能增加连续失败五次后锁定账号 30 分钟。
+   ```
+
+普通用户不需要学习 `feature ensure`、`feature update`、`evidence record`、`feature-impact-file`、`candidate score` 或 `feature-map`。Codex Skill 会自动识别或创建功能档案，读取需求、现状和约束，维护代码范围和验证结果，记录重大变更，并为后续 Codex 对话恢复上下文。NOC 不调用模型、不上传代码，所有记录都保存在项目本地。
 
 ## 高级用法
 
@@ -240,7 +249,7 @@ Codex Skill 会自动读取最小项目记忆，并且只在产生未来会话�
 
 AI agent 写代码很快，但需求、限制和验证方式很容易随会话丢失。NOC 是本地 agent memory router，负责在改代码前把 agent 指向最小但足够的持久项目记忆。
 
-默认 v2 simplified 项目的确定性入口是：
+默认 feature-archive 项目的确定性入口是：
 
 ```bash
 noc work . --path src/app.py --json
@@ -248,33 +257,29 @@ noc work . --path src/app.py --json
 
 ## 效果示例
 
-新建 v2 项目对该路径返回的真实 JSON 结构如下：
+新建 feature-archive 项目在尚无功能时会返回类似结构：
 
 ```json
 {
   "schema_version": "1.0",
   "protocol_version": 2,
-  "layout": "simplified",
-  "resolution_status": "project_memory",
+  "layout": "feature-archive",
+  "layout_version": "1.0",
+  "resolution_status": "no_match",
   "intent": null,
   "paths": [
     "src/app.py"
   ],
-  "features": [
+  "read_before_code": [
+    "noc_docs/project.md",
+    "noc_docs/guardrails.md",
+    "noc_docs/verification.md"
+  ],
+  "candidates": [
     {
-      "id": "project",
-      "read_before_code": [
-        "noc_docs/project.md",
-        "noc_docs/guardrails.md",
-        "noc_docs/verification.md"
-      ],
-      "before_coding": [],
-      "update_after_code": [
-        {
-          "doc": "project memory",
-          "reason": "only when future sessions need a new fact"
-        }
-      ]
+      "id": "user-login",
+      "name": "用户登录",
+      "confidence": "high"
     }
   ],
   "next_actions": [],
@@ -284,7 +289,7 @@ noc work . --path src/app.py --json
 
 ## 生成的文件
 
-默认 `noc init .` 会创建 v2 simplified 结构：
+默认 `noc init .` 会创建 feature-archive 结构：
 
 ```text
 <project>/
@@ -293,25 +298,36 @@ noc work . --path src/app.py --json
     project.md
     guardrails.md
     verification.md
+    features/
+      <feature-id>/
+        overview.md
     .living-docs/
       config.json
       routing.json
       manifest.json
+      feature-index.json
+      evidence-index.json
 ```
 
-`project.md` 保存目标、阶段、主要能力、边界和架构事实；`guardrails.md` 保存安全、兼容性、权限、数据丢失、API、迁移或部署限制；`verification.md` 保存标准测试、构建、发布和验收命令。`.living-docs` 下的 JSON 保存协议配置、路由和清单，agent 应通过 `noc work --json` 使用它们。
+`project.md` 保存目标、阶段、主要能力、边界和架构事实；`guardrails.md` 保存安全、兼容性、权限、数据丢失、API、迁移或部署限制；`verification.md` 保存标准测试、构建、发布和验收命令；`features/<feature-id>/overview.md` 保存单个功能的目标、已确认需求、当前实现、代码范围、验证结果和重大变更。`.living-docs` 下的 JSON 保存协议配置、路由、功能索引、证据索引和清单，agent 应通过 `noc work --json` 使用它们。
 v2 路由文件的完整路径是 `noc_docs/.living-docs/routing.json`。
 
-## 默认 v2 工作流
+新项目默认使用 feature-archive。中文项目默认生成简体中文正文；JSON key、YAML key、feature-id、路径、代码标识、命令和 CLI 参数保持英文或原文。NOC 不会伪造测试结果：只有真实命令执行且 exit code 为 0，才能记录 `passed`。旧项目不会静默迁移；v1 small/domain 继续兼容。
 
-改代码前运行 `noc work` 并读取返回的文件。改完后判断 diff 是否产生持久的 project、guardrails 或 verification 事实，只更新对应文件；普通修复和普通测试无需更新项目记忆。最后执行对应检查：
+## 工作原理
+
+正常使用 Codex 时，Skill 会在内部调用这些高级命令：
 
 ```bash
-noc doctor .
-noc check . --staged --memory-impact none
+noc work . --path src/app.py --json
+noc feature ensure . --id user-login --name "用户登录" --json
+noc feature update . --id user-login --patch-file patch.json --json
+noc evidence . --staged --json
+noc evidence record . --feature-id user-login --file evidence.json --json
+noc check . --feature-impact-file impact.json --json
 ```
 
-如果产生对应的持久事实，使用 `--memory-impact project`、`guardrails` 或 `verification`。正常使用 Codex 时由 Skill 自动处理。
+这些是工作原理，不是普通用户主流程。
 
 ## 安装、更新和命令
 
@@ -343,7 +359,7 @@ python scripts/noc.py validate
 python scripts/release.py --check
 ```
 
-当前版本：`1.2.1`。
+当前版本：`1.3.0`。
 
 ## 许可证
 

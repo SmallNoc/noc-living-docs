@@ -11,6 +11,10 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.noclib.schemas import validate_config_schema, validate_overview_frontmatter
 START = "<!-- noc-living-docs:start -->"
 END = "<!-- noc-living-docs:end -->"
 
@@ -154,6 +158,11 @@ def check_project(target: Path) -> None:
         fail("target config documentation_root must be noc_docs")
 
     if config.get("protocol_version") == 2:
+        if config.get("layout") == "feature-archive":
+            check_feature_archive_project(target, noc_docs, config)
+            print_language_config(config)
+            validate_agent_file(target)
+            return
         if config.get("layout") != "simplified":
             fail("protocol version 2 target layout must be simplified")
         for relative in ["project.md", "guardrails.md", "verification.md", ".living-docs/routing.json", ".living-docs/manifest.json"]:
@@ -163,6 +172,7 @@ def check_project(target: Path) -> None:
             data = json.loads((noc_docs / ".living-docs" / name).read_text(encoding="utf-8"))
             if data.get("protocol_version") != 2 or data.get("layout") != "simplified":
                 fail(f"simplified target {name} must declare protocol_version 2 and simplified layout")
+        print_language_config(config)
         validate_agent_file(target)
         return
 
@@ -177,6 +187,55 @@ def check_project(target: Path) -> None:
         fail("target must not initialize both noc_docs/features and noc_docs/domains")
 
     validate_agent_file(target)
+
+
+def print_language_config(config: dict) -> None:
+    language = config.get("language") if isinstance(config.get("language"), str) else "unspecified"
+    machine_keys = config.get("machine_keys") if isinstance(config.get("machine_keys"), str) else "unspecified"
+    print(f"Language: {language}; machine_keys: {machine_keys}")
+
+
+def check_feature_archive_project(target: Path, noc_docs: Path, config: dict) -> None:
+    errors = validate_config_schema(config)
+    if errors:
+        fail("feature-archive config invalid: " + "; ".join(errors))
+    for relative in ["project.md", "guardrails.md", "verification.md"]:
+        if not (noc_docs / relative).is_file():
+            fail(f"feature-archive target missing noc_docs/{relative}")
+    features_root = noc_docs / "features"
+    if not features_root.is_dir():
+        fail("feature-archive target missing noc_docs/features")
+    for feature_dir in sorted(features_root.iterdir()):
+        if not feature_dir.is_dir() or feature_dir.name.startswith("."):
+            continue
+        overview = feature_dir / "overview.md"
+        if not overview.is_file():
+            fail(f"feature-archive feature missing overview.md: {overview.relative_to(target).as_posix()}")
+        frontmatter = parse_frontmatter(overview)
+        overview_errors = validate_overview_frontmatter(frontmatter)
+        if overview_errors:
+            fail(f"{overview.relative_to(target).as_posix()} invalid: " + "; ".join(overview_errors))
+
+
+def parse_frontmatter(path: Path) -> dict:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    if not lines or lines[0].strip() != "---":
+        return {}
+    data: dict = {}
+    index = 1
+    while index < len(lines):
+        line = lines[index]
+        if line.strip() == "---":
+            break
+        if ":" in line and not line.startswith(" "):
+            key, raw = line.split(":", 1)
+            value = raw.strip()
+            if value.isdigit():
+                data[key.strip()] = int(value)
+            else:
+                data[key.strip()] = value
+        index += 1
+    return data
 
 
 def validate_agent_file(target: Path) -> None:

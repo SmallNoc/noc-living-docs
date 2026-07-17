@@ -1,5 +1,25 @@
 # Change Record: release-quality
 
+## 2026-07-17 - Prepare 1.3.0 release metadata
+
+- Set the final feature-archive MVP release version to `1.3.0`.
+- Updated VERSION, package metadata, README current-version markers, the standard Skill manifest, version assertions, and CHANGELOG.
+- Added the compatible `skills/codex/project-living-docs` Skill assets to the wheel under `noc_assets.codex_project_living_docs` while preserving the existing setup installation target.
+- Kept tag creation, PyPI publishing, main merges, PR creation, and release workflow changes out of this stage.
+
+## 2026-07-17 - Cover stage 7 zero-learning user journey
+
+- Reframed README first screen around `pipx install noc-living-docs`, `noc setup`, `noc init .`, and normal Codex requirements.
+- Added tests for README zero-learning flow, Skill workflow safety rules, setup-installed Skill parity, idempotent setup, custom Skill protection, no Git hook installation, and a controlled feature-archive CLI loop.
+- Kept VERSION, CHANGELOG, publishing workflow, tags, PRs, and PyPI publishing unchanged.
+
+## 2026-07-16 - package noclib helper modules
+
+- Reason: stage 1 introduced `scripts.noclib` for schema and layout helpers, and installed CLI smoke tests require those modules in the wheel.
+- Changed: `pyproject.toml` package list now includes `scripts.noclib`; package metadata tests were updated to expect the helper package.
+- Compatibility: no version, CHANGELOG, README, GitHub publish workflow, tag, or PyPI publishing behavior changed.
+- Verification: targeted wheel installation test and full unittest discovery passed.
+
 ## 2026-07-14 - Prepare v1.2.1 release metadata
 
 - Used the tested release CLI patch bump to create the 1.2.1 changelog entry and update `VERSION`.

@@ -16,6 +16,17 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.noclib.schemas import validate_config_schema, validate_overview_frontmatter
+from scripts.noclib.candidates import feature_archive_work_plan
+from scripts.noclib.features import ensure_feature
+from scripts.noclib.feature_update import update_feature
+from scripts.noclib.evidence import collect_code_evidence, record_verification_evidence
+from scripts.noclib.feature_check import check_feature_impact
+from scripts.noclib.migration import migrate_apply, migrate_dry_run, migrate_rollback
+
 SCRIPT_DIR = ROOT / "scripts"
 TEMPLATES = ROOT / "templates/noc_docs"
 SKILL_NAME = "project-living-docs"
@@ -288,9 +299,12 @@ def run_script(name: str, args: list[str]) -> int:
 def command_init(args: argparse.Namespace) -> int:
     target = Path(args.target).resolve()
     existing_config = load_config(target)
+    if args.mode is None and existing_config.get("protocol_version") == 2 and existing_config.get("layout") in {"simplified", "feature-archive"}:
+        print("Project memory is ready. Continue using Codex normally.")
+        return 0
     has_legacy_layout = (target / "noc_docs/features").is_dir() or (target / "noc_docs/domains").is_dir()
-    simplified = args.mode is None and not has_legacy_layout and existing_config.get("protocol_version") != 1
-    if simplified:
+    feature_archive = args.mode is None and not has_legacy_layout and existing_config.get("protocol_version") != 1
+    if feature_archive:
         state = setup_state(codex_home())
         if state["status"] != "ready":
             actions = {
@@ -300,14 +314,14 @@ def command_init(args: argparse.Namespace) -> int:
             }
             print(actions.get(state["status"], state.get("next_action") or "noc setup"))
             return 1
-        forwarded = [str(target), "--layout", "simplified", "--agent-file", args.agent_file]
+        forwarded = [str(target), "--layout", "feature-archive", "--agent-file", args.agent_file]
     else:
         mode = args.mode or detect_docs_mode(target)
         forwarded = [str(target), "--mode", mode, "--agent-file", args.agent_file]
     if args.force:
         forwarded.append("--force")
     code = run_script("init-noc-docs.py", forwarded)
-    if code == 0 and (simplified or args.index):
+    if code == 0 and (feature_archive or args.index):
         result = subprocess.run(
             [sys.executable, str(SCRIPT_DIR / "index-noc-docs.py"), str(target)],
             text=True,
@@ -317,7 +331,7 @@ def command_init(args: argparse.Namespace) -> int:
         code = result.returncode
         if code != 0:
             sys.stderr.write(result.stderr or result.stdout)
-    if code == 0 and simplified:
+    if code == 0 and feature_archive:
         health = subprocess.run(
             [sys.executable, str(SCRIPT_DIR / "validate-noc-docs.py"), "--target", str(target)],
             text=True,
@@ -327,7 +341,7 @@ def command_init(args: argparse.Namespace) -> int:
         code = health.returncode
         if code != 0:
             sys.stderr.write(health.stderr or health.stdout)
-    if code == 0 and simplified:
+    if code == 0 and feature_archive:
         print("Project memory is ready. Continue using Codex normally.")
     return code
 
@@ -338,8 +352,9 @@ def command_index(args: argparse.Namespace) -> int:
 
 def command_validate(args: argparse.Namespace) -> int:
     forwarded = []
-    if args.target:
-        forwarded.extend(["--target", str(args.target)])
+    target = args.target or args.target_positional
+    if target:
+        forwarded.extend(["--target", str(target)])
     return run_script("validate-noc-docs.py", forwarded)
 
 
@@ -652,6 +667,45 @@ def command_feature_create(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_feature_ensure(args: argparse.Namespace) -> int:
+    target = Path(args.target).resolve()
+    code, payload = ensure_feature(target, args.id, args.name, args.alias or [], args.intent)
+    if args.json:
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return code
+    status = payload.get("status")
+    if status == "created":
+        feature = payload["feature"]
+        print(f"Created feature `{feature['id']}` at {feature['overview_path']}")
+    elif status == "existing":
+        feature = payload["feature"]
+        print(f"Feature `{feature['id']}` already exists at {feature['overview_path']}")
+    elif status == "conflict":
+        conflict = payload["conflict"]
+        print(f"ERROR: feature name or alias conflicts with `{conflict['id']}`")
+    else:
+        print(f"ERROR: {payload.get('error', 'feature ensure failed')}")
+    return code
+
+
+def command_feature_update(args: argparse.Namespace) -> int:
+    target = Path(args.target).resolve()
+    code, payload = update_feature(target, args.id, Path(args.patch_file).resolve())
+    if args.json:
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return code
+    status = payload.get("status")
+    if status == "updated":
+        print(f"Updated feature `{payload['feature_id']}` at {payload['overview_path']}")
+    elif status == "unchanged":
+        print(f"Feature `{payload['feature_id']}` unchanged")
+    elif status == "conflict":
+        print("ERROR: overview changed; reread the document and regenerate the patch")
+    else:
+        print(f"ERROR: {payload.get('error', status or 'feature update failed')}")
+    return code
+
+
 def rename_structured_feature_titles(feature_path: Path, old_id: str, new_id: str) -> None:
     for name, prefix in FEATURE_TITLE_PREFIXES.items():
         path = feature_path / name
@@ -753,6 +807,13 @@ def command_feature_adopt(args: argparse.Namespace) -> int:
 
 def command_check(args: argparse.Namespace) -> int:
     target = Path(args.target).resolve()
+    if args.feature_impact_file:
+        code, payload = check_feature_impact(target, Path(args.feature_impact_file).resolve())
+        if args.json:
+            print(json.dumps(payload, indent=2, ensure_ascii=False))
+        else:
+            print(payload["status"])
+        return code
     if args.memory_impact or args.json:
         return command_memory_impact_check(target, args)
     config = load_config(target)
@@ -808,6 +869,50 @@ def command_check(args: argparse.Namespace) -> int:
     return check_result(strictness)
 
 
+def command_evidence(args: argparse.Namespace) -> int:
+    if args.target_or_action == "record":
+        if not args.record_target:
+            print(json.dumps({"status": "invalid_evidence", "error": "record target is required"}, indent=2, ensure_ascii=False))
+            return 2
+        if not args.feature_id or not args.file:
+            print(json.dumps({"status": "invalid_evidence", "error": "--feature-id and --file are required"}, indent=2, ensure_ascii=False))
+            return 2
+        target = Path(args.record_target).resolve()
+        code, payload = record_verification_evidence(target, args.feature_id, Path(args.file).resolve())
+        if args.json:
+            print(json.dumps(payload, indent=2, ensure_ascii=False))
+        else:
+            print(payload.get("status", "error"))
+        return code
+    target = Path(args.target_or_action or ".").resolve()
+    payload = collect_code_evidence(target, "staged" if args.staged else "staged")
+    if args.json:
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+    else:
+        print(f"Changed paths: {len(payload['changed_paths'])}")
+    return 0
+
+
+def command_migrate(args: argparse.Namespace) -> int:
+    target = Path(args.target).resolve()
+    if args.rollback:
+        code, payload = migrate_rollback(target, args.rollback)
+    elif args.apply:
+        code, payload = migrate_apply(target, backup=args.backup)
+    else:
+        code, payload = migrate_dry_run(target)
+    if args.json:
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+    else:
+        print(f"{payload.get('status')}: {payload.get('source_layout', '')} -> {payload.get('target_layout', '')}".strip())
+        rollback = payload.get("rollback")
+        if isinstance(rollback, dict) and rollback.get("rollback_command"):
+            print(f"Rollback: {rollback['rollback_command']}")
+        if payload.get("error"):
+            print(f"ERROR: {payload['error']}")
+    return code
+
+
 MEMORY_IMPACT_DOCS = {
     "project": "noc_docs/project.md",
     "guardrails": "noc_docs/guardrails.md",
@@ -843,7 +948,7 @@ def command_memory_impact_check(target: Path, args: argparse.Namespace) -> int:
             updated_docs = sorted(path for path in docs_files if path.endswith(".md"))
         missing_categories: list[str] = []
         unexpected_updates = bool(updated_docs)
-    elif config.get("protocol_version") == 2 and config.get("layout") == "simplified":
+    elif config.get("protocol_version") == 2 and config.get("layout") in {"simplified", "feature-archive"}:
         required_docs = [MEMORY_IMPACT_DOCS[impact] for impact in normalized]
         updated_docs = sorted(path for path in docs_files if path in MEMORY_IMPACT_DOCS.values())
         missing_categories = [impact for impact in normalized if MEMORY_IMPACT_DOCS[impact] not in updated_docs]
@@ -1170,6 +1275,8 @@ def resolve_work_matches(feature_map: dict, feature: str | None, paths: list[str
 
 def build_work_plan(target: Path, feature: str | None, paths: list[str], intent: str | None) -> dict:
     config = load_config(target)
+    if config.get("protocol_version") == 2 and config.get("layout") == "feature-archive":
+        return feature_archive_work_plan(target, config, paths, intent)
     if config.get("protocol_version") == 2 and config.get("layout") == "simplified":
         memory = ["noc_docs/project.md", "noc_docs/guardrails.md", "noc_docs/verification.md"]
         return {
@@ -1322,8 +1429,47 @@ def command_doctor(args: argparse.Namespace) -> int:
 
     living_docs = noc_docs / ".living-docs"
     raw_config = load_config(target)
+    if raw_config.get("protocol_version") == 2 and raw_config.get("layout") == "feature-archive":
+        config = doctor_json(report, living_docs / "config.json", ["documentation_root", "protocol_version", "layout", "layout_version"])
+        report.ok(language_report(config))
+        for error in validate_config_schema(config):
+            report.error(f"feature-archive config invalid: {error}")
+            report.fix("Fix noc_docs/.living-docs/config.json before running feature-archive workflows.")
+        for name in ["project.md", "guardrails.md", "verification.md"]:
+            if (noc_docs / name).is_file():
+                report.ok(f"found noc_docs/{name}")
+            else:
+                report.error(f"missing noc_docs/{name}")
+                report.fix("Restore the missing project-level memory file.")
+        features_root = noc_docs / "features"
+        if features_root.is_dir():
+            report.ok("found noc_docs/features/")
+            for feature_dir_path in sorted(features_root.iterdir()):
+                if not feature_dir_path.is_dir() or feature_dir_path.name.startswith("."):
+                    continue
+                overview = feature_dir_path / "overview.md"
+                if not overview.is_file():
+                    report.error(f"missing {overview.relative_to(target).as_posix()}")
+                    report.fix("Create the missing feature overview through the feature-archive workflow.")
+                    continue
+                errors = validate_overview_frontmatter(parse_simple_frontmatter(overview))
+                if errors:
+                    report.error(f"{overview.relative_to(target).as_posix()} invalid: {'; '.join(errors)}")
+                    report.fix("Fix the feature overview frontmatter.")
+                else:
+                    report.ok(f"valid {overview.relative_to(target).as_posix()}")
+        else:
+            report.error("missing noc_docs/features/")
+            report.fix("Run explicit migration or initialize a new feature-archive project.")
+        report.ok("protocol 2 feature-archive layout is ready")
+        doctor_hook(report, root)
+        print("Fix suggestions:")
+        print("- No action needed." if not report.fixes else "\n".join(f"- {fix}" for fix in report.fixes))
+        return 1 if report.errors else 0
+
     if raw_config.get("protocol_version") == 2 and raw_config.get("layout") == "simplified":
         config = doctor_json(report, living_docs / "config.json", ["documentation_root", "protocol_version", "layout"])
+        report.ok(language_report(config))
         doctor_json(report, living_docs / "routing.json", ["protocol_version", "layout", "routes"])
         doctor_json(report, living_docs / "manifest.json", ["protocol_version", "layout", "managed_files", "files"])
         for name in ["project.md", "guardrails.md", "verification.md"]:
@@ -1440,6 +1586,28 @@ def doctor_hook(report: DoctorReport, root: Path | None) -> None:
     else:
         report.error("pre-commit hook NOC block does not reference a valid entry")
         report.fix("Run: noc hook install <project> to refresh the hook.")
+
+
+def parse_simple_frontmatter(path: Path) -> dict:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    if not lines or lines[0].strip() != "---":
+        return {}
+    data = {}
+    for line in lines[1:]:
+        if line.strip() == "---":
+            break
+        if ":" not in line or line.startswith(" "):
+            continue
+        key, raw = line.split(":", 1)
+        value = raw.strip()
+        data[key.strip()] = int(value) if value.isdigit() else value
+    return data
+
+
+def language_report(config: dict) -> str:
+    language = config.get("language") if isinstance(config.get("language"), str) else "unspecified"
+    machine_keys = config.get("machine_keys") if isinstance(config.get("machine_keys"), str) else "unspecified"
+    return f"language: {language}; machine_keys: {machine_keys}"
 
 
 def resolve_work_features(feature_map: dict, feature: str | None, paths: list[str]) -> list[str]:
@@ -1779,6 +1947,7 @@ def build_parser() -> argparse.ArgumentParser:
     index.set_defaults(func=command_index)
 
     validate = sub.add_parser("validate", help="[Advanced] Validate repository or target project.")
+    validate.add_argument("target_positional", nargs="?")
     validate.add_argument("--target")
     validate.set_defaults(func=command_validate)
 
@@ -1794,6 +1963,7 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("--environment", choices=["manual", "local", "ci"], help="Select strictness environment.")
     check.add_argument("--github-annotations", action="store_true", help="Emit GitHub Actions warning/error annotations.")
     check.add_argument("--warn-only", action="store_true", help="Return success even when docs are missing.")
+    check.add_argument("--feature-impact-file", help="Structured feature impact JSON file for feature-archive checks.")
     check.add_argument(
         "--memory-impact",
         action="append",
@@ -1802,6 +1972,26 @@ def build_parser() -> argparse.ArgumentParser:
     )
     check.add_argument("--json", action="store_true", help="Print a machine-readable memory-impact result.")
     check.set_defaults(func=command_check)
+
+    evidence = sub.add_parser("evidence", help="[Advanced] Collect or record feature-archive evidence.")
+    evidence.add_argument("target_or_action", nargs="?", default=".")
+    evidence.add_argument("record_target", nargs="?")
+    evidence.add_argument("--staged", action="store_true", help="Collect staged Git evidence.")
+    evidence.add_argument("--feature-id", help="Feature id for `evidence record`.")
+    evidence.add_argument("--file", help="Verification evidence JSON file for `evidence record`.")
+    evidence.add_argument("--json", action="store_true", help="Print evidence as machine-readable JSON.")
+    evidence.set_defaults(func=command_evidence)
+
+    migrate = sub.add_parser("migrate", help="[Advanced] Explicitly migrate legacy NOC docs.")
+    migrate.add_argument("target", nargs="?", default=".")
+    migrate.add_argument("--to", choices=["feature-archive"], help="Target layout for dry-run or apply.")
+    migrate_mode = migrate.add_mutually_exclusive_group()
+    migrate_mode.add_argument("--dry-run", action="store_true", help="Plan migration without writing files.")
+    migrate_mode.add_argument("--apply", action="store_true", help="Apply the migration. Requires --backup.")
+    migrate_mode.add_argument("--rollback", help="Restore noc_docs from a migration backup id.")
+    migrate.add_argument("--backup", action="store_true", help="Create a full noc_docs backup before applying.")
+    migrate.add_argument("--json", action="store_true", help="Print the migration result as machine-readable JSON.")
+    migrate.set_defaults(func=command_migrate)
 
     suggest_map = sub.add_parser("suggest-map", help="[Advanced] Suggest feature path mappings.")
     suggest_map.add_argument("target", nargs="?", default=".")
@@ -1834,6 +2024,22 @@ def build_parser() -> argparse.ArgumentParser:
     feature_create.add_argument("--path", action="append", help="Code path to map into feature-map.json. Can be repeated.")
     feature_create.add_argument("--no-index", action="store_true", help="Skip running `noc index` after creation.")
     feature_create.set_defaults(func=command_feature_create)
+
+    feature_ensure = feature_sub.add_parser("ensure", help="Ensure a feature-archive overview exists.")
+    feature_ensure.add_argument("target", help="Project directory containing noc_docs.")
+    feature_ensure.add_argument("--id", required=True, help="Stable ASCII kebab-case feature id.")
+    feature_ensure.add_argument("--name", required=True, help="Display name stored in overview frontmatter.")
+    feature_ensure.add_argument("--alias", action="append", help="Alias used for candidate routing. Can be repeated.")
+    feature_ensure.add_argument("--intent", help="Confirmed user intent to record as the initial requirement.")
+    feature_ensure.add_argument("--json", action="store_true", help="Print the result as machine-readable JSON.")
+    feature_ensure.set_defaults(func=command_feature_ensure)
+
+    feature_update = feature_sub.add_parser("update", help="Apply a structured feature-archive overview patch.")
+    feature_update.add_argument("target", help="Project directory containing noc_docs.")
+    feature_update.add_argument("--id", required=True, help="Stable ASCII kebab-case feature id.")
+    feature_update.add_argument("--patch-file", required=True, help="JSON patch file produced by an agent workflow.")
+    feature_update.add_argument("--json", action="store_true", help="Print the result as machine-readable JSON.")
+    feature_update.set_defaults(func=command_feature_update)
 
     feature_rename = feature_sub.add_parser("rename", help="Rename an existing feature directory and mapping.")
     feature_rename.add_argument("target", help="Project directory containing noc_docs.")

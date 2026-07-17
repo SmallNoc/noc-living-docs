@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+## [1.3.0] - 2026-07-17
+
+### Added
+
+- New projects now default to the feature-archive layout, where each feature has its own directory and `overview.md`.
+- Added Chinese-friendly feature archives: Chinese projects keep Simplified Chinese prose in feature names, requirements, implementation notes, verification summaries, and final Codex reports while machine keys and CLI identifiers stay stable.
+- Added automatic feature identification through `noc work` and explicit feature creation through `noc feature ensure`.
+- Added structured `noc feature update` patches for confirmed requirements, current implementation, code scope, verification methods, verification results, major changes, and pending questions.
+- Added `noc evidence`, `noc evidence record`, and `noc check --feature-impact-file` so agents can tie code diffs, verification evidence, and feature documentation updates together.
+- Added explicit migration and rollback support for simplified and v1 projects that users choose to migrate.
+- Added the Codex Skill zero-learning workflow so ordinary users can install, initialize, and describe requirements without learning internal NOC subcommands.
+
+### Changed
+
+- README, AGENTS templates, Skill runtime references, setup installation checks, and wheel packaging now align around the default feature-archive user journey.
+- Existing simplified projects and v1 small/domain projects are not silently migrated; v1 small/domain compatibility remains available.
+
 ## [1.2.1] - 2026-07-14
 
 ### Changed

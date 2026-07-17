@@ -11,6 +11,22 @@ confidence: medium
 
 `noc init` 对未指定 `--mode` 的新项目生成 protocol v2 简化结构：三个项目级 Markdown 和记忆配置、路由、清单；它从 README、项目标志、源码和测试目录提取可确认事实，并保留已有 AGENTS 内容。显式 small/domain/auto 和已有 features/domains 项目仍走 v1 流程。`index`、`validate` 和 `doctor` 可识别两种协议，本仓库自身保持 v1。
 
+阶段 1 feature-archive MVP 只增加只读识别：`validate` 可校验手工存在的 `layout: feature-archive`、`layout_version: "1.0"`、项目级三文件和 `features/<feature-id>/overview.md` frontmatter；`doctor` 可报告 feature-archive 布局状态。旧 simplified 项目的 `work/index/doctor/validate` 不创建 `features/`，不改 `routing.json`，不补写缺失的 `language` 字段。
+
+阶段 2 将新项目默认初始化切换为 feature-archive layout。`noc init` 对全新项目创建项目级三文件、空的 `noc_docs/features/` 根目录，以及 `config.json`、`routing.json`、`manifest.json`、`feature-index.json`、`evidence-index.json`。不会创建示例业务功能目录。已有 `layout: simplified` 或 `layout: feature-archive` 的 v2 项目再次执行默认 `noc init` 时只返回 ready，不重建或覆盖已有内容。
+
+`noc index` 现在可以从 Markdown 事实来源重建 feature-archive 派生 JSON。事实来源是 `project.md`、`guardrails.md`、`verification.md` 和 `features/*/overview.md`；派生数据是 `routing.json`、`manifest.json`、`feature-index.json` 和 `evidence-index.json`。删除派生 JSON 后重新执行 `noc index` 可恢复完整索引，重复执行保持幂等；索引失败时先校验 overview frontmatter，不覆盖已有派生索引。
+
+阶段 3 中，`noc feature ensure` 在成功创建新功能 overview 后调用 feature-archive 索引重建，使 `feature-index.json` 立即包含新功能。`noc work` 依赖 `feature-index.json` 加载候选，但当该派生索引缺失或 JSON 损坏时，只读扫描 `features/*/overview.md` 作为 fallback，不重建索引、不修改 Markdown。
+
+阶段 3.1 修复了底层 `scripts/init-noc-docs.py --layout simplified` 旧路径缺少 `hashlib` import 的问题。该路径现在可直接生成 simplified config、routing 和带 SHA-256 的 manifest；默认 `noc init` 的 feature-archive 行为不变。
+
+阶段 4 中，`noc feature update` 在 overview 实际变化后会重建 feature-archive 派生索引，与 `feature ensure` 保持一致。`unchanged`、invalid patch 和 SHA conflict 都不会重建索引或创建备份；如果索引失败，overview 保留已写入事实并返回可手动运行的 `noc index` 命令。
+
+阶段 5 中，`evidence-index.json` 从 `noc_docs/.living-docs/evidence/*/*.json` 重建，不再只是空结构。`noc index` 不执行任何 evidence command 或测试命令，只读取 evidence 摘要元数据；删除 `evidence-index.json` 后可由 `noc index` 恢复，损坏的 evidence JSON 会让 index 报错而不是静默丢弃。
+
+阶段 6 中，旧 layout 迁移仍然与普通 init/index/validate 路径分离，只能通过 `noc migrate` 显式触发。simplified apply 会保留三份项目级 Markdown 原文、创建空 `features/`、把 config 更新为 `layout: feature-archive` 和 `layout_version: "1.0"`，并从事实来源重建 routing、manifest、feature-index 和 evidence-index。v1 small/domain apply 会为每个旧 feature 创建稳定 ASCII feature id、把中文显示名写入 overview frontmatter，并将原始 v1 Markdown 复制到对应 `legacy/` 目录；无法可靠分类的内容不写成当前实现或已确认需求。
+
 ## Important Files
 
 - `scripts/init-noc-docs.py`
@@ -24,6 +40,12 @@ confidence: medium
 - `noc_docs/.living-docs/config.json`
 - `noc_docs/.living-docs/feature-map.json`
 - v2: `config.json`、`routing.json`、`manifest.json`
+- feature-archive stage 1: `config.json` 的 `protocol_version`、`layout`、`layout_version`、`language`、`machine_keys` 只被读取和校验；派生索引生成留给后续阶段。
+- feature-archive stage 2: `feature-index.json` 在空功能集合时为 `{"schema_version": "1.0", "features": []}`；有 overview 时索引 `id`、`name`、`aliases`、`status`、`language`、`overview_path` 和 `updated_at`。
+- feature-archive stage 3: candidate routing 使用索引和 overview 正文作为事实来源；索引缺失 fallback 是只读行为，不会隐式修复或升级项目。
+- feature-archive stage 4: `noc_docs/.living-docs/backups/<timestamp>/features/<feature-id>/overview.md` 保存实际写入前的 overview 备份；该备份只在内容变化时创建。
+- feature-archive stage 5: `noc_docs/.living-docs/evidence/<feature-id>/<evidence-id>.json` 是验证证据事实文件；`evidence-index.json` 是可重建派生摘要，包含 id、feature_id、result、scope、command、recorded_at 和 path。
+- feature-archive stage 6: `.noc-backups/migrations/<backup-id>/noc_docs/` 保存迁移或回滚前的完整 `noc_docs`；同级 `manifest.json` 记录每个备份文件的 SHA-256，用于 rollback 前校验。
 
 ## Known Issues
 

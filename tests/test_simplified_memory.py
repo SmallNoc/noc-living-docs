@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -27,6 +29,14 @@ def run(args: list[str], *, env: dict[str, str] | None = None, check: bool = Tru
     return result
 
 
+def project_file_hashes(project: Path) -> dict[str, str]:
+    hashes: dict[str, str] = {}
+    for path in sorted(project.rglob("*")):
+        if path.is_file() and ".git" not in path.relative_to(project).parts:
+            hashes[path.relative_to(project).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return hashes
+
+
 class SimplifiedProjectMemoryTests(unittest.TestCase):
     def ready_home(self, root: Path) -> dict[str, str]:
         env = {"CODEX_HOME": str(root / "Codex Home 中文")}
@@ -47,7 +57,7 @@ class SimplifiedProjectMemoryTests(unittest.TestCase):
         )
         return project, env
 
-    def test_default_init_creates_only_v2_minimal_structure(self) -> None:
+    def test_default_init_creates_feature_archive_minimal_structure(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             project = root / "项目 with spaces"
@@ -72,12 +82,16 @@ class SimplifiedProjectMemoryTests(unittest.TestCase):
                     "noc_docs/.living-docs/config.json",
                     "noc_docs/.living-docs/routing.json",
                     "noc_docs/.living-docs/manifest.json",
+                    "noc_docs/.living-docs/feature-index.json",
+                    "noc_docs/.living-docs/evidence-index.json",
                 },
             )
             config = json.loads((project / "noc_docs/.living-docs/config.json").read_text(encoding="utf-8"))
             self.assertEqual(config["protocol_version"], 2)
-            self.assertEqual(config["layout"], "simplified")
-            self.assertFalse((project / "noc_docs/features").exists())
+            self.assertEqual(config["layout"], "feature-archive")
+            self.assertEqual(config["layout_version"], "1.0")
+            self.assertTrue((project / "noc_docs/features").is_dir())
+            self.assertEqual([], list((project / "noc_docs/features").iterdir()))
             self.assertFalse((project / "noc_docs/domains").exists())
 
     def test_init_detects_project_files_without_inventing_business_facts(self) -> None:
@@ -102,7 +116,7 @@ class SimplifiedProjectMemoryTests(unittest.TestCase):
                     run(["init", str(project)], env=env)
                     text = (project / "noc_docs/project.md").read_text(encoding="utf-8")
                     self.assertIn(marker, text)
-                    self.assertIn("待确认", text)
+                    self.assertIn("待补充", text)
                     self.assertNotIn("billing", text.lower())
 
     def test_init_preserves_readme_and_user_agents_content_and_is_idempotent(self) -> None:
@@ -153,18 +167,77 @@ class SimplifiedProjectMemoryTests(unittest.TestCase):
 
             self.assertIn("protocol_version", work)
             self.assertEqual(work["protocol_version"], 2)
-            self.assertEqual(work["layout"], "simplified")
+            self.assertEqual(work["layout"], "feature-archive")
             self.assertEqual(
                 work["features"][0]["read_before_code"],
                 ["noc_docs/project.md", "noc_docs/guardrails.md", "noc_docs/verification.md"],
             )
-            self.assertIn("simplified", doctor.stdout)
+            self.assertIn("feature-archive", doctor.stdout)
 
             subprocess.run(["git", "-C", str(project), "add", "."], check=True)
             subprocess.run(["git", "-C", str(project), "-c", "user.name=Test", "-c", "user.email=t@example.com", "commit", "-m", "init"], check=True, stdout=subprocess.PIPE)
             (project / "app.py").write_text("print('fix')\n", encoding="utf-8")
             check_result = run(["check", str(project)], env=env)
             self.assertNotIn("WARNING: code changed but no noc_docs files changed", check_result.stdout)
+
+    def test_existing_simplified_work_index_doctor_validate_do_not_modify_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project, env = self.initialized_git_project(Path(tmp))
+            shutil.rmtree(project / "noc_docs/features")
+            config_path = project / "noc_docs/.living-docs/config.json"
+            config = json.loads(config_path.read_text(encoding="utf-8"))
+            config["layout"] = "simplified"
+            config.pop("layout_version", None)
+            config_path.write_text(json.dumps(config, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+            routing_path = project / "noc_docs/.living-docs/routing.json"
+            routing_path.write_text(
+                json.dumps(
+                    {
+                        "protocol_version": 2,
+                        "layout": "simplified",
+                        "routes": [{"path": "**", "memory": ["noc_docs/project.md", "noc_docs/guardrails.md", "noc_docs/verification.md"]}],
+                    },
+                    indent=2,
+                    ensure_ascii=False,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            (project / "noc_docs/.living-docs/manifest.json").write_text(
+                json.dumps(
+                    {
+                        "protocol_version": 2,
+                        "layout": "simplified",
+                        "managed_files": [
+                            "noc_docs/project.md",
+                            "noc_docs/guardrails.md",
+                            "noc_docs/verification.md",
+                            "noc_docs/.living-docs/config.json",
+                            "noc_docs/.living-docs/routing.json",
+                            "noc_docs/.living-docs/manifest.json",
+                        ],
+                        "files": {},
+                    },
+                    indent=2,
+                    ensure_ascii=False,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            for name in ["feature-index.json", "evidence-index.json"]:
+                path = project / "noc_docs/.living-docs" / name
+                if path.exists():
+                    path.unlink()
+            run(["index", str(project)], env=env)
+            before = project_file_hashes(project)
+
+            run(["work", str(project), "--path", "src/app.py", "--json"], env=env)
+            run(["index", str(project)], env=env)
+            run(["doctor", str(project)], env=env)
+            run(["validate", "--target", str(project)], env=env)
+
+            self.assertEqual(before, project_file_hashes(project))
+            self.assertFalse((project / "noc_docs/features").exists())
 
     def test_existing_v1_project_is_not_migrated_by_default_init(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

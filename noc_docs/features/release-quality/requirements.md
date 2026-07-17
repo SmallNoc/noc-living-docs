@@ -1,6 +1,6 @@
 ---
 status: active
-last_reviewed: 2026-07-08
+last_reviewed: 2026-07-17
 source_of_truth: product-intent
 confidence: medium
 ---
@@ -27,10 +27,12 @@ confidence: medium
 - AC-004: `python -m twine check dist/*` 通过，README 可作为 PyPI long description 渲染。
 - AC-005: 从 wheel 安装后 `noc --help` 和 `noc init <target>` 可用。
 - AC-006: 从 wheel 安装后 `noc setup` 可以向隔离的 `CODEX_HOME` 安装同版本 Skill。
-- AC-007: README 首屏只呈现安装、一次初始化和正常使用 Codex 三步流程，内部命令移至高级用法。
+- AC-007: README 首屏只呈现安装、一次初始化和正常使用 Codex 三步流程，内部命令移至工作原理或高级用法。
 - AC-008: 仓库外隔离安装的 wheel 必须完成 version、setup、v2 init 幂等、语义 check 和中文空格路径验证。
-- AC-009: README 默认流程和生成目录以 v2 simplified 为主，v1 feature/domain 能力仅作为显式兼容模式说明。
-- AC-010: 两份运行时 Skill 内容同步，Definition of Done 分别约束 v2 simplified 与 v1 legacy 项目。
+- AC-009: README 默认流程和生成目录以 feature-archive 为主，说明每个功能默认一个目录和 `overview.md`，中文项目默认生成中文正文。
+- AC-010: 两份运行时 Skill 内容同步，Definition of Done 分别约束 feature-archive、simplified 与 v1 legacy 项目。
+- AC-011: setup 安装和 setup check 必须确认安装后的 Skill 与仓库正式 Skill 一致，且重复 setup 幂等、不安装 Git hook、不覆盖用户自定义同名 Skill。
+- AC-012: release wheel 必须包含 `scripts.noclib` 全部运行模块、标准 `.agents` Skill 资产、兼容 `skills/codex` Skill 资产、templates 和必要 package data。
 
 ## Non-Goals
 

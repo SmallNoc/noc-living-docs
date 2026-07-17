@@ -1,5 +1,47 @@
 # Change Record: cli-core
 
+## 2026-07-16 - explicit feature-archive migration
+
+- Reason: implement stage 6 so old simplified and v1 projects can move to feature-archive only through an explicit, reversible command.
+- Changed: added `noc migrate` with dry-run, apply-with-backup, and rollback JSON paths; migration rejects unsafe documentation roots, conflicting target feature structures, invalid backup ids, and damaged backup manifests.
+- Compatibility: ordinary commands still do not silently migrate old layouts; apply requires `--backup`; rollback preserves the original migration backup and creates a pre-rollback backup.
+- Verification: stage 6 migration tests cover simplified dry-run/apply/rollback, v1 conservative preservation, conflicts, unsafe paths, damaged manifests, ordinary command non-migration, and forced apply failure recovery.
+
+## 2026-07-16 - feature evidence and impact checks
+
+- Reason: implement stage 5 so future Skill workflows can submit real code and verification evidence while the CLI enforces deterministic consistency checks.
+- Changed: added `noc evidence <project> --staged --json`, `noc evidence record <project> --feature-id --file --json`, and `noc check <project> --feature-impact-file --json`; added staged Git evidence collection, deterministic signals, verification evidence validation, sensitive-value redaction, stable evidence ids, and feature impact checks.
+- Compatibility: evidence recording is restricted to feature-archive layout; evidence collection and check are read-only; existing `check --memory-impact` and old simplified/small/domain behavior remain compatible.
+- Verification: stage 5 evidence/check tests, full unittest discovery, repository validation, release check,专项脚本,旧 layout regressions, stage 3/4 regressions, and wheel-isolated evidence/check verification passed.
+
+## 2026-07-16 - structured feature update command
+
+- Reason: implement stage 4 so future Skill workflows submit structured facts while the CLI owns safe, local, idempotent `overview.md` writes.
+- Changed: added `noc feature update --id --patch-file --json`; added structured patch validation, stable `noc:id` Markdown markers, localized section updates, SHA conflict checks, backup creation, atomic writes, and derived index refresh after real changes.
+- Compatibility: command is restricted to feature-archive layout; simplified, small, and domain projects are not migrated or modified.
+- Verification: stage 4 update tests, full unittest discovery, repository validation, release check, and wheel-isolated update verification passed.
+
+## 2026-07-16 - feature-archive candidate routing and ensure
+
+- Reason: implement stage 3 of the MVP without adding structured updates, evidence recording, migration, or Skill automation.
+- Changed: `work --json` now scores feature-archive candidates with deterministic evidence from ids, names, aliases, overview text, code paths, and status; `noc feature ensure` creates a missing feature overview idempotently with Chinese body text when the project language is `zh-CN`.
+- Compatibility: `work` remains read-only, falls back to overview scanning when the feature index is missing, and does not modify old simplified projects.
+- Verification: targeted routing and ensure tests, full unittest discovery, repository validation, release check, stage 3 no-write checks, and isolated wheel ensure/index/work verification passed.
+
+## 2026-07-16 - feature-archive stage 1 CLI recognition
+
+- Reason: implement the first MVP stage for schema and read-only layout recognition without changing new-project init defaults.
+- Changed: added `scripts.noclib.schemas` and `scripts.noclib.layouts`; updated `doctor` to recognize feature-archive projects and report language configuration; allowed `noc validate <target>` as a positional equivalent of `--target`.
+- Compatibility: existing v2 simplified projects remain read-only under `work`, `index`, `doctor`, and `validate`; v1 small/domain routing remains unchanged.
+- Verification: `python -m unittest discover -s tests`, `python scripts/noc.py validate .`, `python scripts/release.py --check`, and the explicit simplified no-write hash comparison passed.
+
+## 2026-07-16 - feature-archive project-memory routing
+
+- Reason: after new init creates feature-archive projects, existing `work` and semantic memory-impact checks must still return the v2 project-memory contract.
+- Changed: `work --json` recognizes `layout: feature-archive` and returns project-level memory plus `layout_version`; `check --memory-impact` treats feature-archive project-level memory files like simplified v2 for project/guardrails/verification impacts.
+- Non-goals: no candidate routing, feature ensure, structured update, evidence record, or migration command was added.
+- Verification: full unittest discovery and stage 2 targeted tests passed.
+
 ## 2026-07-14 - Add declarative semantic memory checks
 
 - Added repeatable `--memory-impact` categories and machine-readable check output.

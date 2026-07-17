@@ -1,6 +1,21 @@
 # Feature Doc Template
 
-Use these files under `noc_docs/features/<feature>/` or `noc_docs/domains/<domain>/features/<feature>/`.
+For feature-archive projects, each feature uses one `noc_docs/features/<feature-id>/overview.md`. Do not freely rewrite `overview.md`; update managed facts through `noc feature update` with a structured patch.
+
+## feature-archive overview.md
+
+Purpose: hold the feature’s durable goal, confirmed requirements, current implementation, constraints, code scope, verification method, recent verification results, major changes, and pending questions.
+
+Rules:
+
+- `id` is a stable ASCII kebab-case feature id.
+- `name` may be Chinese, for example `用户登录`.
+- When `language: zh-CN`, section prose stays Simplified Chinese.
+- Requirements become confirmed only when the user explicitly confirmed them.
+- Verification results may say `passed` only after a real command ran and returned exit code 0.
+- Keep JSON/YAML keys, feature ids, CLI flags, paths, code identifiers, and commands English or original.
+
+Use the files below only for v1 small/domain compatibility under `noc_docs/features/<feature>/` or `noc_docs/domains/<domain>/features/<feature>/`.
 
 ## agent-guide.md
 
