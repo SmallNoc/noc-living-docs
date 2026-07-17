@@ -60,7 +60,7 @@ class NocCliTests(unittest.TestCase):
     def test_cli_version_uses_formal_package_version(self) -> None:
         result = run(["--version"])
 
-        self.assertEqual(result.stdout, "noc-living-docs 1.2.1\n")
+        self.assertEqual(result.stdout, "noc-living-docs 1.3.0\n")
 
     def test_cli_help_prioritizes_setup_init_and_normal_codex_use(self) -> None:
         result = run(["--help"])
@@ -126,13 +126,15 @@ class NocCliTests(unittest.TestCase):
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
 
         self.assertIn('name = "noc-living-docs"', pyproject)
-        self.assertIn('version = "1.2.1"', pyproject)
+        self.assertIn('version = "1.3.0"', pyproject)
         self.assertIn('license = "PolyForm-Noncommercial-1.0.0"', pyproject)
         self.assertIn('license-files = ["LICENSE"]', pyproject)
         self.assertIn('noc = "scripts.noc:main"', pyproject)
-        self.assertIn('packages = ["scripts", "scripts.noclib", "templates", "noc_assets.project_living_docs"]', pyproject)
+        self.assertIn('packages = ["scripts", "scripts.noclib", "templates", "noc_assets.project_living_docs", "noc_assets.codex_project_living_docs"]', pyproject)
         self.assertIn('"noc_assets.project_living_docs" = ".agents/skills/project-living-docs"', pyproject)
+        self.assertIn('"noc_assets.codex_project_living_docs" = "skills/codex/project-living-docs"', pyproject)
         self.assertIn('"noc_assets.project_living_docs" = ["*.md", "*.json", "references/*.md", "evals/*.csv"]', pyproject)
+        self.assertIn('"noc_assets.codex_project_living_docs" = ["*.md", "references/*.md", "evals/*.csv"]', pyproject)
         self.assertIn('"noc_docs/.living-docs/*.json"', pyproject)
 
     def test_pypi_publish_workflow_uses_trusted_publishing(self) -> None:

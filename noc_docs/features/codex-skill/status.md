@@ -34,6 +34,7 @@ Skill 现在明确禁止自由重写整个 `overview.md`、未确认就写入已
 - `noc-skill.json` 记录 Skill 名称、版本、管理方、稳定 manager id 和正式运行必需文件。
 - 自动测试按规范化换行比较标准与兼容 Skill 的全部 runtime content，防止两套副本漂移。
 - `noc setup` 安装的 Skill 内容与 `.agents/skills/project-living-docs/` 正式源逐文件一致；用户自定义同名 Skill 仍拒绝覆盖。
+- 阶段 8 后，wheel 同时包含标准 Skill 资产 `noc_assets.project_living_docs` 和兼容 Skill 资产 `noc_assets.codex_project_living_docs`。`noc setup` 仍只安装标准 NOC-managed Skill；兼容资产用于发布包审计和继续保证两份正式 Skill runtime 内容同步。
 
 ## Known Issues
 

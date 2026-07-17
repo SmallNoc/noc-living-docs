@@ -1,5 +1,11 @@
 # Change Record: codex-skill
 
+## 2026-07-17 - Package both formal Skill assets
+
+- Added the compatible `skills/codex/project-living-docs` runtime files to the wheel under `noc_assets.codex_project_living_docs`.
+- Kept `noc setup` pointed at the standard `.agents/skills/project-living-docs` managed Skill.
+- Extended wheel package assertions so both formal Skill copies remain present in release artifacts.
+
 ## 2026-07-17 - Add feature-archive zero-learning workflow
 
 - Added the complete feature-archive Skill loop around `noc work`, `noc feature ensure`, `noc feature update`, `noc evidence`, `noc evidence record`, and `noc check --feature-impact-file`.

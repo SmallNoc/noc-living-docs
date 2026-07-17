@@ -1,5 +1,12 @@
 # Change Record: release-quality
 
+## 2026-07-17 - Prepare 1.3.0 release metadata
+
+- Set the final feature-archive MVP release version to `1.3.0`.
+- Updated VERSION, package metadata, README current-version markers, the standard Skill manifest, version assertions, and CHANGELOG.
+- Added the compatible `skills/codex/project-living-docs` Skill assets to the wheel under `noc_assets.codex_project_living_docs` while preserving the existing setup installation target.
+- Kept tag creation, PyPI publishing, main merges, PR creation, and release workflow changes out of this stage.
+
 ## 2026-07-17 - Cover stage 7 zero-learning user journey
 
 - Reframed README first screen around `pipx install noc-living-docs`, `noc setup`, `noc init .`, and normal Codex requirements.

@@ -367,6 +367,13 @@ class SetupCliTests(unittest.TestCase):
                 "noc_assets/project_living_docs/references/feature-doc-template.md",
                 "noc_assets/project_living_docs/references/domain-mode-guide.md",
                 "noc_assets/project_living_docs/references/codex-prompts.md",
+                "noc_assets/project_living_docs/evals/project-living-docs.prompts.csv",
+                "noc_assets/codex_project_living_docs/SKILL.md",
+                "noc_assets/codex_project_living_docs/references/workflow.md",
+                "noc_assets/codex_project_living_docs/references/feature-doc-template.md",
+                "noc_assets/codex_project_living_docs/references/domain-mode-guide.md",
+                "noc_assets/codex_project_living_docs/references/codex-prompts.md",
+                "noc_assets/codex_project_living_docs/evals/project-living-docs.prompts.csv",
             }
             self.assertTrue(expected.issubset(names), expected - names)
 
@@ -395,7 +402,7 @@ class SetupCliTests(unittest.TestCase):
                 stderr=subprocess.PIPE,
                 text=True,
             )
-            self.assertEqual("noc-living-docs 1.2.1\n", version.stdout)
+            self.assertEqual("noc-living-docs 1.3.0\n", version.stdout)
 
             installed = subprocess.run(
                 [str(venv_noc), "setup", "--json"],

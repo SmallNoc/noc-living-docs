@@ -32,6 +32,7 @@ confidence: medium
 - AC-009: README 默认流程和生成目录以 feature-archive 为主，说明每个功能默认一个目录和 `overview.md`，中文项目默认生成中文正文。
 - AC-010: 两份运行时 Skill 内容同步，Definition of Done 分别约束 feature-archive、simplified 与 v1 legacy 项目。
 - AC-011: setup 安装和 setup check 必须确认安装后的 Skill 与仓库正式 Skill 一致，且重复 setup 幂等、不安装 Git hook、不覆盖用户自定义同名 Skill。
+- AC-012: release wheel 必须包含 `scripts.noclib` 全部运行模块、标准 `.agents` Skill 资产、兼容 `skills/codex` Skill 资产、templates 和必要 package data。
 
 ## Non-Goals
 

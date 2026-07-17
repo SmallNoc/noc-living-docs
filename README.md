@@ -201,7 +201,7 @@ python scripts/noc.py validate
 python scripts/release.py --check
 ```
 
-Current version: `1.2.1`.
+Current version: `1.3.0`.
 
 More reading: [Why NOC](docs/why-noc.md), [Agent Compatibility](docs/agent-compatibility.md), [Comparisons](docs/comparisons.md), and [Release](docs/release.md).
 
@@ -359,7 +359,7 @@ python scripts/noc.py validate
 python scripts/release.py --check
 ```
 
-当前版本：`1.2.1`。
+当前版本：`1.3.0`。
 
 ## 许可证
 
