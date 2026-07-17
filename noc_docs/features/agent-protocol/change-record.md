@@ -1,5 +1,11 @@
 # Change Record: agent-protocol
 
+## 2026-07-17 - Add feature-archive agent entry flow
+
+- Updated the canonical AGENTS managed block to identify layout and affected memory through `noc work --json`.
+- Added feature-archive-specific before/after code rules while keeping simplified project memory and v1 small/domain compatibility.
+- Made old-layout migration explicitly opt-in and limited ambiguity handling to one user clarification.
+
 ## 2026-07-14 - Remove obsolete workflow modes
 
 - Replaced the old mode-based reading policy in current docs maps, Skill workflow references, templates, examples, and token policy.

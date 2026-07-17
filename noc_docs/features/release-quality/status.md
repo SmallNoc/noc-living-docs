@@ -1,6 +1,6 @@
 ---
 status: active
-last_reviewed: 2026-07-08
+last_reviewed: 2026-07-17
 source_of_truth: code
 confidence: medium
 ---
@@ -22,6 +22,10 @@ README 首屏现以安装、默认 v2 simplified 初始化、正常使用 Codex 
 阶段 3 wheel 验证覆盖安装后的 `noc feature ensure`、`noc index` 和 `noc work --intent --json`，确认 `scripts.noclib.candidates` 与 `scripts.noclib.features` 已随 wheel 打包。版本号仍为 `1.2.1`，本阶段未执行发布、打 tag、合并或修改发布配置。
 
 阶段 4 wheel 验证覆盖安装后的 `noc feature update`，确认 `scripts.noclib.feature_update` 已随 wheel 打包并可在隔离环境中更新 feature-archive overview。版本号仍为 `1.2.1`，本阶段未执行发布、打 tag、合并或修改 Trusted Publishing。
+
+阶段 7 README 首屏改为安装、`noc init .` 和正常描述需求三步，默认流程指向 feature-archive，并把内部 CLI 放入高级说明。README 现在明确新项目默认 feature-archive、每个功能默认目录与 `overview.md`、中文项目默认中文正文、NOC 不伪造测试结果、旧项目不会静默迁移且 v1 small/domain 继续兼容。
+
+setup 覆盖已扩展到安装 Skill 与仓库正式 Skill 逐文件一致、重复执行幂等、不安装 Git hook、用户自定义同名 Skill 不被覆盖；CLI fixture 覆盖 init、work、ensure、update、evidence、evidence record 和 feature impact check 的受控完整闭环。
 
 ## Important Files
 
@@ -48,6 +52,7 @@ README 首屏现以安装、默认 v2 simplified 初始化、正常使用 Codex 
 - `pyproject.toml` 使用 SPDX license expression、`license-files = ["LICENSE"]`、显式 package data，确保 wheel 包含 `templates/noc_docs/.living-docs/*.json` 且不包含 `__pycache__`。
 - `.github/workflows/publish.yml` 使用 `permissions.contents: read` 和 `permissions.id-token: write`，environment 为 `pypi`，不使用 token secret。
 - wheel 内的 Skill package 路径为 `noc_assets/project_living_docs/`，安装目标为 `$CODEX_HOME/skills/project-living-docs/`；集成测试从仓库外工作目录启动隔离 venv，避免源码路径遮蔽 wheel。
+- Stage 7 未修改 `VERSION` 或 `CHANGELOG.md`。
 
 ## Known Issues
 

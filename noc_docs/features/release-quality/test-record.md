@@ -1,6 +1,6 @@
 ---
 status: active
-last_reviewed: 2026-07-08
+last_reviewed: 2026-07-17
 source_of_truth: tests
 confidence: medium
 ---
@@ -21,6 +21,9 @@ confidence: medium
 
 | Date | Change | Command / Method | Result | Notes |
 |---|---|---|---|---|
+| 2026-07-17 | stage 7 final verification | `python -m unittest discover -s tests -v`; `python scripts/noc.py validate .`; `python scripts/release.py --check` | PASS | 185 tests passed；validate 通过并提示仓库存在非协议根 `docs/`；release check passed for 1.2.1。 |
+| 2026-07-17 | stage 7 isolated wheel journey | Build wheel to a temporary dist, install into isolated venv, run installed `noc setup --json`, `noc setup --check --json`, compare installed Skill with repo Skill, run new-user init, then run work/ensure/update/evidence/record/check loop | PASS | `WHEEL_STAGE7_OK noc_living_docs-1.2.1-py3-none-any.whl`；setup/check status `ready`，init/work layout `feature-archive`，ensure `created`，update `updated`，evidence `created`，feature impact check `passed`，7 Skill runtime files compared. |
+| 2026-07-17 | stage 7 targeted Skill and setup coverage | `python -m unittest tests.test_noc_cli tests.test_setup_cli -v` | PASS | 80 tests passed；覆盖 README 首屏三步、普通用户不需要学习内部子命令、setup 安装一致性、幂等、自定义 Skill 不覆盖、不安装 Git hook、完整 CLI 闭环和中文 overview 保持中文。 |
 | 2026-07-16 | feature-archive migration wheel smoke | Build wheel to a temporary dist, install into isolated venv, create an old simplified fixture, run installed `noc migrate --dry-run --json`, `noc migrate --apply --backup --json`, and `noc migrate --rollback <backup-id> --json` | PASS | `WHEEL_MIGRATE_OK noc_living_docs-1.2.1-py3-none-any.whl`; installed CLI migrated to feature-archive, created backup id, and restored layout to simplified. No publish/tag was performed. |
 | 2026-07-16 | feature-archive stage 5 wheel evidence/check | Build wheel, install into isolated venv, run installed `noc evidence --staged --json`, `noc evidence record --feature-id --file --json`, and `noc check --feature-impact-file --json` | PASS | Installed wheel imported `scripts.noclib.evidence` and `scripts.noclib.feature_check`; evidence collection returned staged path, record returned `created`, and check returned `passed`. No publish/tag was performed. |
 | 2026-07-16 | feature-archive stage 4 wheel journey | Build wheel in a temporary directory, install into isolated venv, run `noc setup --json`, `noc init <project>`, `noc feature ensure`, and `noc feature update --patch-file --json` | PASS | Installed wheel updated `user-login` from a structured patch and returned `status: updated`; version remained 1.2.1 and no publish/tag was performed. |

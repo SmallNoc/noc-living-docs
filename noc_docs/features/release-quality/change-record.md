@@ -1,5 +1,11 @@
 # Change Record: release-quality
 
+## 2026-07-17 - Cover stage 7 zero-learning user journey
+
+- Reframed README first screen around `pipx install noc-living-docs`, `noc setup`, `noc init .`, and normal Codex requirements.
+- Added tests for README zero-learning flow, Skill workflow safety rules, setup-installed Skill parity, idempotent setup, custom Skill protection, no Git hook installation, and a controlled feature-archive CLI loop.
+- Kept VERSION, CHANGELOG, publishing workflow, tags, PRs, and PyPI publishing unchanged.
+
 ## 2026-07-16 - package noclib helper modules
 
 - Reason: stage 1 introduced `scripts.noclib` for schema and layout helpers, and installed CLI smoke tests require those modules in the wheel.

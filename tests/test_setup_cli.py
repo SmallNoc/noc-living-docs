@@ -51,6 +51,19 @@ class SetupCliTests(unittest.TestCase):
             self.assertTrue((skill / "SKILL.md").is_file())
             self.assertTrue((skill / "references/workflow.md").is_file())
             self.assertTrue((skill / "noc-skill.json").is_file())
+            for relative in [
+                "SKILL.md",
+                "references/workflow.md",
+                "references/feature-doc-template.md",
+                "references/domain-mode-guide.md",
+                "references/codex-prompts.md",
+                "evals/project-living-docs.prompts.csv",
+            ]:
+                self.assertEqual(
+                    (ROOT / ".agents/skills/project-living-docs" / relative).read_text(encoding="utf-8").replace("\r\n", "\n"),
+                    (skill / relative).read_text(encoding="utf-8").replace("\r\n", "\n"),
+                )
+            self.assertFalse((codex_home / ".git/hooks/pre-commit").exists())
             self.assertIn("NOC is ready for Codex", result.stdout)
             self.assertIn("noc init .", result.stdout)
 

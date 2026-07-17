@@ -1,6 +1,6 @@
 ---
 status: active
-last_reviewed: 2026-07-08
+last_reviewed: 2026-07-17
 source_of_truth: code
 confidence: medium
 ---
@@ -14,6 +14,8 @@ confidence: medium
 两套正式 Skill 现在根据实际 diff 声明 none/project/guardrails/verification；格式化、局部重命名、行为不变重构、恢复既有要求的 Bug 修复和普通测试均为 none。长期影响只更新对应 v2 文件，v1 继续读取旧结构但使用相同的语义阈值。
 
 现行 docs map、Skill workflow reference 和 token policy 已统一采用 route-first 规则：默认 v2 simplified 通过 `noc work --json` 路由三份项目记忆，再按 memory impact 判断是否更新；feature/domain 仅作为 legacy v1 compatibility。
+
+阶段 7 后，canonical `templates/AGENTS.md` 兼容 feature-archive：改代码前通过 `noc work --json` 识别 layout 和相关 memory，高置信度 feature 候选可自动使用，歧义候选只澄清一次；改代码后 feature-archive 使用结构化 CLI 更新，simplified 仍保持项目级三文件流程，small/domain 继续作为旧布局兼容且不会静默迁移。
 
 ## Important Files
 

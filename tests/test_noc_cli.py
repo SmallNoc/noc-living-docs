@@ -79,8 +79,11 @@ class NocCliTests(unittest.TestCase):
         self.assertIn("noc setup", first_screen)
         self.assertIn("cd my-project", first_screen)
         self.assertIn("noc init .", first_screen)
-        self.assertIn("帮我给登录接口增加失败次数限制。", first_screen)
-        self.assertIn("You do not need to run `work`, `index`, `check`, `feature`, or `suggest-map`", first_screen)
+        self.assertIn("给登录功能增加连续失败五次后锁定账号 30 分钟。", first_screen)
+        self.assertIn("recognize or create the right feature archive", first_screen)
+        self.assertIn("maintain code scope and verification results", first_screen)
+        self.assertIn("restore context for later codex conversations", first_screen.lower())
+        self.assertIn("You do not need to learn `feature ensure`, `feature update`, `evidence record`, `feature-impact-file`, `candidate score`, or `feature-map`", first_screen)
         self.assertIn("does not call a model or upload code", first_screen)
         for internal_detail in ["noc work", '"schema_version"', "seven documents", "domain mode", "hook install"]:
             self.assertNotIn(internal_detail, first_screen.lower())
@@ -95,11 +98,17 @@ class NocCliTests(unittest.TestCase):
             "noc_docs/project.md",
             "noc_docs/guardrails.md",
             "noc_docs/verification.md",
+            "noc_docs/features/<feature-id>/overview.md",
             "noc_docs/.living-docs/routing.json",
+            "noc_docs/.living-docs/feature-index.json",
         ]:
             self.assertIn(path, readme)
-        self.assertIn("default v2 simplified", readme.lower())
-        self.assertIn("默认 v2 simplified", readme.lower())
+        self.assertIn("default feature-archive", readme.lower())
+        self.assertIn("默认 feature-archive", readme.lower())
+        self.assertIn("Chinese projects generate Simplified Chinese prose", readme)
+        self.assertIn("NOC never fabricates passing test results", readme)
+        self.assertIn("old projects are never silently migrated", readme.lower())
+        self.assertIn("v1 small/domain", readme)
 
     def test_each_required_subcommand_has_help(self) -> None:
         for command in ["setup", "init", "index", "validate", "hook", "check", "suggest-map", "work", "doctor", "feature"]:
@@ -201,6 +210,41 @@ class NocCliTests(unittest.TestCase):
             self.assertEqual(impacts["verification_command_change"], "verification")
             self.assertEqual(impacts["multiple_memory_impacts"], "project+guardrails")
 
+    def test_skill_defines_feature_archive_zero_learning_workflow(self) -> None:
+        for skill_root in [
+            ROOT / ".agents/skills/project-living-docs",
+            ROOT / "skills/codex/project-living-docs",
+        ]:
+            skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+            workflow = (skill_root / "references/workflow.md").read_text(encoding="utf-8")
+            combined = skill + "\n" + workflow
+
+            for command in [
+                "noc work",
+                "noc feature ensure",
+                "noc feature update",
+                "noc evidence",
+                "noc evidence record",
+                "noc check <project> --feature-impact-file",
+            ]:
+                self.assertIn(command, combined)
+            for phrase in [
+                "Do not freely rewrite `overview.md`",
+                "ask the user once",
+                "passed requires exit_code 0",
+                "do not silently migrate",
+                "language: zh-CN",
+                "JSON/YAML keys, feature ids, CLI flags, paths, code identifiers, and commands stay English",
+            ]:
+                self.assertIn(phrase, combined)
+            self.assertIn("high confidence", combined.lower())
+            self.assertIn("feature-archive", combined)
+            self.assertIn("project.md", combined)
+            self.assertIn("guardrails.md", combined)
+            self.assertIn("verification.md", combined)
+            self.assertIn("overview.md", combined)
+            self.assertNotIn("rewrite the entire overview", combined.lower())
+
     def test_skill_definition_of_done_separates_v2_from_v1_documents(self) -> None:
         skill = (ROOT / ".agents/skills/project-living-docs/SKILL.md").read_text(encoding="utf-8")
         definition_of_done = skill.split("## Definition Of Done", 1)[1].split("## References", 1)[0]
@@ -250,6 +294,153 @@ class NocCliTests(unittest.TestCase):
         self.assertNotIn("must update every feature document", agents.lower())
         self.assertIn("--json", skill)
         self.assertIn("machine-readable", skill)
+        self.assertIn("feature-archive", agents)
+        self.assertIn("old layouts are not migrated unless the user explicitly asks", agents.lower())
+
+    def test_feature_archive_cli_fixture_full_loop(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            env = {**os.environ, "CODEX_HOME": str(root / "Codex Home 中文")}
+            run(["setup", "--json"], env=env)
+            project = root / "project"
+            project.mkdir()
+            git(project, ["init"])
+            run(["init", str(project)], env=env)
+
+            work_before = json.loads(
+                run(
+                    [
+                        "work",
+                        str(project),
+                        "--intent",
+                        "给登录功能增加连续失败五次后锁定账号 30 分钟。",
+                        "--path",
+                        "src/auth/login.py",
+                        "--json",
+                    ],
+                    env=env,
+                ).stdout
+            )
+            self.assertEqual("feature-archive", work_before["layout"])
+
+            ensured = json.loads(
+                run(
+                    [
+                        "feature",
+                        "ensure",
+                        str(project),
+                        "--id",
+                        "user-login",
+                        "--name",
+                        "用户登录",
+                        "--alias",
+                        "登录",
+                        "--intent",
+                        "给登录功能增加连续失败五次后锁定账号 30 分钟。",
+                        "--json",
+                    ],
+                    env=env,
+                ).stdout
+            )
+            self.assertEqual("created", ensured["status"])
+
+            work_after = json.loads(
+                run(
+                    [
+                        "work",
+                        str(project),
+                        "--intent",
+                        "用户登录 登录 连续失败五次后锁定账号",
+                        "--path",
+                        "src/auth/login.py",
+                        "--json",
+                    ],
+                    env=env,
+                ).stdout
+            )
+            self.assertEqual("user-login", work_after["candidates"][0]["id"])
+
+            (project / "src/auth").mkdir(parents=True)
+            (project / "src/auth/login.py").write_text("LOCKOUT_MINUTES = 30\nMAX_FAILURES = 5\n", encoding="utf-8")
+            patch = {
+                "schema_version": "1.0",
+                "feature_id": "user-login",
+                "source": {"actor": "codex-skill", "intent": "给登录功能增加连续失败五次后锁定账号 30 分钟。"},
+                "patch": {
+                    "confirmed_requirements_add": [
+                        {"id": "req-lockout-after-five-failures", "text": "连续登录失败五次后，账号锁定 30 分钟。", "source": "user_request"}
+                    ],
+                    "implementation_upsert": [
+                        {"id": "impl-lockout-constants", "text": "登录失败阈值为 5 次，锁定时长为 30 分钟。", "source": "code_diff"}
+                    ],
+                    "code_paths_add": ["src/auth/login.py"],
+                    "verification_methods_upsert": [
+                        {"id": "verify-login-lockout", "command": "python -m unittest tests/test_login.py", "scope": "用户登录锁定"}
+                    ],
+                    "verification_result": {
+                        "command": "python -m unittest tests/test_login.py",
+                        "cwd": ".",
+                        "started_at": "2026-07-16T10:00:00+08:00",
+                        "finished_at": "2026-07-16T10:00:01+08:00",
+                        "exit_code": 0,
+                        "result": "passed",
+                        "scope": "用户登录锁定",
+                        "output_summary": "1 passed",
+                    },
+                },
+            }
+            patch_file = project / "patch.json"
+            patch_file.write_text(json.dumps(patch, ensure_ascii=False, indent=2), encoding="utf-8")
+
+            updated = json.loads(run(["feature", "update", str(project), "--id", "user-login", "--patch-file", str(patch_file), "--json"], env=env).stdout)
+            self.assertEqual("updated", updated["status"])
+            overview = (project / "noc_docs/features/user-login/overview.md").read_text(encoding="utf-8")
+            self.assertIn("## 已确认需求", overview)
+            self.assertIn("连续登录失败五次后，账号锁定 30 分钟。", overview)
+
+            git(project, ["add", "."])
+            code_evidence = json.loads(run(["evidence", str(project), "--staged", "--json"], env=env).stdout)
+            self.assertIn("src/auth/login.py", {item["path"] for item in code_evidence["changed_paths"]})
+
+            verification = {
+                "schema_version": "1.0",
+                "feature_id": "user-login",
+                "source": {"actor": "codex-skill"},
+                "command": "python -m unittest tests/test_login.py",
+                "cwd": ".",
+                "started_at": "2026-07-16T10:00:00+08:00",
+                "finished_at": "2026-07-16T10:00:01+08:00",
+                "exit_code": 0,
+                "result": "passed",
+                "scope": "用户登录锁定",
+                "output_summary": "1 passed",
+            }
+            verification_file = project / "verification-evidence.json"
+            verification_file.write_text(json.dumps(verification, ensure_ascii=False, indent=2), encoding="utf-8")
+            recorded = json.loads(
+                run(["evidence", "record", str(project), "--feature-id", "user-login", "--file", str(verification_file), "--json"], env=env).stdout
+            )
+            self.assertEqual("created", recorded["status"])
+
+            impact = {
+                "schema_version": "1.0",
+                "change_class": "requirement",
+                "feature_ids": ["user-login"],
+                "code_evidence": {"mode": "staged"},
+                "verification_evidence_ids": [recorded["evidence_id"]],
+                "documentation_updates": [
+                    {
+                        "feature_id": "user-login",
+                        "status": "updated",
+                        "updated_sections": ["已确认需求", "当前实现", "代码范围", "验证方式", "最近验证结果"],
+                        "reason": "新增登录失败锁定需求和实现。",
+                    }
+                ],
+            }
+            impact_file = project / "impact.json"
+            impact_file.write_text(json.dumps(impact, ensure_ascii=False, indent=2), encoding="utf-8")
+            checked = json.loads(run(["check", str(project), "--feature-impact-file", str(impact_file), "--json"], env=env).stdout)
+            self.assertEqual("passed", checked["status"])
 
     def test_hook_install_writes_lf_and_warn_only_hook(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
